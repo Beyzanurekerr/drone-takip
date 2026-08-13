@@ -38,7 +38,7 @@ def _kutu_ciz(img, kutu, renk, kalinlik=1):
     cv2.rectangle(img, (x, y), (x + w, y + h), renk, kalinlik)
 
 
-def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None):
+def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None, canli=False):
     """Senaryoyu bastan sona kosar. Doner: metrik sozlugu."""
     sahne, hedef = sen.sahne, sen.hedef
     tak = (yap_takipci or HedefTakip)()
@@ -47,6 +47,11 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None):
         os.makedirs(os.path.dirname(video) or ".", exist_ok=True)
         yaz = cv2.VideoWriter(video, cv2.VideoWriter_fourcc(*"mp4v"),
                               int(1 / sen.dt), (sahne.cam.w, sahne.cam.h))
+
+    if canli:
+        cv2.namedWindow(sen.ad, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(sen.ad, sahne.cam.w * 2, sahne.cam.h * 2)
+    duraklat = False
 
     kayit = []
     id_switch = 0
@@ -79,9 +84,12 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None):
                     kilitlendi_mi = True
                     ilk_tespit_kare = k
             sonuc = {"kutu": tak.kutu, "durum": tak.durum, "psr": 0.0, "sure": {}}
-            if yaz is not None:
+            if yaz is not None or canli:
                 _ciz(img, sahne, hedef, gt, sonuc, k, adaylar, tarama=True)
-                yaz.write(img)
+                if yaz is not None:
+                    yaz.write(img)
+                if canli and _goster(sen, img, sen.dt, duraklat) == "cik":
+                    break
             continue
 
         # ---- TAKIP ----
@@ -122,12 +130,20 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None):
                       "gorunur": gorunur, "gt_w": gt[2], "gt_h": gt[3], "merkez_hata": mh,
                       "alt": sahne.cam.alt, "uzerinde": uzerinde})
 
-        if yaz is not None:
+        if yaz is not None or canli:
             _ciz(img, sahne, hedef, gt, sonuc, k, tak.son_adaylar, o=o)
-            yaz.write(img)
+            if yaz is not None:
+                yaz.write(img)
+            if canli:
+                cevap = _goster(sen, img, sen.dt, duraklat)
+                if cevap == "cik":
+                    break
+                duraklat = (cevap == "duraklat")
 
     if yaz is not None:
         yaz.release()
+    if canli:
+        cv2.destroyWindow(sen.ad)
 
     gorunur_kayit = [r for r in kayit if r["gorunur"]]
     ious = np.array([r["iou"] for r in gorunur_kayit], np.float32) if gorunur_kayit else np.zeros(1)
@@ -160,6 +176,24 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None):
     return m
 
 
+def _goster(sen, img, dt, duraklat):
+    """Canli pencere. Doner: "devam" | "duraklat" | "cik"."""
+    cv2.imshow(sen.ad, img)
+    while True:
+        tus = cv2.waitKey(0 if duraklat else max(1, int(1000 * dt))) & 0xFF
+        if tus in (27, ord("q")):
+            return "cik"
+        if tus == ord(" "):
+            duraklat = not duraklat
+            if not duraklat:
+                return "devam"
+            continue
+        if duraklat and tus in (ord("n"), 83):   # n / sag ok: tek kare ilerle
+            return "duraklat"
+        if not duraklat:
+            return "devam"
+
+
 def _ciz(img, sahne, hedef, gt, sonuc, k, adaylar=None, o=None, tarama=False):
     for v in sahne.vehicles:
         if v is not hedef:
@@ -190,6 +224,8 @@ def main():
     ap.add_argument("test", nargs="?", default="test1")
     ap.add_argument("--video", default=None)
     ap.add_argument("--hepsi", action="store_true")
+    ap.add_argument("--canli", action="store_true",
+                    help="ekranda pencere ac (bosluk=duraklat, n=tek kare, q=cik)")
     a = ap.parse_args()
 
     testler = list(TUM_TESTLER) if a.hepsi else [a.test]
@@ -198,10 +234,12 @@ def main():
             print(f"bilinmeyen test: {ad}  (secenekler: {', '.join(TUM_TESTLER)})")
             sys.exit(1)
         sen = TUM_TESTLER[ad]()
-        vid = a.video if (a.video and not a.hepsi) else f"cikti/{ad}.mp4"
+        vid = None if a.canli and not a.video else (
+            a.video if (a.video and not a.hepsi) else f"cikti/{ad}.mp4")
         t = time.time()
-        kos(sen, video=vid)
-        print(f"    -> {vid}  ({time.time() - t:.1f} s)")
+        kos(sen, video=vid, canli=a.canli)
+        if vid:
+            print(f"    -> {vid}  ({time.time() - t:.1f} s)")
 
 
 if __name__ == "__main__":

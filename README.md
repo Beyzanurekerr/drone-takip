@@ -11,11 +11,16 @@ küçük nesne · hareketli kamera · benzer nesneler · düşük donanım.
 Sadece `opencv-python` ve `numpy` gerekir. Derin öğrenme bağımlılığı **yoktur**.
 
 ```bash
+python3 calistir.py test6 --canli   # CANLI: ekranda pencere aç, takibi anlık izle
+python3 calistir.py --hepsi --canli # 7 senaryoyu sırayla canlı izle
 python3 kiyasla.py --video     # 7 testi koş, metrikleri bas, cikti/*.mp4 üret, RAPOR.md yaz
-python3 calistir.py test6      # tek senaryo + video
+python3 calistir.py test6      # tek senaryo + video (pencere açmaz)
 python3 minboyut.py            # minimum takip boyutu deneyi (çekirdek karşılaştırmalı)
 python3 tarama.py              # çekirdek / parametre karşılaştırması (paralel)
 ```
+
+Canlı pencerede: **boşluk** duraklat/devam · **n** duraklatılmışken tek kare ilerle ·
+**q** veya **ESC** çık. WSL kullanıyorsan WSLg gerekir (Windows 11'de hazır gelir).
 
 ## Mimari
 
