@@ -22,6 +22,75 @@ python3 tarama.py              # çekirdek / parametre karşılaştırması (par
 Canlı pencerede: **boşluk** duraklat/devam · **n** duraklatılmışken tek kare ilerle ·
 **q** veya **ESC** çık. WSL kullanıyorsan WSLg gerekir (Windows 11'de hazır gelir).
 
+## Görüntü kaynakları
+
+Takip hattı görüntünün nereden geldiğini bilmez. `main.py` üç kaynağı da aynı
+boru hattına bağlar:
+
+```bash
+python3 main.py --source data/videos/drone_traffic_01.mp4   # MP4 drone videosu
+python3 main.py --source sim                                # prosedürel simülatör
+python3 main.py --source sim:test6                          # senaryo seçerek
+python3 main.py --source camera                             # webcam (index 0)
+python3 main.py --source camera:1                           # ikinci kamera
+```
+
+Eski biçim de çalışmaya devam eder: `--source video --input dosya.mp4`
+
+Ek seçenekler: `--cekirdek mosse` · `--kaydet cikti/kayit.mp4` ·
+`--max-kare 300` · `--penceresiz` (ekransız koşum).
+
+Koşum sonunda gecikme özeti basılır:
+
+```
+  kaynak      : sim:test1  (sim)
+  islenen kare: 80
+  hedef       : KILITLENDI
+  FPS         : 362.8
+  gecikme     : ort 2.76 ms | p50 2.42 | p95 4.58 | max 5.28
+```
+
+### Veri klasörü
+
+```
+data/
+├── videos/     # kendi drone/aerial mp4'lerin
+└── datasets/   # UAV123 / UAVDT / DTB70 (ileride)
+```
+
+İkisi de `.gitignore`'da — depo şişmesin. `cikti/*.mp4` dosyaları **ham görüntü
+değildir**, üzerlerine kutu ve yazı basılmıştır; kaynak videosu olarak
+kullanılırsa ekranda iki kat yazı görünür.
+
+Kod içinden:
+
+```python
+from kaynak import kaynak_olustur
+
+with kaynak_olustur("video", girdi="data/ucus.mp4") as kaynak:
+    for kare in kaynak:
+        sonuc = tak.guncelle(kare.goruntu)   # kare.goruntu -> BGR ndarray
+```
+
+Her `Kare`: `goruntu`, `indeks`, `zaman`, `kaynak_adi`, `genislik`, `yukseklik`,
+`fps` — ayrıca simülatörde `gt` (ground-truth kutusu) ve `gorunur`. Video ve
+kamerada bu ikisi `None`'dır. Kaynaklarda ayrıca `acik_mi()`, `kapat()`,
+`bilgi()` ve `tur` (`sim` / `video` / `kamera`) bulunur.
+
+Hedef seçimi takılıp çıkarılabilir — ileride fare ile seçim aynı imzayı
+kullanacak, döngü değişmeyecek:
+
+```python
+def secici(adaylar, kare):    # -> aday sözlüğü ya da None
+    ...
+main.kos(kaynak, hedef_secici=secici)
+```
+
+Kaynak testleri: `python3 test_kaynak.py` (pytest gerektirmez).
+
+Ölçüm ve kıyaslama hâlâ `kiyasla.py` / `calistir.py` üzerinden yapılır;
+`main.py` onların yerini almaz.
+
 ## Mimari
 
 ```

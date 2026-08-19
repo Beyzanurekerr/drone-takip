@@ -1,0 +1,1287 @@
+<title>Hedef Kilidi Karar Raporu</title>
+<style>
+  :root {
+    --bg:        #EDF1F1;
+    --surface:   #F8FBFB;
+    --surface-2: #E3E9E9;
+    --ink:       #101A1C;
+    --ink-2:     #46585B;
+    --ink-3:     #6E8082;
+    --line:      #C7D3D4;
+    --line-soft: #DBE3E3;
+    --accent:    #0F5F66;
+    --accent-2:  #0B4A50;
+    --accent-bg: #DCEAEA;
+    --ok:        #2C6E49;
+    --warn:      #8E5E10;
+    --bad:       #A6382C;
+    --ok-bg:     #DCEBE1;
+    --warn-bg:   #F0E6D2;
+    --bad-bg:    #F1DEDA;
+    --mid-bg:    #E5E9EA;
+
+    --display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "DejaVu Sans Mono", monospace;
+
+    --w: 1120px;
+    --prose: 72ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #0B1214;
+      --surface:   #121B1D;
+      --surface-2: #182325;
+      --ink:       #DFE7E7;
+      --ink-2:     #9FB0B2;
+      --ink-3:     #7A8C8E;
+      --line:      #26383A;
+      --line-soft: #1C2A2C;
+      --accent:    #5FBFC4;
+      --accent-2:  #8AD4D8;
+      --accent-bg: #12292B;
+      --ok:        #6FBB8D;
+      --warn:      #D8A855;
+      --bad:       #E0897A;
+      --ok-bg:     #162C21;
+      --warn-bg:   #2C2415;
+      --bad-bg:    #2E1B18;
+      --mid-bg:    #1B2527;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:        #0B1214;
+    --surface:   #121B1D;
+    --surface-2: #182325;
+    --ink:       #DFE7E7;
+    --ink-2:     #9FB0B2;
+    --ink-3:     #7A8C8E;
+    --line:      #26383A;
+    --line-soft: #1C2A2C;
+    --accent:    #5FBFC4;
+    --accent-2:  #8AD4D8;
+    --accent-bg: #12292B;
+    --ok:        #6FBB8D;
+    --warn:      #D8A855;
+    --bad:       #E0897A;
+    --ok-bg:     #162C21;
+    --warn-bg:   #2C2415;
+    --bad-bg:    #2E1B18;
+    --mid-bg:    #1B2527;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--w); margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  header.doc {
+    padding: 56px 0 28px;
+    border-bottom: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(34px, 5.5vw, 54px);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+    font-weight: 400;
+  }
+  .standfirst {
+    max-width: var(--prose);
+    font-size: 17px;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-3);
+    padding-top: 6px;
+  }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+
+  /* ---------- toc ---------- */
+  nav.toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  nav.toc a {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 11px 12px 11px 0;
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    border-top: 1px solid var(--line-soft);
+  }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  nav.toc .n {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 18px;
+  }
+
+  /* ---------- sections ---------- */
+  section { padding: 44px 0 4px; scroll-margin-top: 12px; }
+  section + section { border-top: 1px solid var(--line-soft); }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 10px;
+  }
+  h3 {
+    font-family: var(--body);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 30px 0 10px;
+    color: var(--ink);
+  }
+  h4 {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 26px 0 8px;
+    font-weight: 500;
+  }
+  p { max-width: var(--prose); margin: 0 0 14px; }
+  ul, ol { max-width: var(--prose); padding-left: 20px; margin: 0 0 16px; }
+  li { margin-bottom: 7px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.875em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  strong { font-weight: 650; }
+
+  /* ---------- tables ---------- */
+  .scroller {
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  .matrix td:first-child, .matrix th:first-child {
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    font-size: 12.5px;
+    white-space: nowrap;
+    z-index: 1;
+  }
+  .matrix thead th:first-child { background: var(--surface-2); z-index: 3; }
+  .matrix thead th { z-index: 2; }
+  .matrix td { text-align: center; font-family: var(--mono); font-size: 11px; padding: 7px 6px; }
+  .matrix th:not(:first-child) { text-align: center; }
+
+  .r5, .r4, .r3, .r2, .r1 {
+    display: block;
+    border-radius: 2px;
+    padding: 3px 4px;
+    letter-spacing: 0.02em;
+  }
+  .r5 { background: var(--ok-bg);   color: var(--ok);   font-weight: 700; }
+  .r4 { background: var(--ok-bg);   color: var(--ok); }
+  .r3 { background: var(--mid-bg);  color: var(--ink-2); }
+  .r2 { background: var(--warn-bg); color: var(--warn); }
+  .r1 { background: var(--bad-bg);  color: var(--bad); font-weight: 700; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin: -14px 0 26px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 9px; height: 9px; border-radius: 1px; display: inline-block; }
+
+  /* ---------- verdict blocks ---------- */
+  .verdict {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 18px 20px;
+    margin: 22px 0;
+  }
+  .verdict.alt { border-left-color: var(--ink-3); }
+  .verdict.warn { border-left-color: var(--warn); }
+  .verdict .label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 7px;
+  }
+  .verdict.alt .label { color: var(--ink-3); }
+  .verdict.warn .label { color: var(--warn); }
+  .verdict .pick {
+    font-family: var(--display);
+    font-size: 21px;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    max-width: none;
+  }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  /* ---------- callout ---------- */
+  .note {
+    background: var(--accent-bg);
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14.5px;
+    border-radius: 2px;
+  }
+  .note p { margin-bottom: 8px; }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- architecture diagram ---------- */
+  .arch {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0 28px;
+    font-size: 14px;
+    max-width: 780px;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 14px;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    background: var(--surface);
+    padding: 13px 16px;
+  }
+  .stage:last-of-type { border-bottom: 1px solid var(--line); }
+  .stage .idx {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    padding-top: 3px;
+  }
+  .stage .name { font-weight: 650; }
+  .stage .name em {
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-left: 8px;
+    letter-spacing: 0.04em;
+  }
+  .stage .why { color: var(--ink-2); font-size: 13.5px; margin-top: 3px; }
+  .stage.reuse { background: var(--accent-bg); }
+  .stage.reuse .idx { color: var(--accent-2); }
+
+  /* ---------- decision grid ---------- */
+  .decisions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin: 22px 0;
+  }
+  .decision { background: var(--surface); padding: 16px 18px; }
+  .decision .k {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .decision .v {
+    font-family: var(--display);
+    font-size: 18px;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .decision p { font-size: 13.5px; color: var(--ink-2); margin: 0; max-width: none; }
+
+  footer.doc {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  footer.doc h4 { margin-top: 0; }
+  footer.doc ol { max-width: none; columns: 2; column-gap: 40px; font-size: 12.5px; }
+  footer.doc li { break-inside: avoid; }
+
+  @media (max-width: 640px) {
+    body { padding: 0 14px 64px; }
+    footer.doc ol { columns: 1; }
+    nav.toc { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="doc">
+  <span class="eyebrow">Teknik karar dosyası · Drone hedef takip sistemi</span>
+  <h1>Hedef Kilidi Karar Raporu</h1>
+  <p class="standfirst">
+    Simülasyon ortamı, tespit modeli, tracker ve gömülü donanım stratejisi için gerekçeli seçim.
+    Tüm sayılar kaynağıyla birlikte verilmiştir; kendi ölçümlerimiz ayrıca işaretlenmiştir.
+  </p>
+  <div class="meta">
+    <span><b>Tarih</b> 19 Ağustos 2026</span>
+    <span><b>Kapsam</b> PC prototipi → Raspberry Pi sınıfı gömülü sistem</span>
+    <span><b>Mevcut kod</b> ~/drone_takip (klasik CV, ölçülmüş)</span>
+    <span><b>Dış kaynak</b> 14 doküman / repo / benchmark</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#s1"><span class="n">01</span> Simülasyon karşılaştırması</a>
+  <a href="#s2"><span class="n">02</span> GitHub araştırması</a>
+  <a href="#s3"><span class="n">03</span> Tracking yöntemi</a>
+  <a href="#s4"><span class="n">04</span> Model seçimi</a>
+  <a href="#s5"><span class="n">05</span> Gerçek donanım</a>
+  <a href="#s6"><span class="n">06</span> Küçük hedef problemi</a>
+  <a href="#s7"><span class="n">07</span> Renk/kutu tabanlı takip</a>
+  <a href="#s8"><span class="n">08</span> Önerilen mimari</a>
+  <a href="#s9"><span class="n">09</span> Test planı</a>
+  <a href="#s10"><span class="n">10</span> Karar raporu</a>
+</nav>
+
+<!-- ============================================================ -->
+<section id="s0">
+  <h2><span class="num">Özet</span>Kararın döndüğü üç eksen</h2>
+  <p>
+    Araştırmanın sonunda seçimi belirleyen şey simülatörlerin grafik kalitesi değil, üç sert kısıt oldu:
+  </p>
+  <ol>
+    <li>
+      <strong>Hedef donanım YOLO'yu kaldırmıyor olabilir.</strong> Raspberry Pi 5'te YOLO26n, 640 px, NCNN ile
+      <strong>67 ms/kare (~15 FPS)</strong> — ve bu yalnız çıkarım süresi, takip ve çizim hariç
+      (<a href="https://docs.ultralytics.com/guides/raspberry-pi/">Ultralytics RPi benchmark</a>).
+      Pi Zero sınıfında YOLO çıkarımı <strong>~1 saniye/kare</strong> mertebesinde
+      (<a href="https://mjrovai.github.io/EdgeML_Made_Ease_ebook/raspi/object_detection/cv_yolo.html">Edge AI Made Easy</a>).
+      Yani "hangi Pi" sorusu, "hangi model" sorusundan önce cevaplanmalı.
+    </li>
+    <li>
+      <strong>Mevcut sentetik simülasyonumuz YOLO'yu test edemez.</strong> <code>sim/world.py</code> araçları
+      düz renkli dörtgen olarak çiziyor; COCO ağırlıklı bir YOLO bunları "car" olarak görmez. Klasik CV
+      için mükemmel bir parametrik test tezgâhı, derin öğrenme için ise ölçüm değeri sıfır.
+    </li>
+    <li>
+      <strong>İhtiyacımız olan şeyi zaten ölçülmüş veri kümeleri veriyor.</strong> UAV123, UAVDT ve DTB70
+      tam olarak bizim senaryomuzu — düşük irtifa drone bakışı, kamera hareketi, okluzyon, küçülen hedef —
+      <em>etiketli ground-truth ile</em> içeriyor. Hiçbir simülatör bunu bedava vermiyor.
+    </li>
+  </ol>
+  <div class="note">
+    <span class="tag">Ölçülmüş kendi verimiz</span>
+    <p>
+      Mevcut klasik boru hattı bugün yeniden koşuldu: 640×480'de <strong>2.42 ms/kare (413 FPS)</strong>,
+      7 senaryoda ortalama kilit oranı <strong>%96.9</strong>, toplam <strong>1 ID switch</strong>,
+      minimum takip boyutu <strong>9.0 × 3.7 px</strong>. Bu, YOLO tabanlı herhangi bir alternatifin
+      geçmesi gereken çıtadır — ve Pi bütçesinde geçmesi kolay değil.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s1">
+  <h2><span class="num">01</span>Simülasyon ortamı karşılaştırması</h2>
+  <p>
+    Sekiz seçenek, 18 kriter. Sekizinci sütun bizim hâlihazırda çalışan prosedürel simülatörümüz —
+    karşılaştırmaya dahil etmek şart, çünkü sıfırdan başlamıyoruz.
+  </p>
+
+  <div class="scroller">
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th>Kriter</th>
+        <th>CARLA<br>+CARLA-Air</th>
+        <th>AirSim /<br>Project AirSim</th>
+        <th>Gazebo<br>+PX4</th>
+        <th>Isaac Sim<br>+Pegasus</th>
+        <th>Unity<br>(Flightmare)</th>
+        <th>UE özel<br>geliştirme</th>
+        <th>Video /<br>dataset</th>
+        <th>Mevcut<br>sim</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Drone kamera desteği</td>
+        <td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">gerçek</span></td><td><span class="r5">çok iyi</span></td></tr>
+      <tr><td>Gerçekçi araç hareketi / trafik</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r2">zayıf</span></td><td><span class="r2">zayıf</span></td><td><span class="r3">orta</span></td><td><span class="r2">zayıf</span></td><td><span class="r3">orta</span></td><td><span class="r5">gerçek</span></td><td><span class="r3">orta</span></td></tr>
+      <tr><td>Kamera hareketi kontrolü</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r1">yok</span></td><td><span class="r4">iyi</span></td></tr>
+      <tr><td>Çözünürlük kontrolü</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r2">sabit</span></td><td><span class="r5">çok iyi</span></td></tr>
+      <tr><td>Render FPS / iterasyon hızı</td>
+        <td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td></tr>
+      <tr><td>Python API</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">ROS2</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r2">zayıf</span></td><td><span class="r5">OpenCV</span></td><td><span class="r5">çok iyi</span></td></tr>
+      <tr><td>Detection pipeline entegrasyonu</td>
+        <td><span class="r4">iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r5">çok iyi</span></td><td><span class="r3">orta</span></td><td><span class="r2">zayıf</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">çok iyi</span></td></tr>
+      <tr><td>YOLO ile anlamlı test</td>
+        <td><span class="r4">iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r2">zayıf</span></td><td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r5">birebir</span></td><td><span class="r1">olmaz</span></td></tr>
+      <tr><td>Tracking testi için GT</td>
+        <td><span class="r5">otomatik</span></td><td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r5">otomatik</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r5">etiketli</span></td><td><span class="r5">kusursuz</span></td></tr>
+      <tr><td>Küçük / uzak araç rejimi</td>
+        <td><span class="r4">iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r2">zayıf</span></td><td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">süpürme</span></td></tr>
+      <tr><td>Okluzyon testi</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r5">çok iyi</span></td><td><span class="r3">orta</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">gerçek</span></td><td><span class="r4">iyi</span></td></tr>
+      <tr><td>Motion blur</td>
+        <td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r1">yok</span></td><td><span class="r4">iyi</span></td><td><span class="r3">orta</span></td><td><span class="r5">çok iyi</span></td><td><span class="r5">gerçek</span></td><td><span class="r1">yok</span></td></tr>
+      <tr><td>Farklı ışık koşulları</td>
+        <td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r2">zayıf</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">çok iyi</span></td><td><span class="r4">gerçek</span></td><td><span class="r1">yok</span></td></tr>
+      <tr><td>Donanım gereksinimi</td>
+        <td><span class="r2">6–8 GB GPU</span></td><td><span class="r2">GPU</span></td><td><span class="r4">hafif</span></td><td><span class="r1">RTX 8 GB+</span></td><td><span class="r3">orta</span></td><td><span class="r1">ağır</span></td><td><span class="r5">laptop</span></td><td><span class="r5">laptop</span></td></tr>
+      <tr><td>Windows'ta kurulabilirlik</td>
+        <td><span class="r3">sancılı</span></td><td><span class="r4">iyi</span></td><td><span class="r2">WSL</span></td><td><span class="r3">orta</span></td><td><span class="r4">iyi</span></td><td><span class="r4">iyi</span></td><td><span class="r5">sorunsuz</span></td><td><span class="r5">sorunsuz</span></td></tr>
+      <tr><td>Öğrenme / kurulum eforu</td>
+        <td><span class="r2">yüksek</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r1">çok yüksek</span></td><td><span class="r2">yüksek</span></td><td><span class="r1">çok yüksek</span></td><td><span class="r5">düşük</span></td><td><span class="r5">sıfır</span></td></tr>
+      <tr><td>Prototip geliştirme hızı</td>
+        <td><span class="r2">yavaş</span></td><td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r1">çok yavaş</span></td><td><span class="r2">yavaş</span></td><td><span class="r1">çok yavaş</span></td><td><span class="r5">çok hızlı</span></td><td><span class="r5">çok hızlı</span></td></tr>
+      <tr><td>Gerçek sisteme yakınlık</td>
+        <td><span class="r3">orta</span></td><td><span class="r3">orta</span></td><td><span class="r1">düşük</span></td><td><span class="r3">orta</span></td><td><span class="r2">düşük</span></td><td><span class="r3">orta</span></td><td><span class="r5">birebir</span></td><td><span class="r2">düşük</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--ok)"></i> çok iyi / iyi</span>
+    <span><i class="swatch" style="background:var(--ink-3)"></i> orta</span>
+    <span><i class="swatch" style="background:var(--warn)"></i> zayıf</span>
+    <span><i class="swatch" style="background:var(--bad)"></i> kritik eksik</span>
+  </div>
+
+  <h3>Satır satır gerekçeler</h3>
+
+  <h4>CARLA + CARLA-Air</h4>
+  <p>
+    CARLA'nın kendisi yer aracı simülatörü; drone kamerası için doğal yolu 2026'da yayımlanan
+    <a href="https://github.com/louiszengCN/CarlaAir">CARLA-Air</a>. Tek bir Unreal sürecinde şehir trafiğini ve
+    fizik-doğru multirotor uçuşunu birleştiriyor, <strong>hem CARLA hem AirSim Python API'lerini ve ROS 2 arayüzünü koruyor</strong>,
+    her tick'te 18'e kadar sensör modalitesini senkron topluyor
+    (<a href="https://arxiv.org/html/2603.28032">arXiv 2603.28032</a>).
+    Bizim için asıl kazanç <strong>Traffic Manager</strong>: kural uyumlu, kalabalık, gerçekçi trafik akışı —
+    5–10 araç senaryolarını elle scriptlemek zorunda kalmıyoruz. Bedeli ağır: CARLA sunucusu
+    <strong>en az 6 GB, önerilen 8 GB GPU</strong> istiyor, kaynaktan derleme ~35 GB + Unreal için 95–135 GB disk
+    (<a href="https://carla.readthedocs.io/en/latest/start_quickstart/">CARLA docs</a>).
+    CARLA-Air'in hazır binary'leri Ubuntu 20.04/22.04 için; Windows tarafı derleme işi.
+  </p>
+
+  <h4>AirSim / Project AirSim</h4>
+  <p>
+    Drone-öncelikli mimarisi ve Windows'ta rahat kurulumuyla bizim senaryomuza doğal görünüyor —
+    ama <strong>orijinal AirSim 15 Aralık 2023'te arşivlendi</strong>, geliştirme durdu
+    (<a href="https://github.com/microsoft/AirSim">microsoft/AirSim</a>). Halefi Project AirSim, MIT lisansıyla
+    <a href="https://github.com/iamaisim/ProjectAirSim">iamaisim/ProjectAirSim</a> altında yayımlandı.
+    Kritik eksik: <strong>trafik motoru yok.</strong> 5–10 aracın yolda gerçekçi hareketini kendimiz
+    kodlamamız gerekir — yani mevcut simülatörümüzdeki <code>Vehicle</code> sınıfının işini,
+    çok daha pahalı bir motorda tekrar yapmak.
+  </p>
+
+  <h4>Gazebo + PX4</h4>
+  <p>
+    Hafif ve ROS 2 ile iyi entegre; kamera plugin'i var ama <strong>fotogerçekçi değil</strong>.
+    Literatürde bu doğrudan bir uyarı olarak geçiyor: Gazebo tabanlı kurgular
+    "algı boru hatlarının doğru davranışını simüle etmek için gereken fotogerçekçi detaydan yoksun"
+    (<a href="https://arxiv.org/pdf/2302.01867">arXiv 2302.01867</a>).
+    20×12 px'lik bir aracın tespit edilip edilemeyeceğini Gazebo'da ölçmek <em>yanıltıcı</em> sonuç verir.
+    Bizim problemimiz tam olarak bu rejimde olduğu için Gazebo eleniyor.
+  </p>
+
+  <h4>Isaac Sim + Pegasus</h4>
+  <p>
+    Teknik olarak listenin en yeteneklisi (Replicator ile otomatik GT, mükemmel malzeme/ışık), ama
+    <a href="https://github.com/PegasusSimulator/PegasusSimulator">Pegasus Simulator</a> dokümantasyonu
+    <strong>CUDA'lı NVIDIA GPU ve en az 8 GB VRAM</strong> istiyor, referans test RTX 4090'da yapılmış,
+    önerilen taban GeForce RTX 3070 üstü. Bir staj projesinin prototip döngüsü için kurulum ve öğrenme
+    maliyeti kazanımın çok üstünde.
+  </p>
+
+  <h4>Unity (Flightmare) ve özel Unreal geliştirme</h4>
+  <p>
+    <a href="https://github.com/uzh-rpg/flightmare">Flightmare</a>'in ayrıştırılmış mimarisi
+    (Unity render + C++ fizik) hız açısından çekici ve yüzlerce quadrotoru paralel koşturabiliyor,
+    ama sahne/trafik içeriğini biz üreteceğiz ve Unity/C# öğrenme maliyeti var. Sıfırdan Unreal
+    geliştirme ise en yüksek görsel tavanı verir, en düşük Python entegrasyonuyla — bu proje takviminde savunulamaz.
+  </p>
+
+  <h4>Video / dataset tabanlı</h4>
+  <p>
+    UAV123 (123 dizi, 112.578 kare), DTB70 (70 dizi, 15.777 kare, <em>şiddetli kamera hareketi odaklı</em>),
+    UAVDT (SOT bölümü 50 dizi, 37.084 kare; hava durumu, irtifa, kamera açısı ve okluzyon etiketleriyle)
+    ve VisDrone-SOT2020 — hepsi düşük irtifa drone bakışından, hepsi etiketli
+    (<a href="https://arxiv.org/pdf/2205.04281">Siamese Tracking for UAV: A Review</a>).
+    Bu, simülatörlerin hiçbirinin veremeyeceği tek şeyi veriyor: <strong>gerçek sensör gürültüsü, gerçek
+    motion blur, gerçek sıkıştırma artefaktı ve bedava ground-truth.</strong>
+    Zayıflığı da net: kamera yörüngesini ve irtifayı <em>sen seçemezsin</em>.
+  </p>
+
+  <div class="verdict">
+    <span class="label">En mantıklı seçenek</span>
+    <p class="pick">Dataset/video tabanlı birincil ortam + mevcut prosedürel simülatörümüz parametrik süpürme için</p>
+    <p>
+      Gerekçe: Bu projenin cevaplaması gereken sorular <em>"araç kaç piksele kadar takip edilebiliyor",
+      "kamera hareketinde ID korunuyor mu", "Pi'de kaç FPS"</em>. Birincisi ve ikincisi UAV123/UAVDT/DTB70'te
+      gerçek veriyle ve etiketli olarak zaten mevcut; üçüncüsünü hiçbir simülatör cevaplamıyor.
+      Mevcut simülatörümüz ise irtifa rampasıyla <strong>52 px'ten 5 px'e sürekli boyut süpürmesi</strong> yapabiliyor —
+      hiçbir gerçek veri kümesinde bu kadar temiz bir kontrollü değişken yok. İkisi birbirini tamamlıyor,
+      ikisinin toplam kurulum maliyeti de sıfır.
+    </p>
+  </div>
+
+  <div class="verdict alt">
+    <span class="label">İkinci en mantıklı seçenek</span>
+    <p class="pick">CARLA + CARLA-Air</p>
+    <p>
+      Eğer ileride <em>kontrollü kalabalık trafik</em> gerekirse (10+ araç, kavşak, gerçek okluzyon geometrisi)
+      doğru adres burası: Traffic Manager'ı bedava, drone kamerası CARLA-Air ile çözülmüş, Python API korunmuş.
+      Koşul: en az 8 GB VRAM'li bir GPU ve Ubuntu (ya da WSL2) ayarlamaya hazır olmak.
+      AirSim/Project AirSim üçüncü sırada — drone tarafı daha iyi ama trafik motoru olmadığı için bize daha az veriyor.
+    </p>
+  </div>
+
+  <div class="note">
+    <span class="tag">Uyarı — mevcut simülatörün sınırı</span>
+    <p>
+      Mevcut <code>sim/</code> ile <strong>YOLO test edilemez</strong>: araçlar prosedürel dörtgen olarak çiziliyor,
+      COCO ağırlıklı bir dedektör bunları araç olarak tanımaz. Klasik CV karşılaştırmaları ve boyut süpürmesi için
+      değerini korur; derin öğrenme ölçümleri gerçek veriye taşınmalıdır.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s2">
+  <h2><span class="num">02</span>GitHub araştırması</h2>
+  <p>
+    Popülerliğe göre değil, senaryomuza teknik yakınlığa göre sıralandı. En üstteki üç repo doğrudan
+    "hareketli kameradan araç takibi" problemini çözüyor.
+  </p>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr>
+        <th>Repo</th><th>Model / tracker</th><th>Hız &amp; donanım</th><th>Bize uygunluk</th><th>Artı / eksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://github.com/mikel-brostrom/boxmot">mikel-brostrom/<br><strong>boxmot</strong></a></td>
+        <td>Tracker kütüphanesi: ByteTrack, BoT-SORT, OC-SORT, DeepOCSORT, StrongSORT, HybridSORT, BoostTrack, SFSort, OccluBoost</td>
+        <td>MOT17 ablasyon: OccluBoost HOTA 70.47 / MOTA 78.32; ByteTrack HOTA 67.68 / MOTA 78.04. C++ native tracker'lar mevcut</td>
+        <td><strong>Çok yüksek</strong> — tracker'ları tek arayüzden A/B karşılaştırmanın en hızlı yolu</td>
+        <td>+ ReID modelleri hazır, C++ port var (gömülü için)<br>− <strong>AGPL-3.0</strong> lisans, ticari kullanımda dikkat</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/NirAharon/BoT-SORT">NirAharon/<br><strong>BoT-SORT</strong></a></td>
+        <td>Referans BoT-SORT: Kalman + kamera hareket telafisi (CMC) + ReID</td>
+        <td>CMC, piramidal Lucas-Kanade optik akış + aykırı değer eleme ile afin dönüşüm kestiriyor</td>
+        <td><strong>Çok yüksek</strong> — CMC bizim <code>egomotion.py</code>'ımızın birebir aynısı</td>
+        <td>+ Hareketli kamera için tasarlanmış referans<br>− Yaya odaklı (MOT17/20); araç için yeniden ayar gerekir</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/Thamkench/uav-speedlab">Thamkench/<br><strong>uav-speedlab</strong></a></td>
+        <td>YOLOv11 + BoT-SORT + homografi tabanlı arka plan hareket telafisi</td>
+        <td>Eğik (oblique) drone bakışı; hız kestirimi için homografi</td>
+        <td><strong>Çok yüksek</strong> — eğik bakış + hareketli kamera + araç: tam senaryomuz</td>
+        <td>+ Eğik bakışta afin yerine homografi kullanımı örneği<br>− Amaç hız ölçümü, hedef kilidi değil</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/wish44165/YOLOv12-BoT-SORT-ReID">wish44165/<br><strong>YOLOv12-BoT-SORT-ReID</strong></a></td>
+        <td>YOLOv12 + BoT-SORT + ReID (multi-UAV tracking baseline, <a href="https://arxiv.org/html/2503.17237v2">arXiv 2503.17237</a>)</td>
+        <td>GPU eğitim/çıkarım odaklı</td>
+        <td><strong>Yüksek</strong> — ReID'in ne zaman kazandırdığını gösteren temiz bir baseline</td>
+        <td>+ CMC dokümantasyonu iyi<br>− Hedef "UAV tespiti", araç değil</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/vision4robotics/SiameseTracking4UAV">vision4robotics/<br><strong>SiameseTracking4UAV</strong></a></td>
+        <td>UAV'a özel Siamese SOT tracker koleksiyonu (SiamAPN, TCTrack, HiFT…)</td>
+        <td>Tümü <strong>NVIDIA Jetson AGX Xavier</strong>'da ölçülmüş; TCTrack &gt;27 FPS, SiamAPN &gt;30 FPS</td>
+        <td><strong>Yüksek</strong> — "tek hedef kilidi" problemimizin akademik karşılığı</td>
+        <td>+ Doğrudan UAV kıyas tablosu<br>− <strong>Jetson sınıfı GPU şart</strong>, Pi'de koşmaz</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/vision4robotics/DCFTracking4UAV">vision4robotics/<br><strong>DCFTracking4UAV</strong></a></td>
+        <td>UAV için korelasyon filtresi (DCF) tracker'ları — <em>CPU</em></td>
+        <td>UAV123@10fps, DTB70, UAVDT, VisDrone-SOT, UAVTrack112 üzerinde tek CPU sonuçları</td>
+        <td><strong>Çok yüksek</strong> — mevcut <code>renk_dcf</code> çekirdeğimizin doğrudan rakipleri</td>
+        <td>+ Pi'ye taşınabilir tek aile; kıyas kümesi bizim harness'a birebir uyar<br>− Derin özellik yok, zorlu sahnede tavanı düşük</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/HonglinChu/NanoTrack">HonglinChu/<br><strong>NanoTrack</strong></a></td>
+        <td>Hafif Siamese SOT, NCNN dağıtımı; OpenCV'ye <code>cv2.TrackerNano</code> olarak girdi</td>
+        <td>Model <strong>~1.9 MB</strong>; Apple M1 CPU'da &gt;200 FPS, <strong>Raspberry Pi 4'te ~30 FPS</strong> (<a href="https://docs.opencv.org/4.x/d8/d69/classcv_1_1TrackerNano.html">OpenCV docs</a>)</td>
+        <td><strong>Çok yüksek</strong> — Pi'de koşabilen tek derin SOT; DCF'e üst sınır referansı</td>
+        <td>+ OpenCV içinde hazır, ek bağımlılık yok<br>− Tek hedef; tespit yapmaz, kaybı kendi anlamaz</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/Qengineering/YoloV8-ncnn-Raspberry-Pi-4">Qengineering/<br><strong>YoloV8-ncnn-RPi</strong></a></td>
+        <td>YOLOv8 n/s, ncnn, saf C++</td>
+        <td>640×640: <strong>RPi 5 → 20 FPS (v8n), 11 FPS (v8s); RPi 4 → 3.1 / 1.47 FPS.</strong> Yalnız çıkarım, kare yakalama ve çizim hariç</td>
+        <td><strong>Yüksek</strong> — Pi'de YOLO'nun gerçekçi tavanı</td>
+        <td>+ Bağımsız, gerçek ölçüm<br>− C++/Code::Blocks kurulumu; Python akışına uzak</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/Seeed-Projects/Benchmarking-YOLOv8-on-Raspberry-PI-reComputer-r1000-and-AIkit-Hailo-8L">Seeed-Projects/<br><strong>Benchmarking-YOLOv8-Hailo-8L</strong></a></td>
+        <td>YOLOv8n/s, int8, Hailo-8L NPU</td>
+        <td>Pi 5 + AI HAT: <strong>YOLOv8n 136.7 FPS, YOLOv8s 127.85 FPS</strong> (batch 8, 640×640); tek model ~107 FPS, 8.4 ms donanım gecikmesi</td>
+        <td><strong>Kritik</strong> — "Pi'de YOLO gerçek zamanlı olur mu" sorusunun tek net evet cevabı</td>
+        <td>+ 25× hızlanma, güç bütçesi makul<br>− +70 $ donanım, int8 kuantizasyon, Hailo SDK'ya bağımlılık</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/obss/sahi">obss/<br><strong>sahi</strong></a></td>
+        <td>Dilimli çıkarım (Slicing Aided Hyper Inference); Ultralytics YOLO11/YOLO26, RT-DETR, MMDet destekli</td>
+        <td>Doğruluk kazandırır, <strong>hızdan götürür</strong> (her dilim ayrı ileri geçiş)</td>
+        <td><strong>Orta</strong> — PC'de etiket üretimi için evet, Pi'de gerçek zamanlı için hayır</td>
+        <td>+ Küçük nesnede belirgin kazanç<br>− Kare başına maliyet dilim sayısıyla çarpılıyor</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/dronefreak/VisDrone-dataset-python-toolkit">dronefreak/<br><strong>VisDrone-toolkit</strong></a></td>
+        <td>33 model (Torchvision + YOLO), eğitim, değerlendirme, video çıkarımı, format dönüşümü</td>
+        <td>PC / GPU</td>
+        <td><strong>Yüksek</strong> — VisDrone etiketlerini YOLO formatına çevirmenin hazır yolu</td>
+        <td>+ Dönüşüm ve benchmark iskeleti hazır<br>− Gömülü tarafla ilgisi yok</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/git-disl/EMO">git-disl/<br><strong>EMO</strong></a></td>
+        <td>Edge cihazlar için verimli MOT; kare atlama / tracker interpolasyonu ölçümleri (<a href="https://arxiv.org/pdf/2309.02666">arXiv 2309.02666</a>)</td>
+        <td>Edge cihaz ölçüm çalışması</td>
+        <td><strong>Yüksek</strong> — "kaç karede bir tespit" sorusunun deneysel cevabı</td>
+        <td>+ Doğruluk/FPS eğrisini veri ile veriyor<br>− Araç/hava bakışı değil, genel MOT</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/lucasleocarvalho/Drone-Tracking">lucasleocarvalho/<br><strong>Drone-Tracking</strong></a></td>
+        <td>YOLOv11 + EKF, Raspberry Pi üzerinde</td>
+        <td>Pi sınıfı donanımda uçtan uca hibrit sistem</td>
+        <td><strong>Orta</strong> — mimari şablon olarak faydalı</td>
+        <td>+ Pi'de tespit+filtre birleşimi örneği<br>− Yayımlanmış benchmark yok</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/dronefreak/dji-tello-target-tracking">dronefreak/<br><strong>dji-tello-target-tracking</strong></a></td>
+        <td>YOLOv8 + centroid takip + yörünge kestirimi + PID ile hedef izleme</td>
+        <td>PC üstünden Tello kontrolü</td>
+        <td><strong>Orta</strong> — hedef seçimi ve kilit UX'i için referans</td>
+        <td>+ "Kullanıcı hedef seçer, sistem kilitler" akışı yazılmış<br>− Takip mantığı basit centroid, ID koruma zayıf</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s3">
+  <h2><span class="num">03</span>Tracking yöntemi karşılaştırması</h2>
+  <p>
+    Kritik ayrım: <strong>SOT</strong> (tek nesne, kullanıcı kutu verir, tespit yok) ile
+    <strong>MOT</strong> (her karede tespit, ID atama) farklı problemler. Bizim ihtiyacımız ikisinin bileşimi.
+  </p>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr><th>Yöntem</th><th>Tip</th><th>Kamera hareketi</th><th>Kalabalıkta ID</th><th>Küçük hedef</th><th>Maliyet</th><th>Senaryomuz için</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>KCF</strong></td><td>SOT / DCF</td><td>Telafi yok</td><td>Kavram yok</td><td>HOG bitince çöker</td><td>Çok düşük</td><td>Denendi, yetersiz — HOG özelliği ~16 px altında bilgi taşımıyor</td></tr>
+      <tr><td><strong>MOSSE</strong></td><td>SOT / DCF</td><td>Telafi yok</td><td>Kavram yok</td><td>Bizim ölçümümüz: 16.5 × 6.8 px</td><td>En düşük</td><td>Tek başına yetersiz; <em>ego-telafi + Kalman ile sarılınca</em> çalışıyor</td></tr>
+      <tr><td><strong>CSRT</strong></td><td>SOT / DCF</td><td>Telafi yok</td><td>Kavram yok</td><td>KCF'ten iyi</td><td>Orta-yüksek</td><td>KCF'ten doğru ama belirgin yavaş; Pi'de zor</td></tr>
+      <tr><td><strong>ByteTrack</strong></td><td>MOT</td><td><strong>Yok</strong></td><td>İyi</td><td>Düşük skorlu tespitleri de kullanır → avantaj</td><td>Çok düşük</td><td>En hızlı taban; kamera hareketinde ID kayması riski</td></tr>
+      <tr><td><strong>BoT-SORT</strong></td><td>MOT</td><td><strong>Var (GMC)</strong></td><td>Çok iyi</td><td>Tespite bağlı</td><td>Düşük-orta</td><td><strong>Ana aday.</strong> Ultralytics dokümanı hareketli kamera/drone için bunu öneriyor</td></tr>
+      <tr><td><strong>DeepSORT</strong></td><td>MOT + ReID</td><td>Yok</td><td>İyi</td><td>ReID gömme küçük hedefte anlamsızlaşır</td><td>Yüksek</td><td>Eskimiş; ReID maliyeti Pi'de savunulamaz</td></tr>
+      <tr><td><strong>OC-SORT</strong></td><td>MOT</td><td>Yok</td><td>Okluzyonda iyi</td><td>Orta</td><td>Düşük</td><td>Uzun okluzyon için iyi ama kamera telafisi yok</td></tr>
+      <tr><td><strong>StrongSORT</strong></td><td>MOT + ReID</td><td>Kısmi</td><td>Çok iyi</td><td>ReID zayıflar</td><td>Yüksek</td><td>PC'de referans üst sınır, gömülüde hayır</td></tr>
+      <tr><td><strong>Deep OC-SORT / TrackTrack</strong></td><td>MOT + ReID</td><td>Var</td><td>En iyi</td><td>Orta</td><td>Yüksek</td><td>Ultralytics "ID takası ana problemse" bunları öneriyor; PC referansı olarak kullan</td></tr>
+      <tr><td><strong>Ultralytics <code>track</code></strong></td><td>Sarmalayıcı</td><td>BoT-SORT ile var</td><td>—</td><td>—</td><td>—</td><td>BoT-SORT, ByteTrack, OC-SORT, Deep OC-SORT, FastTracker, TrackTrack tek satırda; en hızlı deney yolu</td></tr>
+      <tr><td><strong>Detection + custom lock</strong></td><td>Hibrit</td><td>Bizde var</td><td>Kural bizde</td><td>SOT çekirdeğine bağlı</td><td>Ayarlanabilir</td><td><strong>Önerilen.</strong> MOT'un ID'si + kendi kilit durum makinemiz</td></tr>
+      <tr><td><strong>Detection + Re-ID</strong></td><td>Hibrit</td><td>—</td><td>En iyi</td><td><strong>Küçükte çöker</strong></td><td>Yüksek</td><td>Yalnızca uzun okluzyon sonrası, seyrek çağrılmalı</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Ana soru: 5–10 araç arasında, hareketli kamerada hedef ID'si nasıl korunur?</h3>
+  <p>
+    Cevap tek bir tracker değil, <strong>üç katmanın üst üste binmesi</strong>. Sebep şu: ID switch'in üç ayrı
+    kaynağı var ve her birini farklı bir mekanizma çözüyor.
+  </p>
+  <ol>
+    <li>
+      <strong>Kamera hareketi kaynaklı kayma → GMC (kamera hareket telafisi).</strong>
+      Kamera kaydığında Kalman tahmini ile tespit kutusu arasındaki IoU düşer, eşleşme kopar ve ID takas olur.
+      BoT-SORT bunu her karede seyrek optik akışla afin dönüşüm kestirip Kalman durumuna uygulayarak çözüyor.
+      Ultralytics dokümanı bunu açıkça "elde taşınan, drone veya hareketli kamera görüntüsü" için öneriyor;
+      varsayılan yöntem <code>gmc_method: sparseOptFlow</code>.
+      <em>Bizde bu katman zaten var</em> — <code>takip/egomotion.py</code> aynı işi yapıyor (LK + RANSAC afin).
+    </li>
+    <li>
+      <strong>Yakın komşu kaynaklı takas → hareket modeli + belirsizlik kuralı.</strong>
+      İki araç üst üste geldiğinde görünüm ayırt edemez; ayıran şey <em>hız vektörüdür</em>. Kalman'a
+      ego dönüşümü uygulanmışsa hız, kameranın değil aracın gerçek hareketini temsil eder ve iki aracı ayırır.
+      Buna ek olarak <strong>en iyi aday ikinciyi belirgin farkla geçmiyorsa hiçbirini kabul etme</strong> kuralı gerekir;
+      bizim ölçümümüzde 5 özdeş beyaz aracın olduğu senaryoda 0 ID switch'i sağlayan şey buydu.
+    </li>
+    <li>
+      <strong>Uzun okluzyon sonrası dönüş → görünüm imzası (hafif Re-ID).</strong>
+      Hedef 1–2 saniye kaybolduğunda konum önbilgisi bilgi taşımaz. Burada görünüm şart —
+      ama <em>seyrek çağrılan</em>, ucuz bir imza yeterli.
+    </li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">Küçük hedefte hangi yaklaşım avantajlı</span>
+    <p>
+      <strong>Derin ReID küçük hedefte işe yaramaz.</strong> 9×4 px'lik bir yamadan çıkarılan 128–512 boyutlu
+      gömme vektörü gürültüdür; ayırt edici bilgi fiziksel olarak orada değildir. Bizim ölçümümüz bunu
+      niceliksel gösteriyor: <strong>20×10 px altında doku bitiyor, renk kalıyor.</strong> Renk kanallı DCF
+      minimum takip boyutunu MOSSE'nin 16.5×6.8 px'inden 9.0×3.7 px'e indiriyor.
+      Yani küçük rejimde sıralama: <em>hareket modeli &gt; renk/kroma imzası &gt; doku &gt; derin gömme</em>.
+      ByteTrack'in düşük skorlu tespitleri de değerlendirme fikri de bu rejimde avantajlı, çünkü küçük hedefte
+      YOLO güveni doğal olarak düşer.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s4">
+  <h2><span class="num">04</span>Model seçimi</h2>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr><th>Model</th><th>CPU çıkarım (ONNX)</th><th>Küçük nesne</th><th>Pi 5 (NCNN, 640)</th><th>Not</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>YOLO26n</strong></td>
+        <td class="num">38.9 ms</td>
+        <td>YOLO11n ile benzer; P2 başlığı eklenebilir</td>
+        <td class="num">67.0 ms → ~15 FPS</td>
+        <td><strong>Önerilen.</strong> NMS-free uçtan uca → gecikme değişkenliği düşük, gömülü dağıtım basit</td>
+      </tr>
+      <tr>
+        <td><strong>YOLO26s</strong></td>
+        <td class="num">~87 ms</td>
+        <td>n'den belirgin iyi</td>
+        <td class="num">~179 ms → ~5.6 FPS</td>
+        <td>PC'de referans / etiket üretimi için; Pi'de CPU ile olmaz</td>
+      </tr>
+      <tr>
+        <td><strong>YOLO11n</strong></td>
+        <td class="num">56.1 ms</td>
+        <td>İyi, geniş ekosistem</td>
+        <td class="num">~80 ms</td>
+        <td>En olgun/denenmiş seçenek; YOLO26n'den ~%31 yavaş</td>
+      </tr>
+      <tr>
+        <td><strong>YOLO11s</strong></td>
+        <td class="num">~90 ms</td>
+        <td>Küçük nesnede n'den net iyi</td>
+        <td>—</td>
+        <td>Jetson/Hailo varsa mantıklı</td>
+      </tr>
+      <tr>
+        <td><strong>YOLOv8n</strong></td>
+        <td>—</td>
+        <td>Taban</td>
+        <td class="num">7.25–20 FPS<sup>*</sup></td>
+        <td>En çok bağımsız Pi ölçümü olan model; kıyas tabanı olarak tut</td>
+      </tr>
+      <tr>
+        <td><strong>YOLOv8n + P2</strong></td>
+        <td>~%20–30 daha yavaş</td>
+        <td><strong>APsmall +%31'e kadar</strong></td>
+        <td>—</td>
+        <td>Stride-4 / 160×160 başlık; 6×6–16×16 px aralığında asıl kazanç</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:13px; color:var(--ink-3); max-width:none;">
+    <sup>*</sup> Kaynak farkı gerçek: Python + Ultralytics ölçümü Pi 5'te <strong>7.25 FPS</strong> (NCNN tek iş parçacığı),
+    saf C++ ncnn ölçümü aynı modelde <strong>20 FPS</strong> (yalnız çıkarım). Aradaki fark ön/son işleme ve dil katmanı.
+    Planlamada muhafazakâr olanı (Python) kullanın.
+  </p>
+
+  <p>
+    <strong>Seçim: YOLO26n.</strong> Üç gerekçe: (1) CPU'da YOLO11n'e göre 56.1 → 38.9 ms, yani ~%31 daha düşük gecikme —
+    Pi bütçesinde bu doğrudan FPS demek; (2) <strong>NMS-free uçtan uca tasarım</strong>, kalabalık sahnede
+    gecikmenin kare kare dalgalanmasını ortadan kaldırıyor, ki gerçek zamanlı kontrol döngüsü için ortalama FPS'ten
+    daha önemlidir; (3) NCNN dışa aktarımı ve Pi rehberi resmî olarak destekleniyor.
+    Risk: YOLO11 kadar sahada denenmiş değil — bu yüzden <strong>YOLO11n'i yedek olarak aynı harness'ta tutun.</strong>
+  </p>
+  <p>
+    Eğitim tarafında COCO ağırlıkları yeterli değil: COCO'nun "car" sınıfı yan/önden görünümlerle doludur,
+    kuşbakışı araç neredeyse yoktur. <strong>VisDrone'un araç sınıflarında (car, van, truck, bus) fine-tune şart.</strong>
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<section id="s5">
+  <h2><span class="num">05</span>Gerçek donanım: Pi'de ne çalışır?</h2>
+  <p>
+    Bu bölüm projenin kaderini belirliyor. Üç senaryo var ve seçim <em>hangi Pi</em> sorusuna bağlı.
+  </p>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr><th>Donanım</th><th>YOLO gerçekçi hızı</th><th>Uygulanabilir mimari</th><th>Hüküm</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Pi Zero / Zero 2 W</strong></td>
+        <td>~1 FPS (≈1 s/kare)</td>
+        <td>YOLO gerçek zamanlı <strong>imkânsız</strong>. Tek yol saf klasik CV</td>
+        <td class="num"><span class="r1">YOLO yok</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pi 4</strong></td>
+        <td>3.1 FPS (v8n, 640, C++ ncnn)</td>
+        <td>Sadece seyrek tespit (2–4 sn'de bir) + klasik takip</td>
+        <td class="num"><span class="r2">sınırda</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pi 5 (CPU)</strong></td>
+        <td>~7–20 FPS (640) / ~25–60 FPS (320)</td>
+        <td>Tespit her N karede + klasik SOT ara karelerde</td>
+        <td class="num"><span class="r3">çalışır</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pi 5 + Hailo-8L AI HAT</strong></td>
+        <td><strong>107–137 FPS</strong> (v8n/v8s, int8, 640)</td>
+        <td>Her karede YOLO + BoT-SORT rahatça</td>
+        <td class="num"><span class="r5">rahat</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="verdict warn">
+    <span class="label">En kritik bulgu</span>
+    <p class="pick">Pi 5 + Hailo-8L, "YOLO tabanlı mimari" ile "gerçek zamanlı" kelimelerini aynı cümlede kullanabilmenin tek yolu</p>
+    <p>
+      Hızlanma ~7×–25× mertebesinde ve maliyeti yaklaşık 70 $. Bu donanım <strong>yoksa</strong>, YOLO her karede
+      koşamaz ve mimari zorunlu olarak hibrit hale gelir: seyrek tespit + her karede ucuz klasik takip.
+      Karar sırası bu yüzden şudur: <strong>önce donanımı sabitle, sonra modeli seç.</strong>
+    </p>
+  </div>
+
+  <h3>CPU-only Pi 5 için somut reçete</h3>
+  <ul>
+    <li><strong>Model:</strong> YOLO26n, <strong>NCNN</strong> formatında (Pi'de en hızlı format; ONNX'e göre ~%50 daha hızlı, TFLite'a göre ~10× — YOLO11n örneğinde 80 ms'e karşı 800 ms)</li>
+    <li><strong>Çözünürlük:</strong> tespit için <strong>320–416 px</strong>, takip için tam kare. 640→320 kabaca 3–4× hızlanma verir</li>
+    <li><strong>Çıkarım stratejisi:</strong> <strong>her karede değil</strong>, N=5–10 karede bir tespit; aradaki kareler klasik takip çekirdeğiyle doldurulur. Ultralytics tabanlı örnek uygulama <code>stride=3</code> ile Kalman interpolasyonunu gösteriyor; DeepStream'in <em>interval</em> özelliği aynı fikir. Literatürde 25 FPS video için dedektörü ortalama <strong>8 karede bire</strong> düşürmek raporlanmış</li>
+    <li><strong>Kuantizasyon:</strong> int8 (Hailo varsa zaten zorunlu)</li>
+    <li><strong>ROI:</strong> kilitliyken tespiti tüm kare yerine hedef çevresindeki pencereye sınırla</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="s6">
+  <h2><span class="num">06</span>Küçük hedef problemi</h2>
+  <p>
+    100×60 → 50×30 → 20×12 px geçişi tek bir problem değil, <strong>iki ayrı eşik</strong>:
+    <em>tespit</em> eşiği (YOLO aracı görebiliyor mu) ve <em>takip</em> eşiği (kilit korunuyor mu).
+    Bizim ölçümümüz ikincisinin çok daha aşağıda olduğunu gösteriyor: konum kilidi <strong>9×4 px</strong>'e kadar
+    sürüyor, ama kutu <em>ölçüsü</em> zaten 25×10 px altında güvenilmez oluyor.
+    Bu, mimari için doğrudan bir sonuç doğuruyor: <strong>küçüldükçe YOLO'ya değil, takibe güven.</strong>
+  </p>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr><th>Yaklaşım</th><th>Kazanç</th><th>FPS etkisi</th><th>Bizim için</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Yüksek giriş çözünürlüğü</strong> (imgsz 1280)</td><td>Küçük hedefleri geri kazanır</td><td class="num">~4× yavaş</td><td>PC'de evet, Pi'de <strong>hayır</strong></td></tr>
+      <tr><td><strong>Image tiling / SAHI</strong></td><td>Küçük nesnede belirgin mAP artışı</td><td class="num">dilim sayısı kadar</td><td>Sadece <strong>çevrimdışı etiket üretimi</strong> için</td></tr>
+      <tr><td><strong>P2 başlığı</strong> (stride 4)</td><td>APsmall +%31'e kadar; 6–16 px aralığında etkili</td><td class="num">~%20–30 yavaş</td><td><strong>Evet</strong> — en iyi doğruluk/maliyet oranı</td></tr>
+      <tr><td><strong>ROI çıkarımı</strong></td><td>Kilitliyken tam kare taramaya gerek yok</td><td class="num">büyük kazanç</td><td><strong>Evet, öncelikli</strong></td></tr>
+      <tr><td><strong>Frame skipping + tracker interpolasyonu</strong></td><td>Tespit maliyetini N'e böler</td><td class="num">N× kazanç</td><td><strong>Evet, zorunlu</strong> (CPU-only Pi'de)</td></tr>
+      <tr><td><strong>Temporal tracking</strong></td><td>Tespit yokken bile hedefi taşır</td><td class="num">~1 ms</td><td><strong>Evet — mimarinin merkezi</strong></td></tr>
+      <tr><td><strong>Super-resolution</strong></td><td>Teorik</td><td class="num">çok pahalı</td><td><strong>Hayır</strong> — Pi bütçesinde savunulamaz</td></tr>
+      <tr><td><strong>Multi-scale detection</strong></td><td>Sınırlı</td><td class="num">2–3× yavaş</td><td>Hayır</td></tr>
+      <tr><td><strong>Büyük model (s/m)</strong></td><td>Küçük nesnede net iyi</td><td class="num">2–3× yavaş</td><td>Sadece Hailo/Jetson varsa</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    Öncelik sırası nettir: <strong>ROI + frame skipping + temporal tracking</strong> önce gelir (FPS'i artırırlar),
+    <strong>P2 başlığı</strong> ikinci gelir (ölçülü maliyetle doğruluk verir), SAHI ve süper çözünürlük
+    gerçek zamanlı yola hiç girmez.
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<section id="s7">
+  <h2><span class="num">07</span>Renk/kutu tabanlı takip: mimari doğru mu?</h2>
+  <p>
+    <strong>Evet, doğru — ama önemli bir ayrımı korumak şartıyla.</strong>
+  </p>
+  <p>
+    "Yeşil aracı takip et" gibi <em>sabit kodlanmış</em> bir renk kuralı yanlıştır: gerçek sahnede araç rengi
+    aydınlatmaya, gölgeye ve pozlamaya göre değişir; ayrıca kullanıcı hangi rengi seçeceğini önceden bilmez.
+    Bu tür bir kural simülasyonun görselleştirme katmanına özgüdür ve gerçek sisteme taşınmamalıdır.
+  </p>
+  <p>
+    Ancak <strong>hedef kilitlendiği anda öğrenilen görünüm özelliği</strong> bambaşka bir şeydir ve
+    vazgeçilmezdir. Mevcut kodumuzda <code>renk_dcf</code> çekirdeği rengi <em>kural</em> olarak değil,
+    <em>öğrenilen korelasyon filtresi kanalı</em> olarak kullanıyor; kanallar toplam parlaklığa bölünerek
+    normalize ediliyor, yani aydınlatmadan bağımsız kroma bilgisine dönüşüyor. Aynı şekilde
+    <code>Imza</code> sınıfı hedefin ortalama rengini kilit anında öğreniyor, sabit bir tabloya bakmıyor.
+    Bu, "renk tabanlı takip" değil, <strong>hafif appearance modeli</strong>dir — literatürdeki ReID'in
+    ucuz akrabası.
+  </p>
+  <p>Dolayısıyla doğru mimari şudur, ve önerilenle birebir örtüşüyor:</p>
+  <ul>
+    <li><strong>Bounding box</strong> — dedektörden ya da takip çekirdeğinden</li>
+    <li><strong>Tracker ID</strong> — MOT katmanından</li>
+    <li><strong>Hareket bilgisi</strong> — ego-telafili Kalman hızı (kalabalıkta ayırt eden ana sinyal)</li>
+    <li><strong>Görünüm özelliği</strong> — kilit anında öğrenilen, seyrek kullanılan hafif imza</li>
+  </ul>
+  <div class="note">
+    <span class="tag">Bilinmesi gereken sınır</span>
+    <p>
+      Gri/beyaz araç + gri asfalt kombinasyonunda kroma sinyali çöker. Bu yüzden görünüm tek başına
+      hiçbir zaman karar mercii olmamalı; <strong>hareket modeli birincil, görünüm ikincil doğrulama</strong>
+      olarak kalmalı. Ölçümlerimizde 5 özdeş beyaz araçlı senaryoda ID'yi koruyan şey görünüm değil,
+      hız vektörü + belirsizlik kuralıydı.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s8">
+  <h2><span class="num">08</span>Önerilen mimari</h2>
+  <p>
+    Önerilen yapı, sorudaki taslaktan <strong>iki noktada ayrılıyor</strong>: (a) YOLO her karede değil,
+    seyrek koşuyor; (b) araya her karede çalışan ucuz bir <em>SOT çekirdeği</em> giriyor.
+    Sebep 5. bölümdeki Pi ölçümleri. Turkuaz kutular <strong>mevcut kodumuzda hazır olan</strong> katmanlar.
+  </p>
+
+  <div class="arch">
+    <div class="stage">
+      <div class="idx">00</div>
+      <div>
+        <div class="name">Kamera girişi <em>640×480 @ 30 fps</em></div>
+        <div class="why">Tespit için 320–416'ya küçültülür; takip tam çözünürlükte kalır — küçük hedefte her piksel bilgidir.</div>
+      </div>
+    </div>
+    <div class="stage reuse">
+      <div class="idx">01</div>
+      <div>
+        <div class="name">Ego-motion / GMC <em>takip/egomotion.py — HAZIR</em></div>
+        <div class="why">Seyrek LK + RANSAC afin. BoT-SORT'un CMC katmanının aynısı. Tek hesapla üç iş: arama daraltma, hareketli/sabit ayrımı, ölçek. ~0.9 ms.</div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="idx">02</div>
+      <div>
+        <div class="name">YOLO26n dedektör <em>seyrek: her N karede bir + ROI</em></div>
+        <div class="why">NCNN/int8. Kilitliyken hedef çevresinde pencere, kayıpken tam kare. Neden seyrek: Pi 5 CPU'da 640 px'te ~15 FPS tavanı var; 30 fps hedefi ancak N≥2 ile tutulur.</div>
+      </div>
+    </div>
+    <div class="stage reuse">
+      <div class="idx">03</div>
+      <div>
+        <div class="name">SOT çekirdeği <em>renk_dcf — HAZIR · alternatif: cv2.TrackerNano</em></div>
+        <div class="why">Tespit olmayan her karede hedefi taşır. ~1 ms. Ölçülmüş minimum boyut 9.0×3.7 px — YOLO'nun göremediği rejimde kilidi bu katman sürdürüyor.</div>
+      </div>
+    </div>
+    <div class="stage reuse">
+      <div class="idx">04</div>
+      <div>
+        <div class="name">Kalman + veri ilişkilendirme <em>ego-telafili — HAZIR</em></div>
+        <div class="why">Ego dönüşümü hız durumuna da uygulanıyor → hız, aracın gerçek hareketi. Kalabalıkta ID'yi ayıran birincil sinyal bu.</div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="idx">05</div>
+      <div>
+        <div class="name">Hedef seçimi <em>kullanıcı listeden/fareyle seçer</em></div>
+        <div class="why">Hareket tespiti aday listesi üretir (park halindeki araçlar listede çıkmaz), kullanıcı birini seçer. Mevcut <code>tarama()</code> + <code>kilitle()</code> API'si bunu zaten karşılıyor.</div>
+      </div>
+    </div>
+    <div class="stage reuse">
+      <div class="idx">06</div>
+      <div>
+        <div class="name">Kilit durum makinesi <em>KİLİTLİ → ŞÜPHELİ → ARAMA → KAYIP — HAZIR</em></div>
+        <div class="why">Kritik kural: şüpheli durumda <strong>öğrenme durur</strong>. Filtre kaybettiği anda öğrenmeye devam ederse zemini öğrenir ve geri dönemez.</div>
+      </div>
+    </div>
+    <div class="stage reuse">
+      <div class="idx">07</div>
+      <div>
+        <div class="name">Yeniden tespit / kurtarma <em>imza + belirsizlik kuralı — HAZIR</em></div>
+        <div class="why">Arama yarıçapı büyüdükçe skor ağırlığı konumdan görünüme kayar; en iyi aday ikinciyi belirgin farkla geçmezse hiçbiri kabul edilmez. Benzer araçlarda yanlış kilidi engelleyen kural budur.</div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="idx">08</div>
+      <div>
+        <div class="name">Çıkış <em>kutu + durum + güven + hız</em></div>
+        <div class="why">Gimbal/PID ya da operatör arayüzü için. Durum bilgisi kutu kadar önemli: "KİLİTLİ" ile "ARAMA" farklı davranış gerektirir.</div>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    <strong>Neden bu yapı:</strong> YOLO'nun gücü (sınıf bilgisi, kayıptan kurtarma, kalabalıkta ilk tespit)
+    ile klasik CV'nin gücünü (kare başına mikro-saniye maliyeti, 9 px hedefte bile konum kilidi) doğru yerlerde
+    kullanıyor. YOLO pahalı ve seyrek çalışan <em>düzeltici</em>, klasik katman ucuz ve sürekli çalışan
+    <em>taşıyıcı</em>. Pi 5 + Hailo alınırsa N=1'e çekilir ve mimari değişmeden aynı kod hızlanır —
+    yani <strong>donanım kararı mimariyi bozmuyor</strong>, sadece bir parametreyi değiştiriyor.
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<section id="s9">
+  <h2><span class="num">09</span>Test planı</h2>
+  <p>
+    15 test, 3 kaynak. Mevcut harness (<code>kiyasla.py</code>) 7'sini zaten koşuyor;
+    kalanlar gerçek veriye ve yeni senaryolara ihtiyaç duyuyor.
+  </p>
+
+  <div class="scroller">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Test</th><th>Ne ölçer</th><th>Kaynak</th><th>Birincil metrik</th><th>Durum</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="num">1</td><td>1 araç, yakın</td><td>Temel doğruluk</td><td>Kendi sim</td><td>IoU, merkez hata</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">2</td><td>3 araç</td><td>Basit ayrışma</td><td>Kendi sim</td><td>ID switch</td><td><span class="r3">kısmi</span></td></tr>
+      <tr><td class="num">3</td><td>5 araç, konvoy</td><td>Yoğunlukta ID</td><td>Kendi sim</td><td>ID switch, kilit oranı</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">4</td><td>10 araç, kavşak</td><td>Kalabalık sınırı</td><td>CARLA / VisDrone</td><td>ID switch, FPS</td><td><span class="r1">yok</span></td></tr>
+      <tr><td class="num">5</td><td>Uzak araç (~50×20 px)</td><td>Tespit eşiği</td><td>Kendi sim + UAV123</td><td>Tespit güveni, IoU</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">6</td><td>Çok küçük (&lt;20×12 px)</td><td>Takip eşiği</td><td>Kendi sim (irtifa rampası)</td><td>Merkez hata, kilit oranı</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">7</td><td>Kamera hareketi (yaw + titreşim)</td><td>GMC etkinliği</td><td>Kendi sim + DTB70</td><td>ID switch, kilit oranı</td><td><span class="r4">kısmen</span></td></tr>
+      <tr><td class="num">8</td><td>Hedef yön değiştiriyor</td><td>Hareket modeli çevikliği</td><td>Kendi sim (<code>turn_rate</code>)</td><td>Merkez hata, kayıp süresi</td><td><span class="r1">yok</span></td></tr>
+      <tr><td class="num">9</td><td>Hedef başka aracın arkasına giriyor</td><td>Okluzyon dayanımı</td><td>UAVDT / CARLA</td><td>Kurtarma süresi, ID switch</td><td><span class="r2">vekil</span></td></tr>
+      <tr><td class="num">10</td><td>Hedef kısa süre kayboluyor</td><td>Yeniden tespit</td><td>Kendi sim (üst geçit)</td><td>Kurtarma süresi</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">11</td><td>Birden fazla benzer araç</td><td>Belirsizlik kuralı</td><td>Kendi sim + VisDrone</td><td>ID switch</td><td><span class="r5">var</span></td></tr>
+      <tr><td class="num">12</td><td>Düşük ışık / alacakaranlık</td><td>Kroma sinyali çöküşü</td><td>UAVDT / gerçek video</td><td>Tespit güveni, kilit oranı</td><td><span class="r1">yok</span></td></tr>
+      <tr><td class="num">13</td><td>Motion blur</td><td>Bulanıkta korelasyon</td><td>Gerçek video / sentetik blur</td><td>PSR, kilit oranı</td><td><span class="r1">yok</span></td></tr>
+      <tr><td class="num">14</td><td>Düşük çözünürlük (320×240)</td><td>Pi giriş bütçesi</td><td>Kendi sim + downscale</td><td>Tüm metrikler + FPS</td><td><span class="r1">yok</span></td></tr>
+      <tr><td class="num">15</td><td>Düşük FPS girişi (10 fps)</td><td>Büyük kare arası yer değiştirme</td><td>UAV123@10fps</td><td>Kilit oranı, ID switch</td><td><span class="r1">yok</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Her testte kaydedilecek metrikler</h3>
+  <div class="scroller">
+  <table>
+    <thead><tr><th>Metrik</th><th>Tanım</th><th>Neden</th></tr></thead>
+    <tbody>
+      <tr><td><strong>FPS</strong> / ms/kare</td><td>Uçtan uca, çizim hariç; ayrıca aşama kırılımı</td><td>Pi bütçesi kararı buna dayanır</td></tr>
+      <tr><td><strong>Tespit güveni</strong></td><td>YOLO skorunun boyuta göre dağılımı</td><td>Hangi piksel boyutunda dedektörün bittiğini gösterir</td></tr>
+      <tr><td><strong>ID switch</strong></td><td>Kutunun başka araca geçme sayısı</td><td>Kilit sisteminin tek gerçek başarısızlık modu</td></tr>
+      <tr><td><strong>Target loss</strong></td><td>KİLİTLİ olmayan kare oranı</td><td>Kullanıcının hissettiği kesinti</td></tr>
+      <tr><td><strong>Recovery time</strong></td><td>Kilit koptuktan sonra geri dönene kadar kare sayısı</td><td>Okluzyon dayanımının niceliği</td></tr>
+      <tr><td><strong>Tracking duration</strong></td><td>En uzun kesintisiz kilit süresi</td><td>Sahada anlamlı olan tek "dayanıklılık" sayısı</td></tr>
+      <tr><td><strong>Latency</strong></td><td>Kare girişinden kutu çıkışına p50/p95</td><td>NMS-free tercihinin gerekçesi p95'te görünür</td></tr>
+      <tr><td><strong>IoU + merkez hata</strong></td><td>İkisi birlikte</td><td>Küçük hedefte IoU 1 px hatada çöker; merkez hatası adil kalır</td></tr>
+      <tr><td><strong>Yanlış güven</strong></td><td>KİLİTLİ derken hedefin üstünde olmama oranı</td><td>Mevcut sistemin bilinen 1 numaralı açığı</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s10">
+  <h2><span class="num">10</span>Karar raporu</h2>
+
+  <div class="decisions">
+    <div class="decision">
+      <span class="k">A · Simülasyon</span>
+      <div class="v">Dataset birincil + mevcut sim ikincil</div>
+      <p>UAV123 / UAVDT / DTB70 gerçek veri ve bedava GT verir; kendi simülatörümüz hiçbir veri kümesinde
+      bulunmayan kontrollü irtifa süpürmesini verir. Yedek/ölçekleme yolu: CARLA + CARLA-Air.</p>
+    </div>
+    <div class="decision">
+      <span class="k">B · Detection modeli</span>
+      <div class="v">YOLO26n, NCNN, VisDrone fine-tune</div>
+      <p>CPU'da YOLO11n'e göre ~%31 daha hızlı, NMS-free olduğu için gecikmesi kararlı. YOLO11n yedekte
+      aynı harness'ta tutulur. COCO ağırlığı yetmez — kuşbakışı araç için fine-tune şart.</p>
+    </div>
+    <div class="decision">
+      <span class="k">C · Tracker</span>
+      <div class="v">BoT-SORT (GMC açık)</div>
+      <p>Hareketli kamera için tasarlanmış tek yaygın MOT; Ultralytics dokümanı drone görüntüsü için
+      doğrudan bunu öneriyor. ByteTrack yalnız FPS krizi olursa. Kıyas için BoxMOT kullanılır.</p>
+    </div>
+    <div class="decision">
+      <span class="k">D · Target locking</span>
+      <div class="v">MOT ID + kendi kilit durum makinemiz</div>
+      <p>Ham tracker ID'si yetmez: KİLİTLİ / ŞÜPHELİ / ARAMA / KAYIP makinesi, şüphede öğrenmeyi durdurma
+      ve belirsizlik kuralı zaten yazılmış ve 7 senaryoda 1 ID switch ile ölçülmüş durumda.</p>
+    </div>
+    <div class="decision">
+      <span class="k">E · Re-ID gerekli mi?</span>
+      <div class="v">Derin Re-ID hayır, hafif imza evet</div>
+      <p>9×4 px hedefte derin gömme gürültüdür. Kilit anında öğrenilen ~150 sayılık renk+şablon+boyut imzası
+      yeterli ve yalnızca uzun okluzyon sonrası çağrılır. Pi 5 + Hailo alınırsa Ultralytics
+      <code>with_reid</code> denenebilir.</p>
+    </div>
+    <div class="decision">
+      <span class="k">F · Pi optimizasyonu</span>
+      <div class="v">Pi 5 + Hailo-8L, yoksa 320 px + N-kare atlama</div>
+      <p>Hailo ile YOLOv8n 107–137 FPS; CPU-only Pi 5'te 640 px'te ~7–20 FPS tavanı var, o yüzden
+      NCNN + 320 px + ROI + her 5–10 karede bir tespit. <strong>Pi Zero'da YOLO yoktur</strong> —
+      o hedefte tek yol saf klasik boru hattıdır.</p>
+    </div>
+    <div class="decision">
+      <span class="k">G · Geçiş planı</span>
+      <div class="v">Ölçüm önce, taşıma sonra</div>
+      <p>1) Ortak harness'ı gerçek veriye bağla · 2) mevcut klasik hattı ve YOLO+BoT-SORT'u <em>aynı</em>
+      metriklerle karşılaştır · 3) Pi'de tek başına dedektörü ölç (tahmin değil) · 4) N ve çözünürlüğü
+      ölçüme göre seç · 5) NCNN/int8 dışa aktar · 6) sahada doğrula.</p>
+    </div>
+    <div class="decision">
+      <span class="k">H · İlk geliştirilecek modül</span>
+      <div class="v">Video/dataset giriş yolu + ortak ölçüm harness'ı</div>
+      <p>Şu an iki mimariyi karşılaştıracak <em>tek bir sayı</em> yok. <code>video.py</code> (~70 satır)
+      ve UAV123/UAVDT GT okuyucusu, bundan sonraki her kararın önkoşulu.</p>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <span class="label">Neden bu sıra</span>
+    <p>
+      Mevcut klasik hat bugün PC'de <strong>413 FPS</strong>, YOLO26n aynı işi Pi 5 CPU'da <strong>~15 FPS</strong>
+      tavanıyla yapıyor. Aradaki uçurum, "YOLO'ya geçelim mi" sorusunu bir <em>doğruluk</em> sorusu olmaktan
+      çıkarıp <strong>donanım bütçesi</strong> sorusuna dönüştürüyor. Bu yüzden ilk iş yeni model eğitmek değil,
+      iki yaklaşımı <em>aynı gerçek veride, aynı metriklerle</em> yan yana koyabilmek. Harness olmadan verilen
+      her mimari kararı tahmindir.
+    </p>
+  </div>
+</section>
+
+<footer class="doc">
+  <h4>Kaynaklar</h4>
+  <ol>
+    <li><a href="https://docs.ultralytics.com/guides/raspberry-pi/">Ultralytics — YOLO26 on Raspberry Pi: Setup &amp; Benchmarks</a></li>
+    <li><a href="https://docs.ultralytics.com/modes/track/">Ultralytics — Multi-Object Tracking (BoT-SORT, ByteTrack, GMC, ReID)</a></li>
+    <li><a href="https://docs.ultralytics.com/compare/yolo26-vs-yolo11">Ultralytics — YOLO26 vs YOLO11 karşılaştırması</a></li>
+    <li><a href="https://github.com/mikel-brostrom/boxmot">BoxMOT — tracker koleksiyonu ve MOT17 ablasyon tablosu</a></li>
+    <li><a href="https://github.com/NirAharon/BoT-SORT">BoT-SORT — referans uygulama (CMC)</a></li>
+    <li><a href="https://github.com/Qengineering/YoloV8-ncnn-Raspberry-Pi-4">Qengineering — YOLOv8 ncnn RPi 4/5 FPS ölçümleri</a></li>
+    <li><a href="https://kadirmertabatay.github.io/rpi-yolo-benchmark/benchmarks/yolov8/yolov8n/">RPi YOLO Benchmark — YOLOv8n, Pi 5, format karşılaştırması</a></li>
+    <li><a href="https://github.com/Seeed-Projects/Benchmarking-YOLOv8-on-Raspberry-PI-reComputer-r1000-and-AIkit-Hailo-8L">Seeed — Hailo-8L AI Kit YOLOv8 benchmark</a></li>
+    <li><a href="https://github.com/louiszengCN/CarlaAir">CARLA-Air — CARLA içinde drone uçurma altyapısı</a> · <a href="https://arxiv.org/html/2603.28032">arXiv 2603.28032</a></li>
+    <li><a href="https://carla.readthedocs.io/en/latest/start_quickstart/">CARLA — sistem gereksinimleri ve kurulum</a></li>
+    <li><a href="https://github.com/microsoft/AirSim">microsoft/AirSim (arşivlendi)</a> · <a href="https://github.com/iamaisim/ProjectAirSim">iamaisim/ProjectAirSim</a></li>
+    <li><a href="https://github.com/PegasusSimulator/PegasusSimulator">Pegasus Simulator — Isaac Sim drone çerçevesi ve GPU gereksinimi</a></li>
+    <li><a href="https://github.com/uzh-rpg/flightmare">Flightmare — Unity tabanlı quadrotor simülatörü</a></li>
+    <li><a href="https://arxiv.org/pdf/2205.04281">Siamese Object Tracking for UAV: A Review — UAV123 / DTB70 / UAVDT / VisDrone-SOT özellikleri</a></li>
+    <li><a href="https://github.com/vision4robotics/SiameseTracking4UAV">SiameseTracking4UAV — Jetson AGX Xavier FPS ölçümleri</a> · <a href="https://github.com/vision4robotics/DCFTracking4UAV">DCFTracking4UAV</a></li>
+    <li><a href="https://github.com/HonglinChu/NanoTrack">NanoTrack</a> · <a href="https://docs.opencv.org/4.x/d8/d69/classcv_1_1TrackerNano.html">OpenCV TrackerNano dokümantasyonu</a></li>
+    <li><a href="https://github.com/obss/sahi">SAHI — dilimli çıkarım</a></li>
+    <li><a href="https://y-t-g.github.io/tutorials/yolo-tracker-interpolate/">Tracker interpolasyonu ile FPS artırma (stride tabanlı kare atlama)</a></li>
+    <li><a href="https://arxiv.org/pdf/2309.02666">Fast and Resource-Efficient Object Tracking on Edge Devices: A Measurement Study</a></li>
+    <li><a href="https://arxiv.org/pdf/2302.01867">Gazebo/RotorS fotogerçekçilik sınırı üzerine (VIO deployment çalışması)</a></li>
+    <li><a href="https://mjrovai.github.io/EdgeML_Made_Ease_ebook/raspi/object_detection/cv_yolo.html">Edge AI Made Easy — Raspberry Pi YOLO gerçekçi hız beklentileri</a></li>
+    <li><a href="https://github.com/Thamkench/uav-speedlab">uav-speedlab — eğik drone bakışı, YOLOv11 + BoT-SORT + homografi</a></li>
+    <li><a href="https://arxiv.org/html/2503.17237v2">Strong Baseline: Multi-UAV Tracking via YOLOv12 with BoT-SORT-ReID</a></li>
+    <li><a href="https://github.com/dronefreak/VisDrone-dataset-python-toolkit">VisDrone Python toolkit</a> · <a href="https://github.com/VisDrone/VisDrone-Dataset">VisDrone-Dataset</a></li>
+  </ol>
+</footer>
+
+</div>

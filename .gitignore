@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
+
+# veri kumeleri ve videolar depoya girmesin
+data/videos/*
+data/datasets/*
+!data/*/.gitkeep
