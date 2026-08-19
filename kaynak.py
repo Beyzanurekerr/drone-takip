@@ -249,14 +249,17 @@ class KameraKaynak(Kaynak):
 
 
 # ----------------------------------------------------------------------------
-TURLER = ("sim", "video", "camera")
+TURLER = ("sim", "video", "camera", "visdrone")
 KAMERA_ADLARI = ("camera", "kamera", "webcam")
+VISDRONE_VARSAYILAN = "data/datasets/visdrone_vid"
 VIDEO_UZANTILARI = (".mp4", ".avi", ".mov", ".mkv", ".m4v", ".webm", ".mpg",
                     ".mpeg", ".wmv")
 
 
 def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
-                   senaryo: str = "test1") -> Kaynak:
+                   senaryo: str = "test1", veri_kok: str = None,
+                   dizi: str = None, track_id: int = None,
+                   olcek: float = 1.0, hedef_genislik: int = 0) -> Kaynak:
     """Tek giris noktasi.
 
     Kabul edilen bicimler:
@@ -265,6 +268,8 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
         "camera" / "camera:1"       -> kamera (varsayilan index 0)
         "video" + girdi="a.mp4"     -> eski bicim, geriye uyumluluk icin
         "data/videos/a.mp4"         -> DOGRUDAN DOSYA YOLU
+        "visdrone"                  -> VisDrone VID dizisi (veri_kok, dizi,
+                                       track_id, olcek parametreleriyle)
 
     Yeni bir kaynak tipi (dataset adapter'i vb.) eklemek icin buraya bir dal
     eklemek yeterlidir; cagiran taraf degismez.
@@ -276,6 +281,11 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
     on, _, arg = t.partition(":")
     if on == "sim":
         return SimKaynak(arg or senaryo)
+    if on == "visdrone":
+        from veri.visdrone import VisDroneVidKaynak     # ancak gerekince yukle
+        return VisDroneVidKaynak(veri_kok or VISDRONE_VARSAYILAN,
+                                 dizi=dizi or (arg or None), track_id=track_id,
+                                 olcek=olcek, hedef_genislik=hedef_genislik)
     if on in KAMERA_ADLARI and arg:
         try:
             return KameraKaynak(int(arg))

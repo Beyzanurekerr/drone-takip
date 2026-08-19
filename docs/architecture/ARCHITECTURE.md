@@ -11,12 +11,13 @@ takip etmek. Nihai hedef donanım Raspberry Pi sınıfı.
 ## Katmanlar
 
 ```
-                 ┌── SimKaynak      (prosedürel simülatör + kusursuz GT)
-INPUT ───────────┼── VideoKaynak    (MP4/AVI drone videosu)
-                 └── KameraKaynak   (webcam / USB kamera)
+                 ┌── SimKaynak          (prosedürel simülatör + kusursuz GT)
+                 ├── VideoKaynak        (MP4/AVI drone videosu)
+INPUT ───────────┼── KameraKaynak       (webcam / USB kamera)
+                 └── VisDroneVidKaynak  (gerçek hava görüntüsü + VisDrone GT)
                           │
                           ▼
-                    kaynak.py  ·  Kare(goruntu, indeks, zaman, ...)
+                    kaynak.py  ·  Kare(goruntu, indeks, zaman, gt, ...)
                           │
                           ▼
    ┌──────────────────────────────────────────────────────┐
@@ -32,11 +33,18 @@ INPUT ───────────┼── VideoKaynak    (MP4/AVI drone v
    └──────────────────────────────────────────────────────┘
                           │
                           ▼
-              main.py  ·  görselleştirme + gecikme ölçümü
+              main.py  ·  görselleştirme + gecikme + GT varsa metrik
                           │
-                          ▼
-           calistir.py / kiyasla.py  ·  benchmark (yalnız sim)
+              ┌───────────┴───────────┐
+              ▼                       ▼
+   calistir.py / kiyasla.py    visdrone_kiyasla.py
+   SİM BASELINE (dokunulmaz)   GERÇEK VERİ (ayrı rapor)
+   → RAPOR.md                  → RAPOR_VISDRONE.md
 ```
+
+İki benchmark hattı **bilerek ayrıdır**: sim baseline'ı kontrollü ve
+tekrarlanabilir, gerçek veri sonuçları ise gürültülü ve senaryoya bağlıdır.
+Sayıları aynı tabloda birleştirmek yanıltıcı olur.
 
 ## Dosya → görev
 
@@ -55,7 +63,11 @@ INPUT ───────────┼── VideoKaynak    (MP4/AVI drone v
 | `takip/cekirdekler.py` | 4 takılabilir SOT çekirdeği, ortak arayüz |
 | `takip/mosse.py` | MOSSE korelasyon filtresi (numpy FFT) |
 | `takip/izleyici.py` | `HedefTakip` orkestratörü, `Kalman`, durum makinesi |
+| `veri/etiket.py` | Ortak GT temsili (`Etiket`) + VisDrone VID/DET annotation ayrıştırıcı |
+| `veri/visdrone.py` | `VisDroneVidKaynak` + dizi keşfi + frame↔GT senkron doğrulaması |
+| `visdrone_kiyasla.py` | **Gerçek veri** değerlendirmesi → `RAPOR_VISDRONE.md`. Sim benchmark'ından bağımsız |
 | `test_kaynak.py` | Kaynak katmanı testleri (22 test) |
+| `test_visdrone.py` | VisDrone adapter testleri (21 test) |
 
 ## Kaynak sözleşmesi
 
@@ -75,10 +87,47 @@ kaynak.ad, .genislik, .yukseklik, .fps, .kare_sayisi
 `Kare` alanları: `goruntu` (BGR ndarray), `indeks`, `zaman`, `kaynak_adi`,
 `genislik`, `yukseklik`, `fps`, `gt`, `gorunur`.
 
-`gt` ve `gorunur` yalnızca simülatörde doludur; video ve kamerada `None`'dır —
-"bilinmiyor" anlamına gelir. Etiketli veri kümesi adapter'ları (UAV123, UAVDT,
-DTB70) aynı alanı dolduracak, böylece ölçüm tarafı GT'nin nereden geldiğini
-ayırt etmek zorunda kalmayacak.
+`gt` ve `gorunur` simülatör ve VisDrone kaynağında doludur; video ve kamerada
+`None`'dır — "bilinmiyor" anlamına gelir. Ölçüm tarafı GT'nin nereden geldiğini
+ayırt etmez; ileride UAV123/UAVDT/DTB70 adapter'ları da aynı alanı dolduracak.
+
+## Ortak GT temsili (`veri/etiket.py`)
+
+VisDrone formatı doğrudan takip tarafına taşınmaz; önce `Etiket`'e çevrilir:
+
+```python
+@dataclass
+class Etiket:
+    kare: int          # 1-tabanlı (VisDrone böyle); DET'te 0
+    track_id: int      # DET'te -1
+    sinif: int         # 0=ignored 4=car 5=van 6=truck 9=bus ...
+    kutu: np.ndarray   # (x, y, w, h) float32, sol-üst kökenli
+    yoksayilan: bool   # score==0 ya da sinif==0 → ölçüme katılmaz
+    kirpilma: int      # 0/1
+    ortulme: int       # 0 yok, 1 kısmi, 2 ağır
+```
+
+`olcekli(k)` metodu downscale'de GT kutusunu aynı oranda küçültür — kare
+küçülüp GT küçülmezse tüm IoU ölçümü sessizce bozulur.
+
+## VisDrone VID kaynağı
+
+```
+data/datasets/visdrone_vid/
+├── annotations/<dizi>.txt      10 kolon: kare,track_id,x,y,w,h,score,sinif,kirpilma,ortulme
+└── sequences/<dizi>/0000001.jpg ...
+```
+
+- **Hedef seçimi:** `--track-id` ile belirtilir; verilmezse *en uzun süre
+  görünen ve hareket eden* araç track'i seçilir. Sadece "en uzun" seçmek park
+  halindeki aracı seçer — hareketsiz hedef ölçüm için anlamsızdır.
+- **GT kullanımı:** yalnızca **kilit anında** başlangıç kutusu olarak. Sonraki
+  karelerde takipçi kendi tahminiyle ilerler; GT sadece ölçümde kullanılır.
+- **Senkron doğrulaması:** kare adları sayısal mı, 1'den başlıyor mu, eksik kare
+  var mı, annotation kare sayısını aşıyor mu — hepsi açık hata mesajıyla.
+- **Downscale:** `--olcek 0.5` ya da `--hedef-genislik 960`. Diziler
+  1344×756 ile 3840×2160 arasında değişiyor; sistem 640×480'e ayarlı
+  parametreler taşıdığı için ölçekleme fiilen zorunlu.
 
 ## Kaynak seçimi
 

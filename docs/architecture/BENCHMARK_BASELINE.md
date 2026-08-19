@@ -1,6 +1,12 @@
-# Benchmark Baseline
+# Benchmark Baseline — SİMÜLASYON
 
 Aşama 2 sonunda dondurulan referans değerler (19 Ağustos 2026).
+
+> **Bu dosya yalnızca kontrollü simülasyon sonuçlarını içerir.**
+> Gerçek hava görüntüsü (VisDrone) sonuçları `RAPOR_VISDRONE.md` dosyasındadır
+> ve bu tablolarla **birleştirilmemelidir**. İkisi farklı şeyleri ölçer:
+> sim → hedef boyutunun kontrollü süpürülmesi; VisDrone → gerçek kamera
+> hareketi, gerçek gürültü, gerçek sahne karmaşıklığı.
 
 **Bu dosyanın amacı:** bundan sonra eklenecek her şey (YOLO, ByteTrack,
 BoT-SORT, hibrit takip, Pi optimizasyonu) bu sayılarla karşılaştırılacak.
@@ -118,7 +124,27 @@ Pi katsayıları **tahmindir**; kesin sonuç için cihazda ölçülmelidir.
 python3 kiyasla.py        # 7 senaryo + boyut eğrisi + zaman profili (~33 s)
 python3 minboyut.py       # çekirdek karşılaştırmalı minimum boyut
 python3 test_kaynak.py    # kaynak katmanı testleri (22 test)
+python3 test_visdrone.py  # VisDrone adapter testleri (21 test)
 ```
+
+Gerçek veri için ayrı komut (bu tabloları etkilemez):
+
+```bash
+python3 visdrone_kiyasla.py --hepsi --rapor    # → RAPOR_VISDRONE.md
+```
+
+## Sim ↔ Gerçek veri farkı (Aşama 3 ölçümü)
+
+Aynı takip hattı, farklı girdi:
+
+| ortam | ortalama IoU | kilit oranı | not |
+|---|---|---|---|
+| Simülasyon (7 senaryo) | **0.742** | 96.9% | kontrollü, nadir bakış, sentetik doku |
+| VisDrone (6 dizi) | **0.281** | 82.8% | gerçek görüntü, eğik bakışlar, parallaks |
+
+Bu fark bir regresyon **değildir** — sistemin gerçek dünyadaki gerçek
+performansıdır ve YOLO + MOT yönündeki kararın niceliksel gerekçesidir.
+Ayrıntı: `RAPOR_VISDRONE.md`.
 
 Ölçüm sırasında makinede başka ağır iş çalıştırma; doğruluk sayıları
 etkilenmez ama FPS ve zaman profili yanıltıcı çıkar.

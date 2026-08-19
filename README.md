@@ -50,12 +50,45 @@ Koşum sonunda gecikme özeti basılır:
   gecikme     : ort 2.76 ms | p50 2.42 | p95 4.58 | max 5.28
 ```
 
+## Gerçek hava görüntüsü (VisDrone)
+
+```bash
+python3 main.py --source visdrone --sequence uav0000305_00000_v \
+                --track-id 30 --hedef-genislik 960
+python3 visdrone_kiyasla.py --hepsi --rapor      # → RAPOR_VISDRONE.md
+```
+
+`--track-id` verilmezse en uzun süre görünen **hareketli** araç seçilir.
+Hedef, track'in ilk karesindeki GT kutusuyla kilitlenir; sonraki karelerde GT
+yalnızca ölçüm için kullanılır, takipçiye beslenmez.
+
+Sonuçlar `RAPOR_VISDRONE.md`'de, simülasyon sonuçlarından **ayrı** tutulur.
+
+### Veri kümesini kurma
+
+Veri kümeleri depoya dahil **değildir** (1.6 GB). VisDrone'u
+[github.com/VisDrone/VisDrone-Dataset](https://github.com/VisDrone/VisDrone-Dataset)
+adresinden indirip şöyle açın:
+
+```bash
+mkdir -p data/datasets && cd data/datasets
+unzip VisDrone2019-VID-val.zip && mv VisDrone2019-VID-val visdrone_vid
+unzip VisDrone2019-DET-val.zip && mv VisDrone2019-DET-val visdrone_det
+```
+
+`VisDrone2019-MOT-val.zip`'i açmaya gerek yok — içeriği VID-val ile birebir
+aynıdır (kök klasör adı dışında MD5'leri eşleşiyor).
+
 ### Veri klasörü
 
 ```
 data/
-├── videos/     # kendi drone/aerial mp4'lerin
-└── datasets/   # UAV123 / UAVDT / DTB70 (ileride)
+├── videos/                # kendi drone/aerial mp4'lerin
+└── datasets/
+    ├── visdrone_vid/      # 7 dizi, 2846 kare, 1.6 GB
+    │   ├── annotations/<dizi>.txt
+    │   └── sequences/<dizi>/0000001.jpg ...
+    └── visdrone_det/      # 548 görüntü (ileride YOLO fine-tuning için)
 ```
 
 İkisi de `.gitignore`'da — depo şişmesin. `cikti/*.mp4` dosyaları **ham görüntü
