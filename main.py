@@ -25,6 +25,20 @@ from kaynak import KaynakHatasi, kaynak_olustur
 from takip.izleyici import ARAMA, KAYIP, KILITLI, HedefTakip
 
 ISINMA = 6          # hareket tespiti icin gecmis gerekiyor (ilk kareler bos doner)
+PENCERE_KUTUSU = (960, 540)     # baslangic penceresi bu kutuya sigar
+
+
+def pencere_boyutu(genislik, yukseklik, kutu=PENCERE_KUTUSU):
+    """Baslangic pencere boyutu: en-boy orani korunarak `kutu` icine sigdirilir.
+
+    Ekrani kaplamasin diye; kullanici sonrasinda fareyle serbestce
+    boyutlandirabilir (WINDOW_NORMAL). Kaynak cozunurlugu ne olursa olsun
+    (sim 640x480, VisDrone 960x540 ya da 3840x2160) pencere ayni boyda acilir.
+    """
+    if genislik <= 0 or yukseklik <= 0:
+        return kutu
+    k = min(kutu[0] / genislik, kutu[1] / yukseklik)
+    return max(160, int(round(genislik * k))), max(120, int(round(yukseklik * k)))
 
 
 def gt_hedef_sec(adaylar, kare):
@@ -143,8 +157,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     bekleme = max(1, int(1000.0 / kaynak.fps)) if kaynak.fps > 0 else 1
 
     if pencere:
-        cv2.namedWindow(kaynak.ad, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(kaynak.ad, kaynak.genislik * 2, kaynak.yukseklik * 2)
+        # WINDOW_NORMAL  : kullanici fareyle boyutlandirabilsin
+        # WINDOW_KEEPRATIO: elle boyutlandirirken en-boy orani korunsun
+        cv2.namedWindow(kaynak.ad, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
+        cv2.resizeWindow(kaynak.ad, *pencere_boyutu(kaynak.genislik,
+                                                    kaynak.yukseklik))
 
     try:
         for kare in kaynak:
