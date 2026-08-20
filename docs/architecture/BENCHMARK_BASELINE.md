@@ -7,6 +7,10 @@ Aşama 2 sonunda dondurulan referans değerler (19 Ağustos 2026).
 > ve bu tablolarla **birleştirilmemelidir**. İkisi farklı şeyleri ölçer:
 > sim → hedef boyutunun kontrollü süpürülmesi; VisDrone → gerçek kamera
 > hareketi, gerçek gürültü, gerçek sahne karmaşıklığı.
+>
+> Windows üzerinde alınan ölçüm ayrıca `BENCHMARK_WINDOWS.md`
+> dosyasındadır; oradaki FPS/gecikme değerleri bu dosyadakilerle
+> **karşılaştırılmaz** (farklı OS, farklı OpenCV GUI, farklı çözünürlük).
 
 **Bu dosyanın amacı:** bundan sonra eklenecek her şey (YOLO, ByteTrack,
 BoT-SORT, hibrit takip, Pi optimizasyonu) bu sayılarla karşılaştırılacak.
