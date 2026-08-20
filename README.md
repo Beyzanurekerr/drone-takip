@@ -238,9 +238,12 @@ geçit / ağaç örtüsü olarak modellenmiştir.
 
 ## Bilinen sınırlar
 
-1. **Yanlış güven**: hedef ~13 px altında kaybedildiğinde sistem hâlâ `KİLİTLİ`
-   diyebiliyor. PSR düşmüyor çünkü filtre yol dokusuna kilitleniyor. Bağımsız bir
-   doğrulama (periyodik imza kontrolü) gerekiyor.
+1. **Yanlış güven** — *büyük ölçüde giderildi (Aşama 3.8).* `KİLİTLİ` durumu
+   artık PSR'dan bağımsız iki denetleyiciyle sınanıyor: kilit anında dondurulan
+   görünüm imzası ve "kutu zemine mi çakılı" testi. Gerçek veride yanlış kilit
+   oranı %98.4 → %44.0 (268/31) ve %47.8 → %11.3 (182/127). Kalan yanlış kilit
+   süresinin tabanı tespit gecikmesidir (20 kare pencere + 20 kare sabır).
+   Ayrıntı: `docs/architecture/CHANGELOG.md`, Aşama 3.8.
 2. **Ego ölçek yanlılığı**: kare kare ölçek kestirimi kısa vadede doğru, uzun vadede
    ~%8/300 kare yanlı. Bu yüzden ölçek **integre edilmiyor**; kutu boyutu doğrudan
    ölçümle çapalanıyor.
@@ -250,7 +253,16 @@ geçit / ağaç örtüsü olarak modellenmiştir.
 
 ## Sonraki adımlar
 
-- `KİLİTLİ` durumda periyodik bağımsız doğrulama → yanlış güven sorunu
+Aşama 3.8'den devreden, öncelik sırasıyla:
+
+- **Kilit sonrası hız kestirimi.** 268/31 hâlâ bulunamıyor: araç bir karede
+  kutu eninin %61'i kadar yol alıyor ve korelasyon penceresinin merkezinden
+  çıkıyor. Arama penceresi hedefin hareketine göre konumlanmalı.
+- **Duran hedef için görünüm tabanlı aday üretimi.** Yeniden tespit yalnızca
+  hareket lekesi üretiyor; 182/127'nin duran aracı bu yüzden geri bulunamıyor.
+- **ARAMA modunda alt-örnekleme.** Kayıpken aday üretimi her karede tam
+  çözünürlükte çalışıyor; 4K'da p50 12.9 → 43.4 ms.
+- **Tespit gecikmesinin çözünürlüğe göre kalibrasyonu.** 268 için yanlış kilit
+  4K'da %44.0, 1920'de %69.4.
 - 320×240 giriş + ROI-only işleme ile Pi bütçesine inme
-- Gerçek veri seti üzerinde aynı ölçüm harness'ı
 - Referans üst sınır olarak `cv2.TrackerNano` / `TrackerVit` ile kıyas

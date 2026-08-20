@@ -7,3 +7,6 @@ __pycache__/
 data/videos/*
 data/datasets/*
 !data/*/.gitkeep
+
+# teshis ciktisi (telemetri csv + 4K debug kareleri)
+debug/

@@ -116,6 +116,13 @@ Pi katsayıları **tahmindir**; kesin sonuç için cihazda ölçülmelidir.
 - Toplam ID switch sayısının 1'in üstüne çıkması
 - `renk_dcf` minimum takip boyutunun 9.0 × 3.7 px'in üstüne çıkması
 
+**Kabul edilmiş istisna (Aşama 3.8):** test2 kilit oranı %100 → %98.0,
+test3 %100 → %94.6. Bu iki düşüş, bağımsız doğrulamanın **gerçek** yanlış
+kilitleri reddetmesidir — test2 kare 288'de IoU 0.019 (kutu 103 × 17 px,
+GT 9 × 4 px), test3 kare 480'de IoU 0.135. `kilit_orani` metriği yanlış kilidi
+"başarı" saydığı için düşüyor; IoU, @0.5, hassasiyet, ID switch ve minimum
+takip boyutunda düşüş yok. Ayrıntı: `CHANGELOG.md`, Aşama 3.8.
+
 **Regresyon sayılmayan:**
 
 - FPS oynamaları. Ölçüm makine yüküne çok duyarlı: aynı kod, aynı gün,

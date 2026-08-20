@@ -1,5 +1,114 @@
 # Değişiklik Günlüğü
 
+## Aşama 3.8 — Bağımsız yanlış-kilit doğrulaması (20 Ağustos 2026)
+
+Aşama 3.7 teşhisi, `uav0000268_05773_v` dizisinde sistemin 978 karenin
+%99'unda `KİLİTLİ` dediğini ama IoU'nun 0 olduğunu ölçmüştü. Sebep: **PSR bir
+kimlik ölçüsü değil, filtrenin iç tutarlılık ölçüsüdür.** Filtre yol dokusuna
+kayınca yolu öğreniyor, PSR düşmüyor — tam tersine 12'den 46'ya tırmanıyor.
+
+### Eklenen
+
+`takip/izleyici.py` — `KİLİTLİ` durumuna PSR'dan bağımsız iki denetleyici:
+
+1. **İmza testi.** Kilit anındaki görünüm imzası `imza_ref` olarak dondurulur
+   ve bir daha güncellenmez. 6 karede bir mevcut kutu bu referansla
+   karşılaştırılır (renk + doku; boyut terimi dışarıda — hedef küçüldükçe
+   doğru takibi cezalandırıyordu). İki kez üst üste eşiğin altında kalırsa
+   kilit reddedilir.
+2. **Zemine çakılma testi.** Kutunun ego telafili yer değiştirmesi, 20 karelik
+   kayan pencerede p90. Bu değer kare genişliğinin %0.08'inin altında 20 kare
+   üst üste kalırsa kutu aracı değil yeri takip ediyordur.
+
+Tek başına hiçbiri yetmiyor; ölçüldü:
+
+| dizi | durum | imza benzerliği | ego-telafili kutu hareketi |
+|---|---|---|---|
+| 117/23 | DOĞRU | 0.716 | 5.53 px |
+| 268/31 | YANLIŞ | **0.824** | 0.36 px |
+| 182/127 | YANLIŞ | 0.430 | 1.68 px |
+
+268'de yanlış kilidin benzerliği 117'deki **doğru** takiptan yüksek — imza
+testi tek başına o diziyi göremez. 182'nin duran hedefi ise zemin testini
+yanlış tetikler. İkisi birbirinin körünü kapatıyor.
+
+Yanlış alarmı önleyen üç kapı (hepsi ölçümle seçildi):
+
+- **Hareket kapısı:** kutu zeminden belirgin biçimde bağımsız hareket ediyorsa
+  (p90 oranı > %0.3) imza uyuşmazlığı kimlik kaybı değil görünüm değişimi
+  sayılır. sim test6'da oklüzyondan çıkan araç benzerlik 0.35'e düşüyor ama
+  p90 oranı %1.246 — kilit sürdürülür.
+- **Asgari boyut:** kısa kenar 10 px altındaysa imza testi çalışmaz. 12×12
+  şablon birkaç pikselden üretilince anlamını yitiriyor.
+- **Süreklilik:** zemin testi seviyeye değil sürekliliğe bakar. Doğru takipte
+  düşüş anlık (117'de en uzun 8 kare), yanlış kilitte kalıcı (268'de 106).
+
+İki imza ayrıldı: `imza_ref` (donmuş, yalnızca doğrulama) ve `imza`
+(uyarlanan, yalnızca yeniden tespit + renk kapısı). Uyarlanan imza ancak kutu
+hareketliyken **ve** referans hedefi hâlâ tanırken öğrenir.
+
+Reddetme yalnızca "bu kilit yanlış" der; kurtarma mevcut `_arama_adimi`'ne
+devredilir ve orası değişmedi. Reddedilen konum 30 kare yasaklanır.
+
+### Ölçüm
+
+Sim baseline **birebir korundu**: ortalama IoU 0.742, hassasiyet %94.2,
+@0.5 %82.5, ID switch 1, test6 kilit %78.1, minimum takip boyutu 9.0 × 3.7 px.
+
+Gerçek veride yanlış kilit (`KİLİTLİ` iddiası + IoU < 0.1 olan kare oranı):
+
+| dizi | yanlış kilit | en uzun kesintisiz | IoU |
+|---|---|---|---|
+| 117/23 | %0 → **%0** | 0 → 0 kare | 0.646 → 0.646 |
+| 268/31 @3840 | %98.4 → **%44.0** | 144 → **38** kare | 0.005 → 0.005 |
+| 268/31 @1920 | %99.2 → **%69.4** | 250 → **39** kare | 0.002 → 0.002 |
+| 182/127 | %47.8 → **%11.3** | 123 → **18** kare | 0.042 → 0.042 |
+
+### Denenip elenenler
+
+- **Zemin reddini KAYIP moduna devretmek** (ucuz + katı eşik): yol dokusu her
+  yerde aynı göründüğü için tüm-kare taraması 3 karede yeni bir yama buluyor.
+  268 yanlış kilit %60.3 → %75.8. Elendi.
+- **Yeniden kilit için donmuş referans tabanı (0.40):** ayrım temizdi (gerçek
+  kazanım 0.958, yol yamaları ≤ 0.33) ama test6'nın oklüzyon sırasındaki ara
+  kilidini de kesip yörüngeyi bozdu: IoU 0.747 → 0.542. Elendi.
+- **Mutlak piksel eşiği (2.0 px):** 4K'da doğru, 640×480'de test3 kilidini
+  %100 → %78 yaptı. Eşik kare genişliğinin oranı olmak zorunda.
+- **Ardışık sayaç / medyan yerine p90:** sayaç tek gürültülü karede sıfırlanıp
+  hiçbir şeyi değiştirmiyordu; medyan ise durakta bekleyen aracı yanlış kilit
+  sanıyordu.
+
+### Sonraki aşamalara devredilen sorunlar
+
+Bunlar A3.8'in eksiği değil; A3.8 yanlış kilidi **tespit etmeyi** hedefledi,
+hedefi geri bulmayı değil.
+
+1. **268/31 gerçek hedefi hâlâ bulamıyor.** IoU 0.005. Kök neden A3.7'de
+   ölçüldü: kare başına yer değiştirme kutu eninin %61'i, araç bir karede
+   korelasyon penceresinin merkezinden çıkıyor. Çözüm kilit sonrası hız
+   kestirimi ve arama penceresinin hedef hareketine göre konumlanması.
+2. **182/127 duran hedefi yeniden bulamıyor.** Yeniden tespit yalnızca hareket
+   lekesi üretiyor; duran araç için aday listesi boş kalıyor. Duran hedef için
+   görünüm tabanlı bir aday kaynağı gerekiyor.
+3. **Kayıp durumundaki ARAMA modu yüksek gecikme üretiyor.** 4K'da p50 12.9 ms
+   → 43.4 ms, FPS 30.4 → 14.1. Aday üretimi her karede tam çözünürlükte
+   çalışıyor; çözünürlüğe göre alt-örnekleme gerekiyor.
+4. **268@1920 ile 4K farklı davranıyor.** Yanlış kilit 4K'da %44.0, 1920'de
+   %69.4. Tespit gecikmesi (20 kare pencere + 20 kare sabır) iki çözünürlükte
+   farklı sayıda yeniden-kilit döngüsüne denk geliyor; ayrı bir kalibrasyon
+   turu gerekiyor.
+5. **Sim test2/test3 kilit oranı düşüşü gerçek yanlış-kilit reddidir.**
+   test2 %100 → %98.0, test3 %100 → %94.6. Her iki ateşleme de haklı: test2
+   kare 288'de IoU **0.019** (kutu 103×17 px, GT 9×4 px), test3 kare 480'de
+   IoU **0.135**. Baseline'ın "%100 kilit"i o karelerde zaten yanlış kilitti —
+   `kilit_orani` metriği yanlış kilidi ödüllendiriyor. IoU, @0.5, hassasiyet,
+   ID switch ve minimum takip boyutunda düşüş yok.
+
+Ek olarak, gerçekten 20+ kare boyunca duran bir araç zemin testince yanlış
+kilit sanılabilir. `HedefTakip(zemin_dogrulama=False)` bu testi kapatır.
+
+---
+
 ## Aşama 3 — VisDrone gerçek hava görüntüsü entegrasyonu (19 Ağustos 2026)
 
 Gerçek drone görüntüsü + ground-truth destekli veri yolu eklendi. Takip
