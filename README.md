@@ -3,8 +3,6 @@
 Havadan çekilen görüntüde **seçilen tek bir aracı**, araç görüntüde çok küçük hale
 gelse bile, mümkün olduğunca uzun süre ve yüksek FPS ile takip etmek.
 
-Depo: <https://github.com/Beyzanurekerr/drone-takip>
-
 ## Proje Durumu
 
 Tamamlanan:
