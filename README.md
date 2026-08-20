@@ -161,8 +161,8 @@ ederse asfaltı öğrenir ve bir daha geri dönemez.
 | test | IoU | @0.5 | hassasiyet | merkez hata | kilit | ID switch |
 |---|---|---|---|---|---|---|
 | 1 yakın araç | 0.925 | 100% | 100% | 0.25 px | 100% | 0 |
-| 2 uzaklaşan | 0.435 | 45% | 83% | 1.59 px | 100% | 0 |
-| 3 çok küçük | 0.560 | 61% | 85% | 1.75 px | 100% | 0 |
+| 2 uzaklaşan | 0.435 | 45% | 83% | 1.59 px | 98% | 0 |
+| 3 çok küçük | 0.560 | 61% | 85% | 1.75 px | 95% | 0 |
 | 4 çoklu araç | 0.866 | 100% | 100% | 0.57 px | 100% | 0 |
 | 5 benzer araçlar | 0.897 | 100% | 100% | 0.15 px | 100% | 0 |
 | 6 kısa kayıp | 0.747 | 81% | 92% | 0.99 px | 78% | 1 |
@@ -173,6 +173,11 @@ Küçük hedefte IoU 1 piksellik kutu hatasında çökerken bu ölçü adil kal�
 ikisi birlikte raporlanır.
 
 test6'da kilit oranının tavanı %76'dır (karelerin %24'ünde hedef üst geçit altındadır).
+
+test2 ve test3'te kilit oranı %100 değil: Aşama 3.8'de eklenen bağımsız doğrulama,
+hedef 9 × 4 px'e indiğinde takibin gerçekte koptuğu kareleri (IoU 0.019 ve 0.135)
+reddediyor. Baseline'ın oradaki "%100 kilit"i yanlış kilitti; IoU, hassasiyet,
+ID switch ve minimum takip boyutu değişmedi.
 
 ### Minimum takip boyutu (test 3, 3 gürültü tohumu)
 
@@ -247,8 +252,11 @@ geçit / ağaç örtüsü olarak modellenmiştir.
 2. **Ego ölçek yanlılığı**: kare kare ölçek kestirimi kısa vadede doğru, uzun vadede
    ~%8/300 kare yanlı. Bu yüzden ölçek **integre edilmiyor**; kutu boyutu doğrudan
    ölçümle çapalanıyor.
-3. Sadece simülasyon. Gerçek veri (VisDrone / UAV123 / DTB70) üzerinde aynı harness
-   koşulmadı.
+3. **Gerçek veride doğruluk düşük.** Aynı harness VisDrone üzerinde koşuluyor
+   (`RAPOR_VISDRONE.md`) ve sim ile arayı açıyor: sim ortalama IoU 0.742, VisDrone
+   0.281. Sebep Aşama 3.7'de ölçüldü — kare başına yer değiştirme hedef boyutuna
+   göre çok büyük olduğunda araç, korelasyon penceresinin merkezinden bir karede
+   çıkıyor. UAV123 / DTB70 henüz bağlanmadı.
 4. Pi üzerinde gerçek ölçüm yapılmadı; sayılar ekstrapolasyon.
 
 ## Sonraki adımlar

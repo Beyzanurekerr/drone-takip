@@ -4,6 +4,14 @@ Bu rapor SIMULASYON baseline'indan bagimsizdir; `RAPOR.md` ile
 karistirilmamalidir. Olculen sistem ayni klasik takip hattidir
 (ego-motion + renk_dcf + Kalman + durum makinesi); tek fark girdi.
 
+> **Bu tablo Asama 3.8 ONCESINDE uretildi (19 Agustos 2026).** IoU ve merkez
+> hatasi degerleri gecerli; ancak `kilit` sutunu A3.8'in bagimsiz yanlis-kilit
+> dogrulamasindan ONCEKI davranisi gosteriyor. A3.8 sonrasi yanlis kilit orani
+> uav0000268_05773_v'de %98.4 -> %44.0, uav0000182_00000_v'de %47.8 -> %11.3
+> indi; kilit oranlari da buna bagli olarak dustu. Guncel karsilastirma icin
+> `docs/architecture/CHANGELOG.md`, Asama 3.8. Bu dosyayi yeniden uretmek icin:
+> `python3 visdrone_kiyasla.py --hepsi --rapor`
+
 - Veri kumesi: VisDrone2019-VID-val
 - Kareler 960 px genislige indirildi, GT kutulari ayni oranda olceklendi
 - Hedef, track'in ilk karesindeki GT kutusuyla kilitlenir; sonraki

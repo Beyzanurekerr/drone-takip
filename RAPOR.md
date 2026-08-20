@@ -22,8 +22,8 @@ kare
 | test | amac | IoU | @0.5 | hassasiyet | merkez hata | kilit | ID switch |
 |---|---|---|---|---|---|---|---|
 | test1_yakin | Temel takip calisiyor mu? | 0.925 | 100% | 100% | 0.25 px | 100% | 0 |
-| test2_uzaklasan | Piksel boyutu kuculurken hedef korunuyor mu? | 0.435 | 45% | 83% | 1.59 px | 100% | 0 |
-| test3_cok_kucuk | Minimum takip edilebilen hedef boyutu kac px? | 0.560 | 61% | 85% | 1.75 px | 100% | 0 |
+| test2_uzaklasan | Piksel boyutu kuculurken hedef korunuyor mu? | 0.435 | 45% | 83% | 1.59 px | 98% | 0 |
+| test3_cok_kucuk | Minimum takip edilebilen hedef boyutu kac px? | 0.560 | 61% | 85% | 1.75 px | 95% | 0 |
 | test4_coklu | Kilitli arac yerine baskasina geciyor mu? (ID switch) | 0.866 | 100% | 100% | 0.57 px | 100% | 0 |
 | test5_benzer | Gorunum ayirt edemez -> hareket modeli hedefi tutabiliyor mu? | 0.897 | 100% | 100% | 0.15 px | 100% | 0 |
 | test6_okluzyon | Tekrar gorununce AYNI arac bulunabiliyor mu? | 0.747 | 81% | 92% | 0.99 px | 78% | 1 |
@@ -45,21 +45,21 @@ Kucuk hedefte IoU 1 piksellik hatada cokerken bu olcu adil kalir.
 | 13.5 x 5.6 | 156 | 0.555 | 94% | 1.14 px | KARARSIZ |
 | 11.0 x 4.5 | 126 | 0.394 | 100% | 0.43 px | BASARILI |
 | 9.0 x 3.7 | 153 | 0.348 | 99% | 0.37 px | BASARILI |
-| 7.0 x 2.9 | 201 | 0.243 | 79% | 0.32 px | KARARSIZ |
-| 5.4 x 2.2 | 141 | 0.174 | 67% | 0.37 px | KAYIP |
+| 7.0 x 2.9 | 201 | 0.244 | 79% | 0.32 px | KARARSIZ |
+| 5.4 x 2.2 | 141 | 0.172 | 67% | 0.37 px | KAYIP |
 
 ## Zaman profili (640x480)
 
 | asama | ms | pay |
 |---|---|---|
-| ego-motion | 0.94 | 37% |
-| korelasyon cekirdegi | 1.01 | 40% |
-| tespit / kutu rafine | 0.23 | 9% |
-| TOPLAM | 2.52 | 100% |
+| ego-motion | 1.07 | 36% |
+| korelasyon cekirdegi | 1.15 | 39% |
+| tespit / kutu rafine | 0.38 | 13% |
+| TOPLAM | 2.96 | 100% |
 
-- bu makine: **397 FPS**
-- Pi Zero 2 W kaba tahmin: **33.1 FPS** (x12)
-- Pi Zero 1 kaba tahmin: **8.8 FPS** (x45)
+- bu makine: **338 FPS**
+- Pi Zero 2 W kaba tahmin: **28.2 FPS** (x12)
+- Pi Zero 1 kaba tahmin: **7.5 FPS** (x45)
 
 Katsayilar tahmindir; kesin sonuc icin cihazda olculmelidir.
 

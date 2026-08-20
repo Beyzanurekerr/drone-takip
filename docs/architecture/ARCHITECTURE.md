@@ -1,6 +1,6 @@
 # Mimari
 
-Aşama 2 sonu durumu (19 Ağustos 2026).
+Aşama 3.8 sonu durumu (20 Ağustos 2026).
 
 ## Amaç
 
@@ -153,6 +153,32 @@ KİLİTLİ ──PSR düştü──▶ ŞÜPHELİ ──8 kare──▶ ARAMA �
 Kritik kural: **ŞÜPHELİ durumda öğrenme durur.** Filtre kaybettiği anda
 öğrenmeye devam ederse zemini öğrenir ve bir daha geri dönemez.
 
+### Bağımsız doğrulama (Aşama 3.8)
+
+PSR bir **kimlik** ölçüsü değil, filtrenin **iç tutarlılık** ölçüsüdür: filtre
+neyi öğrendiyse onu güvenle bulur. Yola kayarsa yolu öğrenir ve PSR düşmez —
+tam tersine yükselir. Bu yüzden `KİLİTLİ` durumunun PSR'dan bağımsız iki
+denetleyicisi var:
+
+```
+KİLİTLİ
+  ├─ kutu zeminden bağımsız hareket ediyor mu?   (ego-telafili p90, 20 kare)
+  │    EVET → imza uyuşmazlığı = görünüm değişimi → KİLİTLİ devam
+  │    HAYIR ↓
+  ├─ İMZA testi     : kilit anında DONDURULAN referansa benzerlik
+  └─ ZEMİN testi    : p90, kare genişliğinin %0.08'i altında 20 kare üst üste
+       └─ yeterli kanıt → kilit reddedilir → ARAMA + reddedilen konum yasaklı
+```
+
+İki imza ayrı tutulur: `imza_ref` dondurulmuştur ve **yalnızca doğrulama**
+kullanır; `imza` uyarlanır ve **yalnızca yeniden tespit + renk kapısı** kullanır.
+Uyarlanan imza ancak kutu hareketliyken *ve* referans hedefi hâlâ tanırken
+öğrenir.
+
+Tespit ile kurtarma birbirinden ayrıdır: doğrulama yalnızca "bu kilit yanlış"
+der, geri bulma işi `_arama_adimi`'nindir. Eşiklerin nasıl ölçüldüğü ve
+denenip elenen dört tasarım `CHANGELOG.md`, Aşama 3.8'de.
+
 İkinci kritik kural: uzun kayıpta konum önbilgisi kullanılmaz, tüm kare
 görünüm imzasıyla taranır ve **en iyi aday ikinciyi belirgin farkla geçmezse
 hiçbiri kabul edilmez**. Benzer araçlarda yanlış kilidi engelleyen budur.
@@ -169,12 +195,22 @@ hiçbiri kabul edilmez**. Benzer araçlarda yanlış kilidi engelleyen budur.
 
 ## Bilinen sınırlar
 
-1. **Yanlış güven** — hedef ~13 px altında kaybedildiğinde sistem hâlâ
-   `KİLİTLİ` diyebiliyor; PSR düşmüyor çünkü filtre yol dokusuna kilitleniyor.
-   Kilitliyken bağımsız doğrulama yok.
+1. **Yanlış güven** — *büyük ölçüde giderildi (Aşama 3.8).* Kilitliyken artık
+   bağımsız doğrulama var; gerçek veride yanlış kilit oranı %98.4 → %44.0
+   (268/31) ve %47.8 → %11.3 (182/127). Kalan sürenin tabanı tespit
+   gecikmesidir (20 kare pencere + 20 kare sabır).
 2. **MOT katmanı yok** — tek hedef takip ediliyor; track listesi, ID atama ve
    veri ilişkilendirme yok.
-3. **Detection sınıf-bilinçsiz** — hareket tabanlı; duran araç görünmez.
+3. **Detection sınıf-bilinçsiz** — hareket tabanlı; duran araç görünmez. Aşama
+   3.7'de ölçüldü: `uav0000182_00000_v`'nin hedefi 0.8 px/kare hareket ettiği
+   için kaybedildikten sonra yeniden tespit onu hiç bulamıyor.
+
+7. **Hızlı hedef** — Aşama 3.7'nin ana bulgusu: kare başına yer değiştirme
+   hedef boyutuna göre büyükse araç bir karede korelasyon penceresinin
+   merkezinden çıkıyor. `uav0000268_05773_v`'de oran 0.61 kutu eni/kare ve
+   takip kilitten bir kare sonra kopuyor; `uav0000117_02622_v`'de oran 0.03 ve
+   takip 349 kare boyunca sağlam. Arama penceresi hedefin hareketine göre
+   konumlanmalı.
 4. **Benchmark simülatöre kilitli** — `calistir.kos()` sahne adımı, render ve
    GT üretimini döngü içinde yapıyor.
 5. **ID switch metriği tüm nesnelerin GT'sini istiyor** — tek hedefli SOT veri
