@@ -1,0 +1,15 @@
+# Drone Hedef Takip - calisma bagimliliklari
+# Derin ogrenme bagimliligi YOKTUR; hat tumuyle klasik CV'dir.
+#
+#   pip install -r requirements.txt
+#
+# Olculdugu ortam (docs/architecture/BENCHMARK_BASELINE.md):
+#   Python 3.10.12 - opencv-python 4.11.0 - numpy 1.26.4
+#
+# Alt sinirlar test edilmis surumlerdir; ust sinir yoktur.
+# Ekransiz sunucuda opencv-python yerine opencv-python-headless de kullanilabilir
+# (canli pencere -yani calistir.py --canli / main.py'nin pencereli modu- calismaz,
+#  --penceresiz kosum ve tum olcumler calisir).
+
+numpy>=1.24
+opencv-python>=4.8

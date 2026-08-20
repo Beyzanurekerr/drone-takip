@@ -47,8 +47,18 @@ Problem klasik araç tespiti değil; şu dört kısıtın **aynı anda** sağlan
 
 ## Mevcut Sistem
 
-Şu anki hat **tamamen klasik CV**'dir; derin öğrenme bağımlılığı yoktur
-(`opencv-python` + `numpy`).
+Şu anki hat **tamamen klasik CV**'dir; derin öğrenme bağımlılığı yoktur —
+yalnızca `numpy` ve `opencv-python` gerekir:
+
+```bash
+git clone https://github.com/Beyzanurekerr/drone-takip.git
+cd drone-takip
+pip install -r requirements.txt
+python3 main.py --source sim --penceresiz --max-kare 120   # hızlı kontrol
+```
+
+Simülasyon hiçbir ek veri gerektirmez; VisDrone bölümündeki ölçümler için veri
+kümesinin ayrıca indirilmesi gerekir.
 
 | Bileşen | Dosya | Görev |
 |---|---|---|
@@ -454,6 +464,7 @@ python3 visdrone_kiyasla.py --hepsi --rapor
 | `docs/architecture/CHANGELOG.md` | Aşama aşama değişiklik günlüğü + denenip elenenler |
 | `docs/architecture/BENCHMARK_BASELINE.md` | Dondurulmuş sim referansı + regresyon kuralları |
 | `docs/architecture/BENCHMARK_WINDOWS.md` | Windows üzerindeki ayrı ölçüm (Linux sayılarıyla kıyaslanmaz) |
+| `requirements.txt` | Çalışma bağımlılıkları (`numpy`, `opencv-python`) + ölçüm ortamı sürümleri |
 
 ## GitHub
 
