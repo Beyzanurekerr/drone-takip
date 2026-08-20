@@ -63,6 +63,13 @@ Problem klasik araç tespiti değil; şu dört kısıtın **aynı anda** sağlan
 **YOLO ve MOT (ByteTrack / BoT-SORT) henüz sisteme entegre değildir.** Aşama 5–8
 olarak planlanmıştır; bu depodaki hiçbir ölçüm onları içermez.
 
+![Simülasyonda kilitli takip](docs/gorseller/01_sim_test1_kilitli.jpg)
+
+*`main.py --source sim` — HUD'da durum, FPS, işlem gecikmesi, kare sayacı, PSR ve
+(GT varsa) anlık IoU + merkez hatası görünür. Sarı `TRACK` takipçinin kutusu, yeşil
+`GT` ground-truth. Ekran görüntülerindeki FPS değerleri anlık ölçümdür ve makine
+yüküne göre değişir.*
+
 ## Görüntü Kaynakları
 
 Takip hattı görüntünün nereden geldiğini bilmez; dört kaynak da aynı boru hattına
@@ -166,6 +173,17 @@ koşulur (`python3 minboyut.py`):
 
 Takip uygulaması için belirleyici olan birincisidir.
 
+![Küçük hedefte takip](docs/gorseller/02_sim_test3_kucuk_hedef.jpg)
+
+*test3, kare 300: hedef birkaç piksele inmiş durumda. IoU 0.646'ya düşüyor ama
+merkez hatası **0.4 px** — konum kilidi kutu ölçüsünden çok daha uzun dayanıyor.*
+
+![Oklüzyon sırasında arama](docs/gorseller/03_sim_test6_okluzyon_arama.jpg)
+
+*test6, kare 150: hedef üst geçidin altında. Durum `SEARCHING`, öğrenme durmuş
+durumda — filtre bu sırada asfaltı öğrenseydi araç tekrar göründüğünde
+bulunamazdı.*
+
 ### Çekirdek karşılaştırması
 
 Takip çekirdeği takılıp çıkarılabilir (`HedefTakip(cekirdek="...")`).
@@ -212,6 +230,12 @@ farklı şeyleri ölçerler.
 
 `uav0000086_00000_v` atlandı: dizide hiç araç sınıfı yok (sadece yaya).
 
+![VisDrone 117/23 doğru takip](docs/gorseller/04_visdrone_117_dogru_takip.jpg)
+
+*En iyi dizi (`uav0000117_02622_v`, track 23): gece, düşük kontrast, eğik bakış.
+Kare 150'de IoU 0.718, merkez hatası 6.3 px — klasik hat gerçek veride de
+çalışabiliyor.*
+
 ### Veri kümesini kurma
 
 Veri kümeleri **depoya dahil değildir** (1.6 GB; `.gitignore`'da).
@@ -252,6 +276,12 @@ Sim 0.742 → gerçek 0.281. Farkın kökeni Aşama 3.7'de iki dizide teşhis ed
   144 → 38 kare). 1920 px'e indirilmiş aynı dizide %99.2 → %69.4.
 - Gerçek hedef **hâlâ geri bulunamıyor** (IoU 0.005). Aşama 3.9'un konusu budur.
 
+![VisDrone 268/31 hızlı hedef kaybı](docs/gorseller/05_visdrone_268_hizli_hedef_kayip.jpg)
+
+*Kare 120: hedef kaybedilmiş, durum `SCANNING`. Sağ üstte 40 aday var ama bunların
+çoğu ağaç, direk ve tabelalardan geliyor — eğik bakış + parallaks aday üretimini
+gürültülendiriyor.*
+
 ### 182/127 — duran hedef
 
 - Yeniden tespit yalnızca **hareket lekesi** üretiyor. Hedef durduğunda aday listesi
@@ -261,9 +291,29 @@ Sim 0.742 → gerçek 0.281. Farkın kökeni Aşama 3.7'de iki dizide teşhis ed
 - A3.8 sonrası yanlış kilit oranı **%47.8 → %11.3** (123 → 18 kare).
 - Duran hedef için **görünüm tabanlı** bir aday kaynağı hâlâ gerekiyor.
 
+![VisDrone 182/127 yanlış kilit](docs/gorseller/06_visdrone_182_yanlis_kilit.jpg)
+
+*Yanlış kilidin ders kitabı örneği (kare 160): durum `LOCKED`, **PSR 70.9** — filtre
+kendinden son derece emin. Ama IoU 0.000 ve merkez hatası 260.8 px; sarı kutu yol
+dokusunun üstünde, gerçek hedef (yeşil GT) çok uzakta. PSR'ın neden tek başına
+yeterli olmadığı buradan görülüyor.*
+
+![VisDrone 182/127 duran hedef](docs/gorseller/07_visdrone_182_duran_hedef.jpg)
+
+*Kare 320, durum `LOST`: mavi kutular aday üretiminin çıktısı ve **hepsi hareket
+eden** araçların üzerinde. Yeşil GT'deki duran araç hiç aday üretmiyor, dolayısıyla
+yeniden tespit onu asla bulamıyor. Aynı karede gecikme 40.8 ms — ARAMA modunun
+maliyeti de görünüyor.*
+
 Ek olarak: VisDrone dizilerinin bir kısmı nadir değil, sokak seviyesine **eğik**
 bakıyor. `egomotion.py`'nin 2 × 3 afin düzlem modeli parallakslı 3B sahnede
 zayıflıyor; aday üretimi ağaç ve binalarda gürültüleniyor.
+
+![VisDrone 137/12 eğik bakışta sürüklenme](docs/gorseller/08_visdrone_137_egik_bakis_suruklenme.jpg)
+
+*`uav0000137_00458_v`, kare 100: kalabalık kavşak, eğik bakış. Durum `LOCKED` ve
+PSR 54.8, ama kutu hedefin 59.8 px yanına sürüklenmiş (IoU 0.066). Sahne
+kalabalıklaştıkça ego-motion'ın düzlem varsayımı ve renk imzası birlikte zayıflıyor.*
 
 ## Aşama 3.8 — False-Lock Doğrulama
 
