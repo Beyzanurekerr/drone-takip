@@ -20,9 +20,9 @@ from collections import deque
 import cv2
 import numpy as np
 
-from calistir import RENK, _kutu_ciz, iou     # cizim ve olcum ilkelerini yeniden kullan
+from calistir import _kutu_ciz, iou      # cizim ve olcum ilkelerini yeniden kullan
 from kaynak import KaynakHatasi, kaynak_olustur
-from takip.izleyici import ARAMA, KAYIP, KILITLI, HedefTakip
+from takip.izleyici import ARAMA, KAYIP, KILITLI, SUPHELI, HedefTakip
 
 ISINMA = 6          # hareket tespiti icin gecmis gerekiyor (ilk kareler bos doner)
 PENCERE_KUTUSU = (960, 540)     # baslangic penceresi bu kutuya sigar
@@ -87,41 +87,59 @@ def otomatik_hedef_sec(adaylar, kare):
 
 
 # --- HUD -------------------------------------------------------------------
-# Yazi KAYNAK piksellerine cizilir, pencere ise `pencere_boyutu` ile 960x540
-# kutusuna sigdirilir. Sabit font kullanilirsa 3840x2160 bir VisDrone dizisinde
-# yazi ekranda 4 kat kucuk gorunur ve okunmaz. Bu yuzden font olcegi ve
-# kalinlik cozunurlukle birlikte buyutulur: HUD her kaynakta AYNI boyda
-# gorunur. Buradaki hicbir sey olcume girmez - sadece gorsellestirme.
+# Iki kural:
+#
+# 1) OLCEK. Yazi KAYNAK piksellerine cizilir, pencere ise `pencere_boyutu` ile
+#    960x540 kutusuna sigdirilir. Sabit font kullanilirsa 3840x2160 bir dizide
+#    yazi ekranda 4 kat kucuk gorunur. Font ve kalinlik cozunurlukle birlikte
+#    buyutulur: HUD ekranda her kaynakta AYNI boyda gorunur.
+# 2) TEK YER. Butun sistem bilgisi sol ustteki tek panelde toplanir; goruntunun
+#    baska kosesine yazi dagitilmaz. Kutularin yaninda yalnizca "GT" / "TRACK"
+#    etiketi durur, o da kutunun DISINDA - hedefin pikselleri asla kapanmaz.
+#
+# Buradaki hicbir sey olcume girmez: sadece gorsellestirme.
 FONT = cv2.FONT_HERSHEY_SIMPLEX
-HUD_TABAN = 0.62         # 960x540 penceresinde govde yazisinin font olcegi
-HUD_ALT_SINIR = 0.75     # kucuk kaynakta yaziyi bundan fazla kucultme
-GT_RENK = (0, 220, 0)    # GT hep yesil; takip kutusu durum rengini kullanir
-ADAY_RENK = (255, 120, 0)
-BILGI_RENK = (235, 235, 235)
+HUD_GORUNEN = 0.70       # 960x540 penceresinde govde yazisinin gorunen olcegi
+HUD_MIN_OLCEK = 0.72     # ham pikselde de font 0.5'in altina inme
+HUD_MAKS_PAY = 0.62      # panel goruntu genisliginin bu kadarindan genis olamaz
+
+# Durum adlari ve renkleri yalnizca EKRAN icindir; takip tarafi Turkce
+# sabitleri kullanmaya devam eder; calistir.RENK olcum tarafinda duruyor.
+DURUM_ADI = {KILITLI: "LOCKED", SUPHELI: "SUSPECT",
+             ARAMA: "SEARCHING", KAYIP: "LOST"}
+DURUM_RENK = {KILITLI: (0, 255, 255),      # sari
+              SUPHELI: (0, 165, 255),      # turuncu
+              ARAMA: (255, 160, 0),        # gok mavisi
+              KAYIP: (0, 0, 255)}          # kirmizi
+GT_RENK = (0, 230, 0)            # yesil - dort durum renginin hicbiri yesil degil
+ADAY_RENK = (200, 110, 0)
+ETIKET_RENK = (165, 165, 165)    # panelde alan adi
+DEGER_RENK = (245, 245, 245)     # panelde deger
+YOK = "-"
 
 
 def hud_olcek(genislik, yukseklik, kutu=PENCERE_KUTUSU):
     """Cozunurluge gore font/kalinlik carpani.
 
     Pencere `kutu` icine k = min(kutu_w/W, kutu_h/H) orani ile sigdiriliyor;
-    yazi da ayni kuculmeye ugruyor. 1/k ile carparak telafi edilir:
-    960x540 -> 1.00 · 1904x1071 -> 1.98 · 3840x2160 -> 4.00 ·
-    640x480 (4:3) -> 0.89 · 320x240 -> alt sinir 0.75.
+    yazi da ayni kuculmeye ugruyor, 1/k ile telafi edilir:
+    960x540 -> 1.00 · 1920x1080 -> 2.00 · 3840x2160 -> 4.00 ·
+    640x480 (4:3) -> alt sinir 0.72.
     """
     if genislik <= 0 or yukseklik <= 0:
         return 1.0
-    return max(HUD_ALT_SINIR, genislik / kutu[0], yukseklik / kutu[1])
+    return max(HUD_MIN_OLCEK, genislik / kutu[0], yukseklik / kutu[1])
 
 
 def _yaz(img, metin, konum, olcek, renk, kalinlik):
-    """Siyah kontur + renkli govde: acik asfaltta da koyu golgede de okunur."""
+    """Siyah kontur + renkli govde: acik betonda da koyu golgede de okunur."""
     cv2.putText(img, metin, konum, FONT, olcek, (0, 0, 0),
                 kalinlik + 2 * max(1, kalinlik // 2), cv2.LINE_AA)
     cv2.putText(img, metin, konum, FONT, olcek, renk, kalinlik, cv2.LINE_AA)
 
 
-def _panel(img, x0, y0, x1, y1, alfa=0.55):
-    """Yazi blogunun arkasini karart - konturun tek basina yetmedigi zemine."""
+def _karart(img, x0, y0, x1, y1, alfa=0.62):
+    """Panel zemini: kesip karartmak, addWeighted'dan hem ucuz hem yerinde."""
     x0, y0 = max(0, int(x0)), max(0, int(y0))
     x1, y1 = min(img.shape[1], int(x1)), min(img.shape[0], int(y1))
     if x1 <= x0 or y1 <= y0:
@@ -130,20 +148,124 @@ def _panel(img, x0, y0, x1, y1, alfa=0.55):
     roi[:] = (roi * (1.0 - alfa)).astype(img.dtype)
 
 
-def _etiket(img, metin, x, y, renk, olcek, kalinlik, ped, ust=True):
-    """Kutu kosesine dolu renkli rozet + siyah yazi.
+def _kesikli_kutu(img, kutu, renk, kalinlik, adim):
+    """GT KESIK cizgi, takip DUZ cizgi.
 
-    GT ile takip kutusu iki eksende birden ayrilir: RENK (yesil / durum rengi)
-    ve KONUM (GT ustte, TAKIP altta). Tek eksen kucuk hedefte yetmiyor.
+    Renk tek basina yetmiyor (kucuk hedefte iki kutu ust uste biner); cizgi
+    deseni ikinci ve renkten bagimsiz bir ayirt edici.
     """
-    (tw, th), _ = cv2.getTextSize(metin, FONT, olcek, kalinlik)
+    x, y, w, h = [int(round(v)) for v in kutu]
+    adim = max(2, int(adim))
+    if w < 6 * adim or h < 6 * adim:      # kucuk kutuda kesik cizgi kayboluyor
+        cv2.rectangle(img, (x, y), (x + w, y + h), renk, kalinlik)
+        return
+    for i in range(x, x + w, 2 * adim):
+        j = min(i + adim, x + w)
+        cv2.line(img, (i, y), (j, y), renk, kalinlik)
+        cv2.line(img, (i, y + h), (j, y + h), renk, kalinlik)
+    for i in range(y, y + h, 2 * adim):
+        j = min(i + adim, y + h)
+        cv2.line(img, (x, i), (x, j), renk, kalinlik)
+        cv2.line(img, (x + w, i), (x + w, j), renk, kalinlik)
+
+
+def _cakisiyor(a, b):
+    return not (a[0] + a[2] <= b[0] or b[0] + b[2] <= a[0] or
+                a[1] + a[3] <= b[1] or b[1] + b[3] <= a[1])
+
+
+def _kutu_etiketi(img, metin, kutu, renk, olcek, kal, bosluk, yasak=None):
+    """Kutunun DISINA rozet: dolu renkli zemin + siyah yazi. Rozet kutusunu doner.
+
+    Sira: kutunun ustu -> altina -> sagina. Hedefin uzerine hicbir kosulda
+    binmez; 15x7 px bir aracta bile arac pikselleri temiz kalir.
+    """
+    x, y, w, h = [int(round(v)) for v in kutu]
+    (tw, th), _ = cv2.getTextSize(metin, FONT, olcek, kal)
+    ped = max(2, int(round(olcek * 7)))
     kw, kh = tw + 2 * ped, th + 2 * ped
-    x0 = int(min(max(0, x), max(0, img.shape[1] - kw)))
-    y0 = int(y - kh) if ust else int(y)
+    adaylar = [(x, y - kh - bosluk),          # ustu (varsayilan)
+               (x, y + h + bosluk),           # alti
+               (x + w + bosluk, y)]           # sagi
+    x0, y0 = adaylar[0]
+    for ax, ay in adaylar:
+        if ay < 0 or ay + kh > img.shape[0]:
+            continue
+        if yasak is not None and _cakisiyor((ax, ay, kw, kh), yasak):
+            continue
+        x0, y0 = ax, ay
+        break
+    x0 = int(min(max(0, x0), max(0, img.shape[1] - kw)))
     y0 = int(min(max(0, y0), max(0, img.shape[0] - kh)))
     cv2.rectangle(img, (x0, y0), (x0 + kw, y0 + kh), renk, -1)
+    cv2.rectangle(img, (x0, y0), (x0 + kw, y0 + kh), (0, 0, 0),
+                  max(1, kal // 2))
     cv2.putText(img, metin, (x0 + ped, y0 + kh - ped), FONT, olcek,
-                (0, 0, 0), kalinlik, cv2.LINE_AA)
+                (0, 0, 0), kal, cv2.LINE_AA)
+    return (x0, y0, kw, kh)
+
+
+def _panel_olcu(satirlar, f, kal, ped, ayrac, sutun_ara):
+    """Izgara olculeri. Alan adi ve deger sutunlari AYRI hizalanir.
+
+    Boylece FPS / IoU / LATENCY degerleri birbirinin icine giremez: her
+    sutunun genisligi o sutundaki en uzun metne gore sabitlenir.
+    """
+    n = max(len(s) for s in satirlar)
+    ad_w = [0] * n
+    deger_w = [0] * n
+    tam_w = 0                      # tek hucreli satirlarin (SOURCE) genisligi
+    for s in satirlar:
+        for c, (ad, deger, _) in enumerate(s):
+            ad_w[c] = max(ad_w[c], cv2.getTextSize(ad + ":", FONT, f, kal)[0][0])
+            if len(s) > 1:
+                deger_w[c] = max(deger_w[c],
+                                 cv2.getTextSize(deger, FONT, f, kal)[0][0])
+    for s in satirlar:
+        if len(s) == 1:
+            tam_w = max(tam_w, ad_w[0] + ayrac +
+                        cv2.getTextSize(s[0][1], FONT, f, kal)[0][0])
+    yuk = cv2.getTextSize("Ag", FONT, f, kal)[0][1]
+    hucre_w = [ad_w[c] + ayrac + deger_w[c] for c in range(n)]
+    ic_w = max(sum(hucre_w) + sutun_ara * (n - 1), tam_w)
+    satir_h = int(round(yuk * 2.05))
+    return {"ad_w": ad_w, "hucre_w": hucre_w, "yuk": yuk, "satir_h": satir_h,
+            "genislik": ic_w + 2 * ped,
+            "yukseklik": 2 * ped + yuk + satir_h * (len(satirlar) - 1)}
+
+
+def _bilgi_paneli(img, satirlar, s, vurgu):
+    """Sol ust kosede TEK panel. Butun sistem bilgisi burada.
+
+    Panel goruntu genisliginin `HUD_MAKS_PAY`ini asarsa olcek kucultulup
+    yeniden olculur - 4:3 ya da dar kaynakta duzen bozulmasin diye.
+    """
+    for _ in range(4):
+        f = HUD_GORUNEN * s
+        kal = max(1, int(round(2.2 * s)))
+        ped = max(6, int(round(11 * s)))
+        ayrac = max(4, int(round(9 * s)))
+        sutun_ara = max(8, int(round(24 * s)))
+        o = _panel_olcu(satirlar, f, kal, ped, ayrac, sutun_ara)
+        if o["genislik"] <= HUD_MAKS_PAY * img.shape[1] or s <= HUD_MIN_OLCEK:
+            break
+        s *= (HUD_MAKS_PAY * img.shape[1]) / o["genislik"]
+
+    bar = max(3, int(round(5 * s)))
+    pw, ph = o["genislik"] + bar, o["yukseklik"]
+    _karart(img, 0, 0, pw, ph)
+    cv2.rectangle(img, (0, 0), (bar, ph), vurgu, -1)          # durum rengi seridi
+    cv2.rectangle(img, (0, 0), (pw - 1, ph - 1), (60, 60, 60),
+                  max(1, int(round(s))))
+
+    y = ped + o["yuk"]
+    for satir in satirlar:
+        x = bar + ped
+        for c, (ad, deger, renk) in enumerate(satir):
+            _yaz(img, ad + ":", (x, y), f, ETIKET_RENK, kal)
+            _yaz(img, deger, (x + o["ad_w"][c] + ayrac, y), f, renk, kal)
+            x += o["hucre_w"][c] + sutun_ara
+        y += o["satir_h"]
 
 
 def ciz(img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms=0.0,
@@ -156,63 +278,45 @@ def ciz(img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms=0.0,
     durum = sonuc["durum"]
     h, w = img.shape[:2]
     s = hud_olcek(w, h)
-    f_govde = HUD_TABAN * s
-    f_baslik = 0.92 * s
-    f_etiket = 0.55 * s
-    kal = max(1, int(round(2 * s)))
-    ped = max(3, int(round(5 * s)))
-    renk = RENK.get(durum, (255, 160, 0))
+    f_etiket = 0.58 * s
+    kal = max(1, int(round(2.2 * s)))
+    bosluk = max(2, int(round(4 * s)))
+    vurgu = DURUM_RENK.get(durum, DURUM_RENK[ARAMA])
 
-    # --- kutular ---
+    # --- kutular: GT kesik yesil, takip duz durum renginde ---
+    gt_rozet = None
     if kare.gt is not None and kare.gorunur:
-        _kutu_ciz(img, kare.gt, GT_RENK, max(1, int(round(1.5 * s))))
-        _etiket(img, "GT", int(kare.gt[0]), int(kare.gt[1]), GT_RENK,
-                f_etiket, kal, max(2, ped // 2), ust=True)
+        _kesikli_kutu(img, kare.gt, GT_RENK, max(1, int(round(1.6 * s))),
+                      round(4 * s))
+        gt_rozet = _kutu_etiketi(img, "GT", kare.gt, GT_RENK, f_etiket, kal,
+                                 bosluk)
     if (not kilitli) or durum in (ARAMA, KAYIP):
         for a in (adaylar or []):
             _kutu_ciz(img, a["kutu"], ADAY_RENK, max(1, int(round(s))))
     if kilitli and sonuc["kutu"] is not None:
-        _kutu_ciz(img, sonuc["kutu"], renk, max(2, int(round(2.5 * s))))
-        tk = sonuc["kutu"]
-        _etiket(img, "TAKIP", int(tk[0]), int(tk[1] + tk[3]), renk,
-                f_etiket, kal, max(2, ped // 2), ust=False)
+        _kutu_ciz(img, sonuc["kutu"], vurgu, max(2, int(round(2.4 * s))))
+        _kutu_etiketi(img, "TRACK", sonuc["kutu"], vurgu, f_etiket, kal,
+                      bosluk, yasak=gt_rozet)
 
-    # --- sol ust bilgi blogu ---
-    baslik = durum if kilitli else "TARAMA"
-    takip_ms = sonuc.get("sure", {}).get("toplam", 0.0)
-    sayac = f"{kare.indeks}/{toplam}" if toplam > 0 else str(kare.indeks)
-    ikinci = f"kare {sayac}"
-    if hedef_id is not None:
-        ikinci += f"   hedef #{hedef_id}"
-    ikinci += (f"   PSR {sonuc['psr']:.1f}" if kilitli
-               else f"   aday {len(adaylar or [])}")
+    # --- tek bilgi paneli ---
+    ad = DURUM_ADI.get(durum, durum) if kilitli else "SCANNING"
+    hedef = f"#{hedef_id}" if hedef_id is not None else YOK
+    ioumetin = f"{sonuc['iou']:.3f}" if sonuc.get("iou") is not None else YOK
+    merkez = (f"{sonuc['merkez_hata']:.1f} px"
+              if sonuc.get("merkez_hata") is not None else YOK)
+    olcu_renk = GT_RENK if sonuc.get("iou") is not None else ETIKET_RENK
+    sayac = f"{kare.indeks} / {toplam}" if toplam > 0 else str(kare.indeks)
+    psr = f"{sonuc['psr']:.1f}" if kilitli else f"{len(adaylar or [])} cand"
     satirlar = [
-        (f"FPS {fps:.1f}   gecikme {gecikme_ms:.1f} ms   takip {takip_ms:.1f} ms",
-         BILGI_RENK),
-        (ikinci, BILGI_RENK),
+        [("STATUS", ad, vurgu), ("TARGET", hedef, DEGER_RENK)],
+        [("FPS", f"{fps:.1f}", DEGER_RENK), ("IoU", ioumetin, olcu_renk)],
+        [("LATENCY", f"{gecikme_ms:.1f} ms", DEGER_RENK),
+         ("CENTER", merkez, olcu_renk)],
+        [("FRAME", sayac, DEGER_RENK), ("PSR", psr, DEGER_RENK)],
+        [("SOURCE", f"[{tur}] {kare.kaynak_adi.split(':', 1)[-1]}  "
+                    f"{kare.genislik}x{kare.yukseklik}", DEGER_RENK)],
     ]
-    if sonuc.get("iou") is not None:          # GT'den gelen olcu -> GT rengi
-        satirlar.append((f"IoU {sonuc['iou']:.2f}   "
-                         f"merkez hata {sonuc['merkez_hata']:.1f} px", GT_RENK))
-
-    (bw, bh), _ = cv2.getTextSize(baslik, FONT, f_baslik, kal + 1)
-    olcu = [cv2.getTextSize(t, FONT, f_govde, kal)[0] for t, _ in satirlar]
-    genis = max([bw] + [m[0] for m in olcu])
-    satir_h = int(round(max(m[1] for m in olcu) * 2.0))
-    x_metin = ped + ped // 2
-    y = ped + bh
-    _panel(img, 0, 0, genis + 3 * ped, y + len(satirlar) * satir_h + ped)
-    _yaz(img, baslik, (x_metin, y), f_baslik, renk, kal + 1)
-    for metin, c in satirlar:
-        y += satir_h
-        _yaz(img, metin, (x_metin, y), f_govde, c, kal)
-
-    # --- sol alt kaynak satiri ---
-    alt = (f"[{tur}]  {kare.kaynak_adi}  "
-           f"{kare.genislik}x{kare.yukseklik} @ {kare.fps:.0f} fps")
-    (aw, ah), _ = cv2.getTextSize(alt, FONT, f_govde, kal)
-    _panel(img, 0, h - ah - 2 * ped, aw + 3 * ped, h)
-    _yaz(img, alt, (x_metin, h - ped), f_govde, BILGI_RENK, kal)
+    _bilgi_paneli(img, satirlar, s, vurgu)
 
 
 def goster(pencere, img, bekleme_ms, duraklat):
