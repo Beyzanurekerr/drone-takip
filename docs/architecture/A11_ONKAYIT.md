@@ -172,3 +172,41 @@ kendi haline bırakılır) — A2/A5 zaten budur.
 | KOL 3 | `A11_KOL3_UCUS_GEOMETRISI.md` | `cikti/a11_kol3.json` | 5 |
 
 **push YOK.** Sonunda **DUR**.
+
+---
+
+# EK-1 — İstem denetimi: dedektör Gazebo'da KÖR (KOL 0 koşulmadan önce eklendi)
+
+**Eklendiği tarih:** 2026-09-03 · **Hiçbir KOL koşulmadan önce yazıldı.**
+A9 Aşama 1-EK precedent'i: sonuçlara bakıp değil, koşumdan önce yapılan bir
+sistematik taramayla bulundu.
+
+**Bulgu:** COCO-eğitilmiş `A5_baseline` (yolov8n), Gazebo'nun kutu-primitif
+araçlarını **hiç görmüyor**. Sistematik tarama: 6 senaryonun her 10. karesi
+(**240 kare**), tam kare, **sınıf kısıtlamasız**, `conf ≥ 0.10` → **0 tespit**.
+Tek kare değil, tüm taban.
+
+**Sebep görsel:** Gazebo'daki "araç" düz renkli bir kutu + üstünde ikinci bir
+kutu (kabin) — doku, tekerlek, cam, gölgeleme yok. COCO'nun "araba" dağılımıyla
+hiçbir ortak özelliği yok.
+
+**Kapsam üzerindeki etki:**
+
+- **Yasaklar gereği düzeltilmeyecek** (eğitim, ağırlık, `imgsz` değişikliği
+  yasak — bu tam olarak "sonuca göre sabit değiştirme"nin kapsadığı şey).
+- **H0 etkilenmiyor.** H0 saf klasik takipçidir (`hakem=None`), YOLO hiç
+  çağrılmaz. KOL 0'ın asıl talebi (sahte-ego karşılaştırması, taşıma) **H0
+  üzerinden tam olarak ölçülebilir.**
+- **H1/H2/H3/oracle kolları YOLO'ya bağımlı bileşenlerde SIFIRA çöker:**
+  doğrulama hiçbir zaman ONAY vermez (kanıt her zaman yok), boyut çapası hiç
+  yazmaz, recovery hiçbir zaman aday bulamaz (her zaman çekimser).
+  **Bu bir harness hatası değil, ölçülen bir sonuçtur** ve öyle raporlanır.
+- **Mod A histerezisi (D2) etkilenMİYOR** — `iz(P)` ve `takipçinin kendi
+  ARAMA/KAYIP durumu`na dayanır, YOLO'ya bağımlı değil. H1–H3 arası fark
+  bu kanaldan gelmeye devam eder ve **anlamlı kalır**.
+
+**Sonuç olarak KOL 0'da H1, H2, H3 ve iki oracle kolu birbirine neredeyse
+özdeş davranacaktır** (hepsi doğrulama/çapa/recovery'de aynı şekilde
+"kanıtsız"); bu beş kol arasındaki TEK ayrım kanalı Mod A histerezisidir.
+Bu, koşumdan ÖNCE yazılan bir beklentidir; sonuç bunu doğrularsa "harness
+bozuk" değil "dedektör transfer olmuyor" diye okunacaktır.

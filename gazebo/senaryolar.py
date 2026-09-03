@@ -599,11 +599,11 @@ def A3_yaw():
 
 
 def A4_irtifa():
-    """Irtifa salinimi (monoton degil): 38.3 m etrafinda +-35 m."""
+    """Irtifa salinimi (monoton degil): 73.3 m (A11_IRTIFA0+35) etrafinda +-35 m."""
     f = 0.2
     A = 35.0 * 2.0 * math.pi * f
     return _a11("A4_irtifa",
-                "Irtifa salinimi +-35 m (f=0.2 Hz), 38.3 m etrafinda",
+                "Irtifa salinimi +-35 m (f=0.2 Hz), 73.3 m etrafinda -> 38.3-108.3 m band",
                 "Olcek kanali: ego olcek kestirimi gercek irtifa degisiminde ne yapiyor?",
                 "irtifa 38.3 - 108.3 m -> hedef 60 - 21 px salinim",
                 _kam(vz=kosinus(A, f)), kam_z=A11_IRTIFA0 + 35.0,

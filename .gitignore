@@ -43,6 +43,10 @@ cikti/*.npz
 !cikti/a10_hakem.json
 !cikti/a10_1_temiz_yatak.json
 !cikti/a10_1_hakem.json
+!cikti/a11_kol0.json
+!cikti/a11_kol1.json
+!cikti/a11_kol2.json
+!cikti/a11_kol3.json
 
 # sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
 data/sim/*/kareler/
