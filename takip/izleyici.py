@@ -122,7 +122,11 @@ class HedefTakip:
                  kimlik_hareket_kapisi=0.003, kimlik_min_kenar=10.0,
                  zemin_orani=0.0008, zemin_pencere=20, zemin_sabir=20,
                  zemin_dogrulama=True,
-                 yasak_kare=30):
+                 yasak_kare=30, hakem=None):
+        # A10 HAKEM ARAYUZU (tek eklenti). hakem=None iken davranis BIREBIR
+        # eskisi gibidir; esdegerlik testiyle sinanir. Hakem, guncelle()
+        # sonunda cagrilir ve durumu/boyutu degistirebilir - kapali cevrim.
+        self.hakem = hakem
         self.ego = EgoMotion()
         self.tespit = HareketTespit()
         self.cekirdek = CEKIRDEKLER[cekirdek]() if isinstance(cekirdek, str) else cekirdek
@@ -233,7 +237,9 @@ class HedefTakip:
         c, b = self.kf.konum, self.boyut
         return np.array([c[0] - b[0] / 2, c[1] - b[1] / 2, b[0], b[1]], np.float32)
 
-    def guncelle(self, bgr):
+    def guncelle(self, bgr, gt=None):
+        # gt YALNIZCA hakemin oracle kollari icindir (ust sinir olcumu);
+        # H0-H3'te None gecer ve hicbir yerde kullanilmaz.
         t_bas = time.perf_counter()
         gri = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
         H, W = gri.shape
@@ -242,6 +248,11 @@ class HedefTakip:
 
         t0 = time.perf_counter()
         M, ego_guven = self.ego.guncelle(gri, self.kutu if self.durum == KILITLI else None)
+        # Ego'nun olctugu donme cekirdege de verilir: korelasyon filtresi
+        # donme-degismez degildir ve bu bilgi bugune kadar yalnizca Kalman
+        # tarafinda kullaniliyordu. Kullanmayan cekirdekler icin no-op
+        # (`cekirdekler._Cekirdek.ego_guncelle`).
+        self.cekirdek.ego_guncelle(M)
         s["ego"] = (time.perf_counter() - t0) * 1e3
 
         # zemine cakilma testi icin: onceki kutu merkezinin ego ile ONGORULEN
@@ -286,6 +297,8 @@ class HedefTakip:
             self.kf.x[2:] = 0.0
 
         self._boyut_sinirla()
+        if self.hakem is not None:
+            self.hakem.adim(self, bgr, gt)      # A10: dedektor -> hakem -> takipci
         self.tespit.kare_ekle(gri, M)
         self._onceki_merkez = self.kf.konum.copy()
         s["toplam"] = (time.perf_counter() - t_bas) * 1e3

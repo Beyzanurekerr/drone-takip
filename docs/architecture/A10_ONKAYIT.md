@@ -326,3 +326,62 @@ Yeni dizinin rolü (kopan/sağlam) **seçimden sonra** ölçülür ve H0 kolunda
 raporlanır; seçimi etkilemedi.
 
 **Taban bu haliyle DONDU.** A10 boyunca dizi/seviye eklenmeyecek, çıkarılmayacak.
+
+---
+
+# EK-2 — §3.1 Mod A kuralının SÜRÜM 2'si (koşumdan önce, sonuç görülmeden)
+
+**Tarih:** 2026-09-03 · **Hiçbir A10 ölçümü koşulmadan yazıldı.** Sürüm 1
+silinmedi; §3.1'deki tablo olduğu gibi duruyor.
+
+## Neden değişti
+
+Sürüm 1: *"ölçüm kaybı (`kayip > 0`) **veya** P konum izi artışı → LOST"*.
+
+Bu kural, **kodun kendi tanımıyla çelişiyor**. `izleyici.py`'de `kayip`, PSR
+eşiğinin altında kalan **her** karede artar ve tek bir zayıf kare bile onu 1
+yapar; takipçinin kendi kuralı ise ARAMA'ya ancak `kayip > coast_kare` (**8**)
+olunca geçer. `kayip > 0`'da LOST ilan etmek, geçici bir PSR düşüşünü
+kopuş saymak ve her seferinde recovery tetiklemek demektir — K6'yı ölçmeden
+önce ihlal ederdi.
+
+**Bu gerekçe hiçbir A10 sonucuna dayanmıyor**; `izleyici.py:coast_kare`
+sabitinin okunmasından geliyor.
+
+## Sürüm 2 kuralı
+
+| gözlem | karar | dayanağı |
+|---|---|---|
+| `tak.durum ∈ {ARAMA, KAYIP}` | **LOST** | takipçinin **kendi** ölçüm-kaybı eşiği (`kayip > coast_kare = 8`) zaten aşılmış |
+| `iz(P[:2,:2]) > 8.0` | **LOST** | `Kalman.__init__` başlangıç kovaryansı `diag(4,4)` → iz 8.0 (mevcut sabit). A9 Aşama 2'nin yayımlanmış dağılımı: sağlam **p95 = 4.17**, Mod A **p50 = 245.9** — eşik sağlam p95'in üstünde, Mod A medyanının 30 kat altında |
+| `kayip > 0` | **SUSPECT** (LOST değil) | tek zayıf ölçüm onay için yeterli değil, ama kopuş kanıtı da değil |
+| aday yok | **durum değişmez** | sürüm 1 ile aynı |
+| `min d_norm ≤ 1.0` | **ONAY** | sürüm 1 ile aynı |
+| `min d_norm > 1.0` | **SUSPECT** | sürüm 1 ile aynı (k = 1) |
+
+## Ek: recovery denemesi hangi sıklıkta
+
+Sürüm 1 bunu tanımsız bırakmıştı. **Recovery denemeleri de N = 10 kadansında
+yapılır** — yeni sabit üretmemek için, doğrulayıcıyla aynı ve tek ön-kayıtlı
+kadans. Maliyet böylece üst sınırdan bağlanır.
+
+## Ek: "son güvenilir kare" tanımı
+
+Recovery referansı = **hakemin son ONAY verdiği karedeki takipçi merkezi ve
+boyutu**. GT değildir; operasyoneldir. (Oracle kollar bunun yerine GT kullanır
+ve **ÜST SINIR** etiketlidir.)
+
+---
+
+# EK-3 — Model kolu (koşumdan önce, sonuç görülmeden)
+
+Sürüm 1 hangi dedektör ağırlığının kullanılacağını yazmamıştı. **A5_baseline**
+kullanılacak; `A6_uavdt_visdrone` A10'da koşulmayacak.
+
+**Gerekçe (yayımlanmış A9 ölçümü, A10 sonucu değil):** 3.3 §7 ölçtü — A6 bu
+görevde kör: sağlam hücrelerde 130 doğrulama noktasının yalnızca **6**'sında
+kanıt var, dört Mod B hücresinde 44 noktanın **3**'ünde. Kör bir dedektörle
+kapalı çevrim kurmak, hakemi ölçmek yerine körlüğü ölçmek olurdu.
+
+Bu bir **kapsam** kararıdır; A6'nın A10 altında nasıl davranacağı **ölçülmemiş**
+kalır ve öyle raporlanır.
