@@ -1,0 +1,55 @@
+{
+  "senaryo": "G2_agresif",
+  "aile": "G2",
+  "siddet": "agresif",
+  "beklenen": "arka plan tepe 14.8 px/kare",
+  "etiketler": [
+    "kamera",
+    "oteleme",
+    "eksen-y"
+  ],
+  "aciklama": "Kamera yanal oteleme: 40 m/s genlik, 0.50 Hz",
+  "amac": "Yanal oteleme yatay otelemeden farkli mi kopariyor?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 14.5,
+    "rtf": 1.0008152241794435,
+    "poz_ornegi": {
+      "hedef": 820,
+      "celdirici": 820,
+      "drone": 820
+    },
+    "cmd_vel_mesaj": 820,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

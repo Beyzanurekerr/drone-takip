@@ -25,6 +25,8 @@ from kaynak import KaynakHatasi, kaynak_olustur
 from takip.izleyici import ARAMA, KAYIP, KILITLI, SUPHELI, HedefTakip
 
 ISINMA = 6          # hareket tespiti icin gecmis gerekiyor (ilk kareler bos doner)
+DRIFT_ESIK = 0.3    # bu IoU'nun altinda "kopmus" sayilir
+DRIFT_SABIR = 5     # ust uste bu kadar kare -> gercek kopma (tek kare gurultu degil)
 PENCERE_KUTUSU = (960, 540)     # baslangic penceresi bu kutuya sigar
 
 
@@ -353,6 +355,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     gecikmeler = []                 # tum kareler: p50 / p95 icin
     olcum = []                      # GT varsa kare kare: iou, merkez hata, durum
     kayip_basi, kurtarmalar = None, []
+    # DRIFT KARESI (A3.9): IoU'nun ilk kez SUREKLI olarak esigin altina
+    # dustugu kare. Tek karelik gurultu kopma sayilmasin diye sabir sayaci
+    # var; "kesinti" sayisindan farkli olarak yalnizca ILK kopmayi verir ve
+    # kamera hareketi siddetiyle iliskilendirilecek olan budur.
+    t_drift, _drift_sayac = None, 0
     bekleme = max(1, int(1000.0 / kaynak.fps)) if kaynak.fps > 0 else 1
     hedef_id = getattr(kaynak, "track_id", None)   # VisDrone track; yoksa None
 
@@ -391,6 +398,12 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                 sonuc["merkez_hata"] = float(np.hypot(
                     tk[0] + tk[2] / 2 - (gt[0] + gt[2] / 2),
                     tk[1] + tk[3] / 2 - (gt[1] + gt[3] / 2)))
+                if sonuc["iou"] < DRIFT_ESIK:
+                    _drift_sayac += 1
+                    if _drift_sayac >= DRIFT_SABIR and t_drift is None:
+                        t_drift = kare.indeks - DRIFT_SABIR + 1
+                else:
+                    _drift_sayac = 0
                 kilit = sonuc["durum"] == KILITLI and sonuc["iou"] > 0.2
                 if not kilit and kayip_basi is None:
                     kayip_basi = kare.indeks
@@ -458,6 +471,7 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
             "merkez_hata": float(np.median(mh)),
             "hassasiyet": float((mh < np.maximum(4.0, 0.5 * kos)).mean()),
             "kilit_orani": float(np.mean([r["durum"] == KILITLI for r in olcum])),
+            "t_drift": t_drift,
             "hedef_kayip": float(np.mean([r["durum"] != KILITLI for r in olcum])),
             "kesinti": len(kurtarmalar),
             "kurtarma_ort": float(np.mean(kurtarmalar)) if kurtarmalar else 0.0,
@@ -528,6 +542,9 @@ def main():
               f"(hedef kayip {m['hedef_kayip']:.1%})")
         print(f"  kurtarma    : {m['kesinti']} kesinti, "
               f"ort {m['kurtarma_ort']:.0f} kare, max {m['kurtarma_max']} kare")
+        print(f"  drift karesi: "
+              f"{'yok' if m['t_drift'] is None else m['t_drift']}"
+              f"  (IoU<{DRIFT_ESIK} x {DRIFT_SABIR} kare)")
         print(f"  hedef boyut : {m['gt_boyut'][0]:.1f} x {m['gt_boyut'][1]:.1f} px")
     if a.kaydet:
         print(f"  kayit       : {a.kaydet}")

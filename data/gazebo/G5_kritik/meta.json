@@ -1,0 +1,55 @@
+{
+  "senaryo": "G5_kritik",
+  "aile": "G5",
+  "siddet": "kritik",
+  "beklenen": "bileske tepe ~36.7 px/kare",
+  "etiketler": [
+    "kamera",
+    "capraz",
+    "lissajous"
+  ],
+  "aciklama": "Capraz (Lissajous) kamera otelemesi: 70 m/s/eksen, fx=0.70 Hz, fy=1.40 Hz",
+  "amac": "Yonu surekli degisen eksen-hizasiz kamera hareketi nerede kopariyor?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 14.2,
+    "rtf": 1.0000602436387158,
+    "poz_ornegi": {
+      "hedef": 838,
+      "celdirici": 838,
+      "drone": 838
+    },
+    "cmd_vel_mesaj": 838,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

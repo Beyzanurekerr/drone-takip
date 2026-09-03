@@ -1,0 +1,55 @@
+{
+  "senaryo": "G6_yumusak",
+  "aile": "G6",
+  "siddet": "yumusak",
+  "beklenen": "kamera ~5.2 px/kare + hedef ~0.7 px/kare",
+  "etiketler": [
+    "kamera",
+    "hedef",
+    "birlesik"
+  ],
+  "aciklama": "Capraz kamera (10 m/s) + hedef manevrasi (yaw 0.25 rad/s, hiz +-2.0 m/s)",
+  "amac": "Kamera ve hedef hareketi ayni anda oldugunda esik nereye kayiyor?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 13.2,
+    "rtf": 1.000067204526897,
+    "poz_ornegi": {
+      "hedef": 836,
+      "celdirici": 836,
+      "drone": 836
+    },
+    "cmd_vel_mesaj": 1664,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "senaryo": "G6_agresif_durakli_celdiricisiz",
+  "aile": "G6",
+  "siddet": "agresif (duraklamali)",
+  "beklenen": "kamera ~16.8 px/kare + hedef ~1.9 px/kare",
+  "etiketler": [
+    "kamera",
+    "hedef",
+    "birlesik",
+    "4P",
+    "celdiricisiz"
+  ],
+  "aciklama": "Capraz kamera (32 m/s) + hedef manevrasi (yaw 0.60 rad/s, hiz +-5.0 m/s) | CELDIRICI YOK (Deney 4P nedensellik testi)",
+  "amac": "4O'daki DCF cekim noktasi kaymasi celdiriciden mi geliyor? Tek degisken: celdirici arac sahneden cikarildi.",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    }
+  ],
+  "kayit": {
+    "sure_s": 13.2,
+    "rtf": 0.7673289453160177,
+    "poz_ornegi": {
+      "hedef": 830,
+      "drone": 830
+    },
+    "cmd_vel_mesaj": 1658,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

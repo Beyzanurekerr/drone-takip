@@ -1,0 +1,107 @@
+{
+ "G6_agresif_durakli": {
+  "ad": "G6_agresif_durakli",
+  "n_kilitli": 258,
+  "epizot": [
+   {
+    "bas": 151,
+    "son": 293,
+    "yk_kare": 115,
+    "aralik": 143,
+    "psr_med": 78.17789999637169,
+    "benzerlik_med": 1.0,
+    "hareketli_oran": 0.951048951048951,
+    "red_icinde": 3,
+    "uzerinde": {
+     "zemin": 115
+    },
+    "hedef_hiz_med": 3.581291364197318,
+    "hedef_hiz_min": 0.0031953233940115863,
+    "hiz_onceki30_med": 7.669221752096929,
+    "hiz_baslangic": [
+     6.39,
+     6.14,
+     5.89,
+     5.63,
+     5.37,
+     5.11,
+     4.86,
+     4.62,
+     4.35,
+     4.1,
+     3.84
+    ]
+   }
+  ],
+  "hiz_ozet": {
+   "med": 4.636381811811691,
+   "min": 0.0031953233940115863,
+   "maks": 9.799114336593467,
+   "durma_karesi": 52
+  }
+ },
+ "305/5": {
+  "ad": "305/5",
+  "n_kilitli": 117,
+  "epizot": [
+   {
+    "bas": 173,
+    "son": 183,
+    "yk_kare": 11,
+    "aralik": 11,
+    "psr_med": 99.0,
+    "benzerlik_med": 1.0,
+    "hareketli_oran": 1.0,
+    "red_icinde": 0
+   }
+  ]
+ },
+ "137/12": {
+  "ad": "137/12",
+  "n_kilitli": 209,
+  "epizot": [
+   {
+    "bas": 226,
+    "son": 226,
+    "yk_kare": 1,
+    "aralik": 1,
+    "psr_med": 99.0,
+    "benzerlik_med": 1.0,
+    "hareketli_oran": 1.0,
+    "red_icinde": 0
+   }
+  ]
+ },
+ "182/127": {
+  "ad": "182/127",
+  "n_kilitli": 103,
+  "epizot": [
+   {
+    "bas": 120,
+    "son": 249,
+    "yk_kare": 63,
+    "aralik": 130,
+    "psr_med": 7.817459349275116,
+    "benzerlik_med": 1.0,
+    "hareketli_oran": 1.0,
+    "red_icinde": 1
+   }
+  ]
+ },
+ "339/49": {
+  "ad": "339/49",
+  "n_kilitli": 198,
+  "epizot": [
+   {
+    "bas": 100,
+    "son": 274,
+    "yk_kare": 117,
+    "aralik": 175,
+    "psr_med": 51.94699278925645,
+    "benzerlik_med": 1.0,
+    "hareketli_oran": 1.0,
+    "red_icinde": 3
+   }
+  ]
+ }
+}

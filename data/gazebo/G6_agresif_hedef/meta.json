@@ -1,0 +1,55 @@
+{
+  "senaryo": "G6_agresif_hedef",
+  "aile": "G6",
+  "siddet": "agresif (hedef-tek)",
+  "beklenen": "kamera 0 px/kare + hedef manevrasi",
+  "etiketler": [
+    "kamera",
+    "hedef",
+    "birlesik"
+  ],
+  "aciklama": "Bozulmasiz kamera + G6_agresif hedef manevrasi",
+  "amac": "G6'daki kopmanin hedef payini kamera payindan ayir",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 14.2,
+    "rtf": 1.000600360312245,
+    "poz_ornegi": {
+      "hedef": 833,
+      "celdirici": 833,
+      "drone": 833
+    },
+    "cmd_vel_mesaj": 832,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

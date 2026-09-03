@@ -1,0 +1,55 @@
+{
+  "senaryo": "G1_kritik",
+  "aile": "G1",
+  "siddet": "kritik",
+  "beklenen": "arka plan tepe 29.6 px/kare",
+  "etiketler": [
+    "kamera",
+    "oteleme",
+    "eksen-x"
+  ],
+  "aciklama": "Kamera ileri-geri oteleme: 80 m/s genlik, 0.70 Hz",
+  "amac": "Saf yatay oteleme kac px/kare'de takipciyi koparir?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 13.2,
+    "rtf": 1.0002736749212464,
+    "poz_ornegi": {
+      "hedef": 837,
+      "celdirici": 837,
+      "drone": 837
+    },
+    "cmd_vel_mesaj": 837,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

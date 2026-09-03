@@ -249,9 +249,10 @@ class KameraKaynak(Kaynak):
 
 
 # ----------------------------------------------------------------------------
-TURLER = ("sim", "video", "camera", "visdrone")
+TURLER = ("sim", "video", "camera", "visdrone", "gazebo")
 KAMERA_ADLARI = ("camera", "kamera", "webcam")
 VISDRONE_VARSAYILAN = "data/datasets/visdrone_vid"
+GAZEBO_VARSAYILAN = "data/gazebo"
 VIDEO_UZANTILARI = (".mp4", ".avi", ".mov", ".mkv", ".m4v", ".webm", ".mpg",
                     ".mpeg", ".wmv")
 
@@ -270,6 +271,8 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
         "data/videos/a.mp4"         -> DOGRUDAN DOSYA YOLU
         "visdrone"                  -> VisDrone VID dizisi (veri_kok, dizi,
                                        track_id, olcek parametreleriyle)
+        "gazebo:G0"                 -> Gazebo kontrollu senaryo kaydi
+                                       (veri_kok = kayit koku, dizi = senaryo)
 
     Yeni bir kaynak tipi (dataset adapter'i vb.) eklemek icin buraya bir dal
     eklemek yeterlidir; cagiran taraf degismez.
@@ -286,6 +289,11 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
         return VisDroneVidKaynak(veri_kok or VISDRONE_VARSAYILAN,
                                  dizi=dizi or (arg or None), track_id=track_id,
                                  olcek=olcek, hedef_genislik=hedef_genislik)
+    if on == "gazebo":
+        from veri.gazebo import GazeboKaynak            # ancak gerekince yukle
+        return GazeboKaynak(veri_kok or GAZEBO_VARSAYILAN,
+                            senaryo=dizi or (arg or None),
+                            olcek=olcek, hedef_genislik=hedef_genislik)
     if on in KAMERA_ADLARI and arg:
         try:
             return KameraKaynak(int(arg))

@@ -1,0 +1,198 @@
+{
+ "182/127": {
+  "ad": "182/127",
+  "t_drift": 39,
+  "kilit_boyut": [
+   12.0,
+   11.0
+  ],
+  "kilit_gt": [
+   19.285715103149414,
+   15.714285850524902
+  ],
+  "gt_oran_min": [
+   0.9629629080187659,
+   1.0
+  ],
+  "gt_oran_maks": [
+   2.3703703264150127,
+   2.681818123888379
+  ],
+  "s1": {
+   "kare": 334,
+   "ihlal_mevcut": 4,
+   "ihlal_capa": 145,
+   "ilk_ihlal_capa": 196,
+   "maks_kirpma": 99.04683380126953,
+   "ihlal_capa_drift_oncesi": 0
+  },
+  "s2_sadakat_maks_sapma_px": 3.2380635857975903e-05,
+  "s2_mevcut": {
+   "son_oran_w": 2.8824635870695343,
+   "son_oran_h": 2.751808547062742,
+   "drift_oran_w": 0.5268636576579445,
+   "drift_oran_h": 0.5591538450234482,
+   "maks_oran_w": 0.6488344249503823,
+   "maks_oran_h": 0.7047118626516343,
+   "ort_mutlak_log": 0.4408307608399662,
+   "kirpma_kare": 4
+  },
+  "s2_capa": {
+   "son_oran_w": 0.5192726912569433,
+   "son_oran_h": 0.443728819297258,
+   "drift_oran_w": 0.5268636576579445,
+   "drift_oran_h": 0.5591538450234482,
+   "maks_oran_w": 0.6488344249503823,
+   "maks_oran_h": 0.7047118626516343,
+   "ort_mutlak_log": 0.4408307608399662,
+   "kirpma_kare": 113
+  }
+ },
+ "305/5": {
+  "ad": "305/5",
+  "t_drift": 110,
+  "kilit_boyut": [
+   23.0,
+   81.0
+  ],
+  "kilit_gt": [
+   24.201683044433594,
+   47.394962310791016
+  ],
+  "gt_oran_min": [
+   0.9791666600991185,
+   0.30851063701349896
+  ],
+  "gt_oran_maks": [
+   2.5624999408920663,
+   1.2021276039182875
+  ],
+  "s1": {
+   "kare": 140,
+   "ihlal_mevcut": 0,
+   "ihlal_capa": 40,
+   "ilk_ihlal_capa": 90,
+   "maks_kirpma": 13.048422241210936,
+   "ihlal_capa_drift_oncesi": 20
+  },
+  "s2_sadakat_maks_sapma_px": 5.843305215432579,
+  "s2_mevcut": {
+   "son_oran_w": 0.6722520025897245,
+   "son_oran_h": 2.3454198547193905,
+   "drift_oran_w": 1.4627014892333843,
+   "drift_oran_h": 2.6753384682747106,
+   "maks_oran_w": 1.9514660689387664,
+   "maks_oran_h": 2.6753384682747106,
+   "ort_mutlak_log": 0.17372800309493425,
+   "kirpma_kare": 0
+  },
+  "s2_capa": {
+   "son_oran_w": 0.6685200566836121,
+   "son_oran_h": 2.3454198547193905,
+   "drift_oran_w": 1.2918170054044278,
+   "drift_oran_h": 2.6753384682747106,
+   "maks_oran_w": 1.463176018133976,
+   "maks_oran_h": 2.6753384682747106,
+   "ort_mutlak_log": 0.15462044017869112,
+   "kirpma_kare": 10
+  }
+ },
+ "G6_agresif": {
+  "ad": "G6_agresif",
+  "t_drift": 294,
+  "kilit_boyut": [
+   57.0,
+   39.0
+  ],
+  "kilit_gt": [
+   58.99360656738281,
+   32.829856872558594
+  ],
+  "gt_oran_min": [
+   0.8967359464901629,
+   0.6672971073011742
+  ],
+  "gt_oran_maks": [
+   1.0408591241281826,
+   1.241680077618912
+  ],
+  "s1": {
+   "kare": 293,
+   "ihlal_mevcut": 0,
+   "ihlal_capa": 46,
+   "ilk_ihlal_capa": 254,
+   "maks_kirpma": 22.96163330078126,
+   "ihlal_capa_drift_oncesi": 41
+  },
+  "s2_sadakat_maks_sapma_px": 1.5699074531028145e-05,
+  "s2_mevcut": {
+   "son_oran_w": 1.9588376121325202,
+   "son_oran_h": 2.1915035342332243,
+   "drift_oran_w": 1.8800473785028136,
+   "drift_oran_h": 1.8446159571102279,
+   "maks_oran_w": 2.100461472030242,
+   "maks_oran_h": 1.9399961619030623,
+   "ort_mutlak_log": 0.14511037534262253,
+   "kirpma_kare": 0
+  },
+  "s2_capa": {
+   "son_oran_w": 1.6349181156436965,
+   "son_oran_h": 2.1915035342332243,
+   "drift_oran_w": 1.5691568807668712,
+   "drift_oran_h": 1.8446159571102279,
+   "maks_oran_w": 1.6980804525727116,
+   "maks_oran_h": 1.9399961619030623,
+   "ort_mutlak_log": 0.13296389751275656,
+   "kirpma_kare": 8
+  }
+ },
+ "G6_agresif_durakli": {
+  "ad": "G6_agresif_durakli",
+  "t_drift": 148,
+  "kilit_boyut": [
+   57.0,
+   32.0
+  ],
+  "kilit_gt": [
+   58.70771789550781,
+   32.829856872558594
+  ],
+  "gt_oran_min": [
+   0.9008006302324983,
+   0.6700842420826967
+  ],
+  "gt_oran_maks": [
+   1.0529607905872667,
+   1.2601627905625628
+  ],
+  "s1": {
+   "kare": 293,
+   "ihlal_mevcut": 0,
+   "ihlal_capa": 0,
+   "ilk_ihlal_capa": null,
+   "maks_kirpma": 0.0,
+   "ihlal_capa_drift_oncesi": 0
+  },
+  "s2_sadakat_maks_sapma_px": 1.9647641686049155e-05,
+  "s2_mevcut": {
+   "son_oran_w": 1.282460268466531,
+   "son_oran_h": 1.7971308554203338,
+   "drift_oran_w": 1.0595290037119696,
+   "drift_oran_h": 1.3733354754457605,
+   "maks_oran_w": 1.2221078419684683,
+   "maks_oran_h": 1.4258003805827795,
+   "ort_mutlak_log": 0.08317986963361894,
+   "kirpma_kare": 0
+  },
+  "s2_capa": {
+   "son_oran_w": 1.282460268466531,
+   "son_oran_h": 1.7971308554203338,
+   "drift_oran_w": 1.0595290037119696,
+   "drift_oran_h": 1.3733354754457605,
+   "maks_oran_w": 1.2221078419684683,
+   "maks_oran_h": 1.4258003805827795,
+   "ort_mutlak_log": 0.08317986963361894,
+   "kirpma_kare": 0
+  }
+ }
+}

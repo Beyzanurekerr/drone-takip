@@ -1,0 +1,63 @@
+{
+  "senaryo": "A5_kucul_yaw",
+  "aile": "A11",
+  "siddet": "",
+  "beklenen": "hedef 60 -> 8 px, aci genligi 30 derece",
+  "etiketler": [
+    "kucultme",
+    "yaw",
+    "celdirici"
+  ],
+  "aciklama": "Irtifa rampasi 38.3 -> 287.5 m VE yaw +-30 derece",
+  "amac": "Iki kanal birlikte: kucultme ve donme etkilesiyor mu?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 600,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 47.6,
+    "rtf": 0.10185857044423333,
+    "poz_ornegi": {
+      "hedef": 1617,
+      "celdirici": 1617,
+      "celdirici2": 1617,
+      "drone": 1617
+    },
+    "cmd_vel_mesaj": 1617,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

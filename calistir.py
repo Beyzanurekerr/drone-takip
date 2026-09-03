@@ -61,6 +61,11 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None, canli=False):
     kurtarmalar = []
     kayip_basi = None
     sureler = []
+    # DRIFT KARESI ve GECIKME YUZDELIKLERI (A3.9 Faz C olcumu icin eklendi).
+    # Tanim main.py'dekiyle BIREBIR ayni tutuldu (DRIFT_ESIK 0.3, DRIFT_SABIR 5);
+    # sim ile Gazebo sayilari ayni sutunda okunabilsin diye. Yalnizca RAPOR
+    # ureten toplamsal alanlar - kosum davranisi degismedi.
+    t_drift, _drift_sayac = None, 0
 
     for k in range(sen.kare):
         sen.kamera_fn(sahne, k, sen.dt)
@@ -118,6 +123,14 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None, canli=False):
         if uzerinde >= 0:
             onceki_uzerinde = uzerinde
 
+        if gorunur and np.isfinite(o):
+            if o < 0.3:
+                _drift_sayac += 1
+                if _drift_sayac >= 5 and t_drift is None:
+                    t_drift = k - 5 + 1
+            else:
+                _drift_sayac = 0
+
         # kurtarma suresi: kilit koptuktan sonra kac karede geri geldi
         kilit = sonuc["durum"] == KILITLI and (not gorunur or o > 0.2)
         if not kilit and kayip_basi is None:
@@ -168,6 +181,9 @@ def kos(sen, video=None, isinma=6, sessiz=False, yap_takipci=None, canli=False):
         "kesinti": len(kurtarmalar),
         "fps": float(1000.0 / np.mean(sureler)) if sureler else 0.0,
         "ms_kare": float(np.mean(sureler)) if sureler else 0.0,
+        "gecikme_p50": float(np.percentile(sureler, 50)) if sureler else 0.0,
+        "gecikme_p95": float(np.percentile(sureler, 95)) if sureler else 0.0,
+        "t_drift": t_drift,
     }
     m["_kayit"] = kayit
     if not sessiz:
