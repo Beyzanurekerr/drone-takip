@@ -10,3 +10,49 @@ data/datasets/*
 
 # teshis ciktisi (telemetri csv + 4K debug kareleri)
 debug/
+
+# Gazebo kayitlari: kare PNG'leri ve zemin dokusu buyuk ve yeniden uretilebilir
+# (gazebo/kaydet.py). meta.json + pozlar.csv kalir: kayit kunyesi ve GT kaynagi.
+data/gazebo/*/kareler/
+data/gazebo/*/zemin.png
+data/gazebo/*/gz.log
+
+# Zemin dokusu onbellegi: seed'li ve gazebo/dunya_uret.py ile yeniden uretilir
+data/gazebo/_doku/
+
+# Kare kare teshis dokumleri: ham iz kayitlari, buyuk ve gazebo/tani_*.py ile
+# yeniden uretilebilir. Karar/ozet tablolari ASAGIDA acikca haric tutuldu.
+cikti/*.json
+cikti/*.npz
+# --- kalici: raporlarin dogrudan dayandigi karar ve ozet tablolari ---
+!cikti/fazb_tani.json
+!cikti/visdrone_envanter.json
+!cikti/yanliskilit.json
+!cikti/yk_envanter.json
+!cikti/yk_epizot.json
+!cikti/konjonksiyon_4q.json
+!cikti/konjonksiyon_4q_drift.json
+!cikti/a5_yolo_integration.json
+!cikti/a5_kucuk_hedef.json
+!cikti/capa_4s.json
+!cikti/ayirtedici_4t.json
+!cikti/yeni_olcum_envanteri.json
+!cikti/boyut_kapisi_4u.json
+!cikti/4u_A.json
+!cikti/a10_taban_secim.json
+!cikti/a10_hakem.json
+!cikti/a10_1_temiz_yatak.json
+!cikti/a10_1_hakem.json
+
+# sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
+data/sim/*/kareler/
+
+# A5 - YOLO agirliklari (ikili, depoya girmez)
+weights/
+
+# A6 - uretilmis egitim havuzlari (kaynaktan yeniden uretilebilir)
+data/a6/
+!data/a6/manifest/
+
+# A6 - egitim ciktilari
+runs/
