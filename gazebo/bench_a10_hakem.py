@@ -56,6 +56,7 @@ DIZILER = [("uav0000117_02622_v", 23, "KOPAN"), ("uav0000268_05773_v", 31, "KOPA
 ARTEFAKT = {"uav0000339_00001_v/49", "uav0000305_00000_v/5", "uav0000182_00000_v/127"}
 DOGRU_IOU, YANLIS_IOU, MIN_EPIZOT, STABIL = 0.5, 0.2, 5, 5
 MODEL_AD = "A5_baseline"                     # ON-KAYIT EK-3
+CIKTI_YOL = "cikti/a10_hakem.json"           # A10.1 sarmalayicisi override eder
 
 KOLLAR = {
     "H0": dict(dogrulayici=False),
@@ -234,7 +235,7 @@ def main():
 
     cikti["md5_bitis"] = md5ler()
     cikti["md5_degismedi"] = cikti["md5_baslangic"] == cikti["md5_bitis"]
-    yol = os.path.join(ROOT, "cikti", "a10_hakem.json")
+    yol = os.path.join(ROOT, CIKTI_YOL)
     json.dump(cikti, open(yol, "w"), indent=2, ensure_ascii=False)
     print("\nyazildi:", yol)
 

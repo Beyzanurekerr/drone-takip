@@ -39,13 +39,42 @@ class Hakem:
     G_KAPISI = 1.0
     K = 1
     MAX_HIZ = 35.0            # izleyici.Kalman.MAX_HIZ
-    P_IZ_ESIK = 8.0           # Kalman baslangic kovaryansi izi (diag(4,4))
     CAPA_AGIRLIK = 0.25       # izleyici._boyut_tazele: 0.75*eski + 0.25*yeni
 
-    def __init__(self, dedektor, roi_kurali, dogrulayici=True, boyut_capasi=False,
+    # --- D2: HISTEREZIS (A10.1) -------------------------------------------
+    # A10'da tek esik 8.0'di ve bu, hakemin KENDI eyleminin yazdigi degerdi:
+    # LOST -> ARAMA -> _arama_adimi -> Kalman.ata -> P[:2,:2]=diag(4,4) -> iz
+    # TAM 8.0 -> sonraki tahmin adimi esigi asar -> yeniden LOST. Kendi kendini
+    # besleyen cevrim. Artik giris ve cikis esikleri AYRI ve IKISI DE 8.0'dan
+    # uzak; ikisi de A9 Asama 2'nin YAYIMLANMIS acik cevrim dagilimindan gelir
+    # (hakem yokken olculdu, dolayisiyla hicbir eylemin yazdigi deger degil):
+    #     saglam        p95 =  14.86     -> CIKIS
+    #     Mod B         p95 =  29.52
+    #     kopus oncesi  p95 =  54.08     -> GIRIS
+    #     Mod A         p50 = 243.52
+    #     (sifirlama degeri 8.00: GIRIS'in 6.8 KATI ALTINDA -> Kalman.ata'dan
+    #      sonra esik kendiliginden asilamaz; A10'un kendi kendini besleyen
+    #      cevrimi boylece imkansiz. A9'un kirli-yatak sayilari (saglam p95
+    #      4.17, Mod B p95 11.97) artefaktliydi ve KULLANILMADI - D1'e bak.)
+    MOD_A_GIRIS = 54.08
+    MOD_A_CIKIS = 14.86
+    P_SIFIRLAMA = 8.0         # Kalman.ata'nin yazdigi iz - ESIK OLARAK KULLANILMAZ
+
+    # --- D3: DOGRULAYICI ROI = A8 §13 (merdiven + KAPSAMA TABANI) ----------
+    MERDIVEN = [640, 320, 160, 80]
+    NET_HEDEF = 75.0          # A8: hedefin ag girdisindeki ideal px boyu
+    AG_W = 640                # A8: aga verilen kare genisligi
+    BANT = (55.0, 110.0)      # A8 §15: operasyonel bant
+    KAPSAMA_K = 2.0           # A8 §13: k ~ 2 (p95 karsiligi)
+    KAPSAMA_EN_BOY = 32.0 / 9.0   # A8 §13: 16:9 -> dikey dar
+
+    def __init__(self, dedektor, roi_kurali=None, dogrulayici=True, boyut_capasi=False,
                  recovery=False, oracle_merkez=False, oracle_boyut=False, N=None):
         """dedektor(bgr, merkez, R) -> (kutular, guvenler, ms)
-        roi_kurali(L_sensor) -> R  (A8'in adaptif merdiveni)"""
+
+        roi_kurali: A10'da A8.R_sec idi; A10.1/D3'ten sonra dogrulama ROI'si
+        `R_dogrulama` (A8 §13, kapsama tabani dahil) ile secilir ve bu
+        parametre KULLANILMAZ. Geriye donuk uyum icin duruyor."""
         self.dedektor, self.roi_kurali = dedektor, roi_kurali
         self.dogrulayici = dogrulayici
         self.boyut_capasi = boyut_capasi
@@ -74,6 +103,10 @@ class Hakem:
         self.recovery_cekimser = 0
         self.recovery_tohum = 0
         self.dogrulama_kosmadi_kare = 0   # SUSPECT'te tutuldugu icin _bagimsiz_dogrula kosmayan kare
+        self._mod_a_aktif = False         # D2 histerezis mandali
+        self._kendi_itti = False          # ARAMA'yi hakem mi yazdi (D2 kurali)
+        self._son_R = None                # A8 §13 adim 1: son guvenilir R
+        self.kanit_var = 0                # D3 birincil metrik: kanit_yok orani icin
 
     # ------------------------------------------------------------------
     @staticmethod
@@ -89,6 +122,32 @@ class Hakem:
     def R_recovery(gecen_kare):
         """Deney 3.0'in gerekli-yaricap p95 tablosundan; 3.2'de de bu kullanildi."""
         return 160 if gecen_kare <= 5 else (320 if gecen_kare <= 20 else 640)
+
+    def R_dogrulama(self, tak):
+        """A8 §13'un adaptif secim kurali - KAPSAMA TABANI dahil (D3).
+
+        1. GUVEN KAPISI : durum != KILITLI ya da PSR dusukse L_est'e guvenme;
+                          son guvenilir R korunur ve bir basamak BUYUTULUR.
+        2. BUYUTME      : R_buyutme = L_est * 640 / 75
+        3. KAPSAMA      : R_kapsama = (32/9) * (k*u + L_est/2),  u = sqrt(iz P)
+        4. SECIM        : ag_px = L_est*640/R bandi [55,110] icinde OLAN ve
+                          R >= R_kapsama olan EN KUCUK basamak; yoksa en buyuk.
+        A10'da yalnizca A8.R_sec (adim 2) kullaniliyordu; kapsama tabani yoktu.
+        """
+        L = float(np.max(tak.boyut))
+        u = float(np.sqrt(max(np.trace(tak.kf.P[:2, :2]), 0.0)))
+        guvenilir = (tak.durum == KILITLI and tak.psr >= tak.psr_kilit)
+        if not guvenilir and self._son_R is not None:
+            i = self.MERDIVEN.index(self._son_R)
+            return self.MERDIVEN[max(0, i - 1)]        # bir basamak BUYUT
+        R_kapsama = self.KAPSAMA_EN_BOY * (self.KAPSAMA_K * u + L / 2.0)
+        uygun = [R for R in sorted(self.MERDIVEN)
+                 if self.BANT[0] <= L * self.AG_W / float(R) <= self.BANT[1]
+                 and R >= R_kapsama]
+        R = uygun[0] if uygun else self.MERDIVEN[0]
+        if guvenilir:
+            self._son_R = R
+        return R
 
     def _sec(self, kutular, ref_merkez, ref_wh, dt):
         """Kapi + argmin d_norm. Gecen yoksa CEKIMSER (None)."""
@@ -115,16 +174,25 @@ class Hakem:
         kayit = {"t": t, "karar": None, "min_d": None, "kanit": None,
                  "durum_takipci": tak.durum}
 
-        # ---------- Mod A (EK-2 surum 2) ----------
+        # ---------- Mod A: HISTEREZIS (D2) ----------
         p_iz = float(np.trace(tak.kf.P[:2, :2])) if tak.kf is not None else 0.0
         kayit["p_iz"] = round(p_iz, 3)
-        mod_a = (tak.durum in (ARAMA, KAYIP)) or (p_iz > self.P_IZ_ESIK)
 
         if not self.dogrulayici:
             self.log.append(kayit)
             return kayit                        # H0: hakem hic karismaz
 
-        if mod_a:
+        # Cikis once degerlendirilir: iz CIKIS esiginin altina inince mandal duser.
+        if self._mod_a_aktif and p_iz < self.MOD_A_CIKIS:
+            self._mod_a_aktif = False
+        # Takipcinin KENDI arama durumu Mod A kanitidir; ama ARAMA'yi HAKEM
+        # yazdiysa kanit degildir (kendi eyleminin ciktisini olcut yapmak,
+        # KALICI_KISITLAR.md'deki yasagin ta kendisi).
+        takipci_aramada = (tak.durum in (ARAMA, KAYIP)) and not self._kendi_itti
+        yeni_giris = (not self._mod_a_aktif) and (p_iz > self.MOD_A_GIRIS
+                                                  or takipci_aramada)
+        if yeni_giris:
+            self._mod_a_aktif = True
             self.onay = False
             kayit["karar"] = LOST
             self.lost_sayisi += 1
@@ -132,6 +200,12 @@ class Hakem:
                 tak.durum = ARAMA
                 tak.kayip = tak.coast_kare + 1
                 tak.kf.x[2:] = 0.0
+                self._kendi_itti = True
+        elif self._mod_a_aktif:
+            self.onay = False
+            kayit["karar"] = LOST                # mandal acik; YENI itme YOK
+        if tak.durum not in (ARAMA, KAYIP):
+            self._kendi_itti = False
         elif tak.kayip > 0:
             self.onay = False
             kayit["karar"] = SUSPECT
@@ -144,9 +218,12 @@ class Hakem:
                       if (self.oracle_merkez and gt is not None) else tak.kf.konum)
             wh = (np.asarray(gt[2:], float)
                   if (self.oracle_merkez and gt is not None) else np.asarray(tak.boyut, float))
-            R = self.roi_kurali(float(np.max(tak.boyut)))
+            R = self.R_dogrulama(tak)           # D3: A8 §13 + kapsama tabani
+            kayit["R"] = R
             kutular = self._dedektor(bgr, merkez, R)
             kayit["kanit"] = len(kutular)
+            if len(kutular):
+                self.kanit_var += 1
             if not len(kutular):
                 self.kanit_yok += 1             # ON-KAYIT: durum DEGISMEZ
             else:
@@ -158,6 +235,7 @@ class Hakem:
                     self.suspect_sayisi += 1
                 else:
                     self.onay = True
+                    self._mod_a_aktif = False   # bagimsiz kanit mandali dusurur
                     kayit["karar"] = ONAY
                     self.onay_sayisi += 1
                     self.son_guvenilir = (t, tak.kf.konum.copy(),
