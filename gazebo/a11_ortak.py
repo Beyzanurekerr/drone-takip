@@ -31,6 +31,8 @@ if ROOT not in sys.path:
 
 from veri.gazebo import GazeboKaynak, izdusur, kuaterniyon_matris  # noqa: E402
 
+import csv as _csv
+
 AG = (640, 360)          # A8'in aga verilen kare boyutu - DEGISMEDI
 YANLIS_IOU, DOGRU_IOU, MIN_EPIZOT = 0.2, 0.5, 5
 
@@ -175,3 +177,98 @@ def mod_etiketle(iz, kopus_idx):
     kabul = sum(1 for x in sonrasi if x["durum_takipci"] == "KILITLI")
     oran = kabul / len(sonrasi)
     return ("B" if oran >= 0.8 else "A"), round(oran, 4)
+
+
+# --------------------------------------------------------------------------
+# IMU - KOL 1 (docs/architecture/A11_ONKAYIT.md EK-2)
+# --------------------------------------------------------------------------
+def imu_oku(yol):
+    """imu.csv -> t sirali kayit listesi (t,wx,wy,wz,ax,ay,az,qw,qx,qy,qz)."""
+    with open(yol) as f:
+        r = list(_csv.DictReader(f))
+    return [{k: float(v) for k, v in row.items()} for row in r]
+
+
+def imu_en_yakin(t, imu_satirlar):
+    """En yakin ornek (200 Hz IMU vs 30 Hz kare - enterpolasyon YOK)."""
+    return min(imu_satirlar, key=lambda r: abs(r["t"] - t))
+
+
+IMU_IZGARA_YARICAP = 0.35   # W,H'nin bu oraninda 3x3 ornekleme izgarasi
+
+
+def _izgara(W, H):
+    xs = [0.5 - IMU_IZGARA_YARICAP, 0.5, 0.5 + IMU_IZGARA_YARICAP]
+    ys = [0.5 - IMU_IZGARA_YARICAP, 0.5, 0.5 + IMU_IZGARA_YARICAP]
+    return [np.array([x * W, y * H]) for y in ys for x in xs]
+
+
+def imu_M(R0, R1, C, W, H, fx, fy, cx, cy):
+    """EK-2 mekanigi: ROTASYON-ONLY M. Kamera konumu C SABIT (oteleme YOK).
+
+    3x3 izgara zemine dusurulup (C,R0) -> geri izdusurulur (C,R1); gorsel
+    EgoMotion ile AYNI model sinifina (benzerlik donusumu) fit edilir.
+    Basarisiz olursa (yetersiz gecerli nokta) BIRIM M doner.
+    """
+    src, dst = [], []
+    for x_ref in _izgara(W, H):
+        P = _unproject_zemin(x_ref, C, R0, fx, fy, cx, cy)
+        if P is None:
+            continue
+        uv, onde = izdusur([P], C, R1, fx, fy, cx, cy)
+        if not onde[0]:
+            continue
+        src.append(x_ref)
+        dst.append(uv[0])
+    if len(src) < 3:
+        return np.array([[1, 0, 0], [0, 1, 0]], np.float32), 0.0
+    src_a = np.asarray(src, np.float32).reshape(-1, 1, 2)
+    dst_a = np.asarray(dst, np.float32).reshape(-1, 1, 2)
+    M, inl = cv2.estimateAffinePartial2D(src_a, dst_a, method=cv2.RANSAC)
+    if M is None:
+        return np.array([[1, 0, 0], [0, 1, 0]], np.float32), 0.0
+    oran = float(inl.sum()) / len(src) if inl is not None else 1.0
+    return M.astype(np.float32), oran
+
+
+class ImuEgo:
+    """EgoMotion ile AYNI arayuz: guncelle(gri, hedef_kutu=None) -> (M, guven).
+
+    gri KULLANILMAZ - gorsel akis KAPALI (EK-2). IMU + pozlar.csv'den YALNIZCA
+    frame 0'da kalibrasyon icin okunur (R_kam_sabit, C_sabit); sonrasi
+    saf IMU'dur.
+    """
+
+    def __init__(self, imu_satirlar, pozlar, W, H, fx, fy, cx, cy):
+        self.imu = imu_satirlar
+        self.pozlar = pozlar
+        self.W, self.H = W, H
+        self.fx, self.fy, self.cx, self.cy = fx, fy, cx, cy
+        self._k = 0
+        p0 = pozlar[0]
+        s0 = imu_en_yakin(p0["t"], imu_satirlar)
+        R_govde0 = kuaterniyon_matris(s0["qw"], s0["qx"], s0["qy"], s0["qz"])
+        R_cam0 = kuaterniyon_matris(p0["kam_qw"], p0["kam_qx"], p0["kam_qy"], p0["kam_qz"])
+        self.R_kam_sabit = R_govde0.T @ R_cam0      # TEK SEFERLIK kalibrasyon
+        self.C_sabit = np.array([p0["kam_x"], p0["kam_y"], p0["kam_z"]])
+        self._R_onceki = R_govde0 @ self.R_kam_sabit
+
+    def guncelle(self, gri, hedef_kutu=None):
+        self._k += 1
+        p = self.pozlar[self._k]
+        s = imu_en_yakin(p["t"], self.imu)
+        R_govde = kuaterniyon_matris(s["qw"], s["qx"], s["qy"], s["qz"])
+        R_cam = R_govde @ self.R_kam_sabit
+        M, guven = imu_M(self._R_onceki, R_cam, self.C_sabit,
+                         self.W, self.H, self.fx, self.fy, self.cx, self.cy)
+        self._R_onceki = R_cam
+        self.M, self.guven = M, guven
+        return M, guven
+
+    @property
+    def olcek_katsayisi(self):
+        """EgoMotion.olcek_katsayisi ile AYNI arayuz (izleyici.py bunu okur).
+        M rotasyon-only (EK-2) oldugu icin ~1.0 civarinda kalmasi beklenir;
+        yine de fit edilen benzerlik donusumunden GERCEK deger okunur,
+        varsayimla DOLDURULMAZ."""
+        return float(np.sqrt(abs(np.linalg.det(self.M[:, :2]))))

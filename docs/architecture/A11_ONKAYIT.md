@@ -210,3 +210,54 @@ hiçbir ortak özelliği yok.
 "kanıtsız"); bu beş kol arasındaki TEK ayrım kanalı Mod A histerezisidir.
 Bu, koşumdan ÖNCE yazılan bir beklentidir; sonuç bunu doğrularsa "harness
 bozuk" değil "dedektör transfer olmuyor" diye okunacaktır.
+
+---
+
+# EK-2 — KOL 1 tasarım kararı: IMU ego'nun kapsamı (KOL 1 koşulmadan önce)
+
+**Eklendiği tarih:** 2026-09-03 · **KOL 1 ölçümü koşulmadan önce yazıldı.**
+İki hızlı doğrulama koşumuyla (A3_yaw, ~300 kare) bulundu; hiçbir eşik veya
+kabul ölçütü bu bulguya göre değiştirilmedi.
+
+**Bulgu 1 — IMU `orientation` alanının MUTLAK değeri gerçek kamera
+yöneliminden sapıyor** (Frobenius farkı ~0.09–0.19, sabit değil, A3'ün kendi
+yaw salınımıyla aynı periyotta osile ediyor — muhtemelen gz-sim IMU
+eklentisinin kendi entegrasyon referansıyla ilgili bir yapaylık).
+
+**Bulgu 2 — KARE-KARE BAĞIL rotasyon (`R(t-1)⁻¹·R(t)`) gerçeğe YAKIN**
+(açı farkı tipik olarak <0.5°). Mutlak sapma kare-kare farkta büyük ölçüde
+iptal oluyor.
+
+## Tasarım kararı
+
+**M_imu YALNIZCA ROTASYONU telafi eder; ÖTELENME (ileri uçuş, irtifa
+değişimi) KASITLI OLARAK SIFIRDIR.**
+
+**Gerekçe:** İvmeölçerden öteleme çıkarmak çift integrasyon gerektirir ve
+sürüklenmesi bilinen bir IMU sınırıdır (denenmedi — kapsam dışı bırakıldı,
+"sonuca göre" değil, fiziksel bir kısıt olarak). Bu, projenin kendi
+A3.9 Faz B bulgusuyla ("koparan tek kanal DONME... kamera ötelemesi 80 m/s'ye
+kadar koparmıyor") doğrudan hizalı bir kapsam daraltmasıdır — test edilen tam
+olarak IMU'nun İYİ olabileceği kanaldır.
+
+**Mekanik:**
+1. `R_kam_sabit`, HER senaryo için **bir kez**, **frame 0**'da kalibre edilir:
+   `R_kam_sabit = R_govde_imu(t0)⁻¹ · R_kamera_gercek(t0)`. Bu, gerçek bir
+   dronda kamera-IMU dış kalibrasyonunun (mount offset) tek seferlik
+   ölçümüne karşılık gelir — **çalışma zamanında** GT kullanılmaz.
+2. Kamera konumu **frame 0'ın gerçek konumunda SABİTLENİR** (`C_sabit`) —
+   ötelenme dışlandığı için bu bir yer tutucudur, her karede GT'ye
+   bakılmaz.
+3. Her kare geçişinde: `R_govde_imu(t)` IMU'nun **en yakın örneğinden**
+   okunur (200 Hz, kare 30 Hz — enterpolasyon yok, en yakın örnek).
+   `R_cam_imu(t) = R_govde_imu(t) · R_kam_sabit`.
+4. 3×3 örnekleme ızgarası, `(C_sabit, R_cam_imu(t-1))` ile zemine
+   düşürülüp `(C_sabit, R_cam_imu(t))` ile geri izdüşürülür — **görsel
+   EgoMotion'ın kendi uydurduğu model** olan **benzerlik dönüşümüne**
+   (`cv2.estimateAffinePartial2D`, RANSAC) fit edilir. Adil karşılaştırma
+   için görsel ego ile AYNI dönüşüm sınıfı kullanılır (tam 6-DOF afin değil).
+
+**Bu, KOL 1'in bir ÜST SINIR olmadığını doğrular** (ön-kayıt §3): IMU
+ötelemeyi hiç görmediği için karışık (öteleme+dönme) senaryolarda
+(A1, A2, A4) **beklenen sonuç görsel egodan BELİRGİN kötü**dür — bu
+beklenti, sonuçlara bakılmadan burada yazılmıştır.
