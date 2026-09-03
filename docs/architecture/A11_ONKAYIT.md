@@ -261,3 +261,49 @@ olarak IMU'nun İYİ olabileceği kanaldır.
 ötelemeyi hiç görmediği için karışık (öteleme+dönme) senaryolarda
 (A1, A2, A4) **beklenen sonuç görsel egodan BELİRGİN kötü**dür — bu
 beklenti, sonuçlara bakılmadan burada yazılmıştır.
+
+---
+
+# EK-3 — KOL 3 kontrol yasası ve kapsamı (KOL 3 koşulmadan önce)
+
+**Eklendiği tarih:** 2026-09-03 · **KOL 3 koşulmadan önce yazıldı.**
+
+## Kontrol yasası (yeni sabit uydurulmadı)
+
+```
+takipçinin KENDİ tahmini  L_est = max(tak.boyut)   (px, GT DEĞİL)
+her poz örneğinde (Surucu.tik):
+    (vx,vy,vz_taban,wx,wy,wz) = A2_kucul'un DEĞİŞMEMİŞ kam_profil(t)
+    if L_est is not None and L_est < 25:            # ön-kayıt §5 eşiği
+        vz = -vz_taban                              # YÖNÜ TERSİNE ÇEVİR
+    else:
+        vz = vz_taban                                # BAZ profil aynen
+    yayınla (vx, vy, vz, wx, wy, wz)
+```
+
+`vz_taban`'ın **büyüklüğü** aynen korunuyor, yalnızca **yönü** ters
+çevriliyor — yeni bir iniş hızı sabiti **uydurulmadı**, A2'nin kendi
+rampasının hızı kullanıldı. Dünya, senaryonun **A2_kucul** dünyasıdır
+(`gazebo/senaryolar.py:A2_kucul`); tek fark, `kam_profil`'in bir
+**kapalı çevrim sarmalayıcıyla** değiştirilmesidir — SDF/araç/zemin
+**değişmedi**.
+
+## Kapsam daralması (KOL 0/1/2 bulgularına dayanarak, gerekçeli)
+
+**Hakem KULLANILMAZ.** Gerekçe: KOL 0 dedektörün Gazebo'da **%100 kör**
+olduğunu ölçtü; hakemin doğrulama/çapa/recovery bileşenleri zaten inert.
+Geriye kalan tek bileşen (Mod A histerezisi) KOL 3'ün sorusuyla
+(irtifa kontrol yasası) karışırdı ve ayrı bir değişken eklerdi. KOL 3
+**saf takipçi** (H0/KOL1/KOL2 ile aynı kapsam) üzerinde ölçülür.
+Ön-kayıt §5'in *"hakem LOST ilan etmez"* ifadesi bu yüzden **KOL 3'te
+tanımsız/uygulanamaz** hale geldi — hakem hiç yok. Bu, K1–K6'nın hâlâ
+geçerli olduğu KOL 1'den **farklı bir kapsamdır**: KOL 3 kabul ölçütüne
+zaten tabi değildi (ön-kayıt §6), o yüzden bu daralma kabul mekanizmasını
+etkilemiyor.
+
+## Karşılaştırma kolu
+
+**3a (kontrol):** A2_kucul'un **değişmemiş** profili (yaklaşma yok) —
+zaten `cikti/a11_kol0.json`'da H0 olarak ölçülü; burada **yeniden
+koşulmuyor**, o sonuçlara referans verilir.
+**3b (deney):** yukarıdaki kapalı çevrim.
