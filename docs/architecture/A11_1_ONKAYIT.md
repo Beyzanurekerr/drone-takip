@@ -94,36 +94,40 @@ tabana **60 texel (~4.7 m) feather (yumuşak alfa)** ile karışır. Prosedürel
 taban (mevcut, doğrulanmış, LK köşe kaynağı olarak zaten çalışıyor) sınırın
 dışında ve yüksek irtifada devam eder.
 
-**Bilinçli kapsam sınırı:** yama 150×69 m kaplıyor. A1/A3/A4/A6 ve A2/A5'in
-düşük-orta irtifa kareleri tamamen gerçek dokuda kalır (kamera 38.3 m'de
-~49 m, A4'ün en yüksek noktası 108.3 m'de ~106 m görür — hâlâ yama içinde).
-A2/A5'in rampanın ÜST UCUNDA (287.5 m, ~369 m görüş) kamera yamanın dışına
-taşar ve prosedürel dokuyu görür — bu ölçülüp raporlanacak, gizlenmeyecek.
-Doku önizlemesinde (tam tuval, gz sim render değil) yama merkezinin HEMEN
-dışında prosedürel bina/ağaç kalabalığı yamayla keskince kontrast oluşturuyor
-(feather bandının genişliği bunu tam gizlemiyor) — çünkü prosedürel
-bina/ağaç üretimi de aynı `TEXEL_PM=12.8` ile tuvalin merkezine yakın bir
-bantta yoğunlaşıyor, tam yamanın oturduğu yerde. Bu sınır A1_taban'ın normal
-görüş alanının (kamera hedefe kilitli, ~49 m, yamanın çekirdeğinde) çok
-dışında kalıyor; gz sim'in gerçekten render ettiği tek-kare smoke testte
-(bkz. Durum) bu kalabalık kadrajda GÖRÜNMEDİ. Yüksek irtifa karelerinde
-(A2/A5 rampasının üst ucu) görünmesi beklenir — ölçülüp raporlanacak.
+**TEXEL_PM DÜZELTİLDİ (2026-09-04, kullanıcı talimatı — "yan bulgu değil, Y1'in
+özü").** `gazebo/dunya_uret.py:_zemin_dokusu_ham` artık `texel_pm`/
+`icerik_zemin_m` parametreleri alıyor; verilmezse (A1-A11 arşivinin TÜM
+çağrıları) davranış birebir eskisi gibi kalıyor (md5 doğrulandı, DEĞİŞMEDİ).
+Y1 (`zemin_dokusu_hibrit`, `dunya_yaz`) artık `zemin_m=sen.zemin_m` (560)
+üzerinden **fiili** `n/zemin_m=7.31 texel/m`'i hem prosedürel tabana HEM
+yamanın kendi yerleşimine geçiriyor — ikisi artık AYNI (doğru) ölçekte.
+Sonuç: yama'nın gerçek dünya kapsamı **150×69 m değil, 262.6×120.4 m**
+(1920×880 px / 7.31 texel/m) — önceki ölçüm yanlış ölçekle hesaplanmıştı.
+Ayrıca bu düzeltme olmadan yamanın KENDİSİ de dünyada yanlış konumda
+render olurdu (istenen x=16 m yerine fiilen ~x=28 m'de çıkardı) — yani bu
+yalnızca "doku ne kadar kalın görünüyor" meselesi değil, doğrudan konum
+hatasıydı. **A9-A11 arşivine DOKUNULMADI** (`texel_pm`/`icerik_zemin_m`
+verilmezse eski davranış), **bu yüzden Y1 sonuçları A11 ile DOĞRUDAN
+KARŞILAŞTIRILAMAZ** (A11'in tüm ölçümleri hâlâ eski/tutarsız ölçekte).
 
-**TEXEL_PM tutarsızlığı (yeni gözlem, DÜZELTİLMEDİ — kapsam dışı):**
-`gazebo/dunya_uret.py`'deki `TEXEL_PM = DOKU_PX/ZEMIN_M` MODÜL sabitidir
-(2048/160=12.8), `zemin_dokusu()` içindeki içerik yerleşimi (yol, bina, ağaç)
-bunu kullanır — ama SDF'teki `<box><size>{zemin_m}...` A11 ailesinde
-`sen.zemin_m=560` yazıyor. Yani içerik "12.8 texel/m" varsayımıyla
-YERLEŞTİRİLİYOR, Gazebo ise dokuyu fiilen 4096/560=7.31 texel/m yoğunlukta
-GÖSTERİYOR — içerik göründüğünden ~1.75× daha küçük ölçekte render oluyor
-(9 m'lik yol fiilen ~15.8 m genişlikte görünür). Bu, A1-A11'in TÜM önceki
-prosedürel koşumlarında da vardı (benim değişikliğim DEĞİL); mevcut A11
-bulgularının hiçbiri bu ölçek farkına bağlı değildi (görece karşılaştırmalar
-hep aynı tabanla yapıldı) ama mutlak metre iddiaları (`px_kare` tablolarındaki
-metre-cinsi büyüklükler) bundan etkilenmiş olabilir. Y1'in kendi yama
-yerleşimi de AYNI (12.8) kuralı kullanır — tutarlı ama "doğru" değil.
-Düzeltmek A11'in TÜM sonuçlarını yeniden ölçmeyi gerektirir; Y1'in kapsamı
-DIŞINDA bırakıldı, yalnızca not düşülüyor.
+`gazebo/dunya_uret.py:yama_dunya_sinirlari()` / `inpaint_dunya_bolgesi()`
+bu doğru ölçekle dünya-metre AABB'leri hesaplıyor (Y2 (2) talebindeki
+"inpaint konumu" ve "yama_ici" bayrağı bunları kullanıyor).
+
+**Kapsam ölçüldü (talimat maddesi 2 — "gizleme"):** 6 senaryo × ilgili kare
+sayısı = 2400 kare kaydedildi; `yama_ici_mi()` (kamera görüş alanının
+köşegen yarıçapı, feather bandı HARİÇ saf gerçek piksel sınırına göre)
+**1128/2400 (%47) yama-içi, 1272/2400 (%53) taşma** çıktı — A2/A5'in irtifa
+rampasının büyük kısmı (kamera görüş alanı yamadan büyüdüğü andan itibaren)
+taşıyor. Kapı ölçümü ve DCF zaman serisi YALNIZ yama-içi karelerden
+hesaplandı (`gazebo/tani_a11_1_y1.py`, `gazebo/tani_a11_1_dcf_kayma.py`).
+
+**`meta.json`'daki `zemin_m` alanı hâlâ 160.0 yazıyor** (`gazebo/kaydet.py:458`
+`ZEMIN_M` modül sabitini yazıyor, `sen.zemin_m`'i DEĞİL) — GT hesaplamasını
+ETKİLEMİYOR (`veri/gazebo.py` yalnızca araç `L/W/H` okuyor, `zemin_m`'i hiç
+kullanmıyor), yalnızca metadata alanı yanlış. Pre-existing, Y1 kapsamı
+dışında, yalnızca not (bu turda düzeltilmedi — kaydet.py'ye dokunmak ayrı
+bir onay ister).
 
 **`meta.json`'daki `zemin_m` alanı da hep 160.0 yazıyor** (`gazebo/kaydet.py:458`
 `ZEMIN_M` modül sabitini yazıyor, `sen.zemin_m`'i DEĞİL) — GT hesaplamasını
@@ -138,21 +142,81 @@ aynı kinematik (kamera profili, araç hızları, çeldirici yerleşimi), TEK fa
 (`data/gazebo/Y1_*`) — arşivlenmiş A1-A6 kompozit sonuçları ÜZERİNE YAZILMADI.
 `Y1_A1_taban(kare=500)` → `Y1_A1_taban_500k`, DCF-kayma raporu için.
 
+### İki model + ROI protokolü (talimat ekleri)
+`gazebo/y1_ortak.py`: **COCO** (`weights/yolov8n.pt`, sınıf [2,3,5,7]) ve
+**A6** (`runs/a6/asamaB/weights/best.pt`, sınıf [0,1,2,3] — UAVDT→VisDrone
+fine-tune, `A6_KUCUK_HEDEF_FINAL_BENCHMARK.md`'deki nihai ağırlık) ayrı ayrı
+ölçülüyor. Protokol A6 raporuyla AYNI: `conf=0.25, imgsz=640`,
+`recall@IoU>=0.5`. **ROI 4×:** `gazebo/a11_ortak.py:roi_tespit_g` (A7/A8 ile
+BİREBİR kırp→büyüt→YOLO→geri-dönüştür geometrisi), `R=160` — A7'nin
+1280px'lik VisDrone sensör tuvalindeki "roi320" (4×) katmanının bizim 640px'lik
+Gazebo karemize ORANSAL karşılığı (`R = 640 × 320/1280 = 160`). ROI merkezi
+**GT'den** alınıyor (izleyicinin Kalman öngörüsünden DEĞİL) — Y1 kapısı
+dedektör+ROI'nin KENDİ yeteneğini ölçüyor, izleyici zincirinin robustluğunu
+değil; bu kısıt bilinçli ve Y2'nin konusu.
+
+### Inpaint edilen aracın konumu (talimat maddesi — KOL 2 için)
+`gazebo/dunya_uret.py:INPAINT_PIKSEL_KUTUSU` + `inpaint_dunya_bolgesi()`:
+dünya koordinatlarında **x∈[36.6, 57.1] m, y∈[22.1, 44.0] m** (A11 doğru
+ölçekle). KOL 2'nin hareket biriktirmesi bu bölgede statik bir "hayalet"
+bulursa kaynağı budur (inpaint kalıntısı, gerçek nesne değil).
+
 ---
 
-## Durum (2026-09-04)
+## Durum (2026-09-04) — Y1 KAPISI ÖLÇÜLDÜ: **KALDI**
 
-**Tamamlanan:** mesh+doku altyapısı yazıldı, 6 senaryo + 500-kare varyantı
-SDF üretimi hatasız (`dunya_yaz` tüm 7 çağrıda başarılı), mevcut A1-A6
-prosedürel dokusu BİREBİR aynı kaldı (md5 doğrulandı — regresyon yok).
-`Y1_A1_taban` 5 karelik gz sim smoke testi koşuldu (düşen kare 0, RTF 0.96):
-mesh doğru yönde, düz zeminde, gerçek dokunun üzerinde net görünüyor; GT
-`meta.json`'da hedefin L/W/H'si doğru (4.0011/2.1405/1.5679).
+6 senaryo (300-600 kare × 6 = 2400 kare, 0 düşen kare) + 500 karelik DCF
+varyantı kaydedildi (`data/gazebo/Y1_*`). Ölçüm: `gazebo/tani_a11_1_y1.py`
+→ `cikti/a11_1_y1_kapi.json`, `gazebo/tani_a11_1_dcf_kayma.py` →
+`cikti/a11_1_dcf_kayma_500k.json`.
 
-**YAPILMADI (Y1 kapısı henüz ÖLÇÜLMEDİ):**
-- 6 senaryonun tam kaydı (300-600 kare × 6).
-- Dedektör tam kare recall (40 px) + ROI recall (20 px) ölçümü.
-- `Y1_A1_taban_500k` renk_dcf IoU zaman serisi (doku-kayması hâlâ var mı?).
+**Kapsam:** 2400 karenin 1128'i (%47) yama-içi, 1272'si (%53) taşma (A2/A5
+irtifa rampasının üst kısmı). Kapı + DCF ölçümü yalnız yama-içi karelerden.
 
-Kapı ölçülüp GEÇMEDEN Y2/Y3'e geçilmeyecek (talimat: "Geçmezse DUR, hiçbir
-kol koşma").
+**Dedektör kapısı (@40px±5 tam-kare, @20px±5 ROI-4×, eşik ≥0.80):**
+
+| Model | tam-kare @40px (n) | ROI-4× @20px (n) | Kapı |
+|---|---:|---:|---|
+| COCO | **0.000** (n=101) | ölçülemedi (n=0) | **KALDI** |
+| A6 | 0.693 (n=101) | ölçülemedi (n=0) | **KALDI** |
+
+- **COCO tam kör** — gerçekçi mesh'e ve gerçek dokuya rağmen 40px bandında
+  0/101 doğru tespit. A11 KOL0'ın "COCO Gazebo'da tamamen kör" bulgusunu
+  DOĞRULUYOR — bu sefer kutu değil gerçekçi mesh'le bile.
+- **A6 40px'te 0.693 — eşiğin altında ama yakın.** Geniş kova tablosunda
+  A6: 60px kovası (n=958) tam-kare 0.880/ROI 0.884; 40px kovası (n=149)
+  tam-kare 0.711/ROI 0.913; 30px kovası (n=21) tam-kare 0.762/ROI 1.000.
+  **ROI 4× büyütme A6'da tutarlı biçimde kazandırıyor** (A7/A8 bulgusuyla
+  aynı yönde).
+- **20px ROI kapısı hiç ÖLÇÜLEMEDİ (n=0) — "kaldı" değil "veri yok".**
+  Yama (gerçek doku) hedefin 20px'e küçüldüğü irtifaya (~115 m) kadar
+  uzanmıyor; kamera o irtifada yamanın çoktan dışına taşmış oluyor. Bu,
+  yama boyutunun (düzeltilmiş ölçekte bile) A2/A5'in tam irtifa aralığını
+  kapsamadığının doğrudan kanıtı — kapsam sınırı sadece teorik değil,
+  ölçülebilir bir veri boşluğu yarattı.
+
+**renk_dcf doku-kayması — Y1_A1_taban_500k (tamamı yama-içi, 500/500 kare):**
+Kapalı çevrim (hakem=None, saf DCF, A11 KOL0'ın H0'ıyla aynı protokol).
+**Kayma VAR ve HIZLI:** ilk "KİLİTLİ ama IoU<0.2" karesi **t=8** (frame 8,
+~0.27 saniye). IoU zaten t=4'te 0.20'ye, t=8'de 0.12'ye düşüyor. Kilitli
+kareler arasında yanlış-kilit oranı **%45.9** (84/183); dizi sonunda durum
+KAYIP'a düşüyor. Görsel doğrulama (kare 8, `/tmp/dcf_kare_8.png` mantığıyla
+üretildi — kalıcı dosya değil, tekrar üretmek için `tani_a11_1_dcf_kayma.py`
+sonrası elle kare çekilebilir): takipçinin kutusu (kırmızı) aracın (yeşil GT)
+üstünden geçen **şerit çizgisi boyunca dikey olarak şişiyor** — DCF gerçek
+görüntüdeki şerit çizgisine (yüksek kontrastlı statik çizgi) kilitleniyor,
+tıpkı A11'in prosedürel dokuda bulduğu mekanizmanın AYNISI. **Sonuç: doku-
+kayması Gazebo'nun prosedürel dokusuna özgü bir zaaf DEĞİL — gerçek VisDrone
+görüntüsünde de, hatta DAHA HIZLI ortaya çıkıyor.**
+
+**HÜKÜM: Y1 kapısı KALDI.** Talimat gereği Y2/Y3 KOŞULMADI, DUR.
+
+**Kapıyı geçmek için olası sonraki adaylar (SINANMADI, öneri):**
+1. A6 modelini 40px'te 0.80'e çıkarmak (0.693'ten farkı küçük — eşik/NMS
+   ayarı veya ek fine-tune denenebilir).
+2. Yamayı büyütmek (daha geniş bir VisDrone karesi/mozaik — bu sefer
+   TEXEL_PM doğru olduğu için mozaikleme daha az repetitif olur) ki A2/A5
+   20px'e inene kadar yama-içi kalsın, ROI kapısı gerçekten ölçülebilsin.
+3. renk_dcf'in şerit-çizgisi tipi doku-kaymasına karşı sertleştirilmesi
+   (A11'in "sıradaki adaylar" listesindeki "DCF-doku-kaymasını önlemek"
+   maddesiyle AYNI, artık gerçek görüntüyle de doğrulanmış durumda).

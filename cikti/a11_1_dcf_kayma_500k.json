@@ -1,0 +1,3505 @@
+{
+  "senaryo": "Y1_A1_taban_500k",
+  "kare_sayisi": 500,
+  "tamami_yama_ici": true,
+  "yama_ici_kare": 500,
+  "ilk_kopus_karesi": 8,
+  "kilitli_ve_yanlis_orani": 0.459,
+  "kilitli_toplam": 183,
+  "kilitli_ve_yanlis": 84,
+  "iou_zaman_serisi": [
+    {
+      "t": 1,
+      "iou": 0.3307,
+      "durum": "KILITLI",
+      "psr": 134.022,
+      "yama_ici": true
+    },
+    {
+      "t": 2,
+      "iou": 0.3272,
+      "durum": "KILITLI",
+      "psr": 73.636,
+      "yama_ici": true
+    },
+    {
+      "t": 3,
+      "iou": 0.3255,
+      "durum": "KILITLI",
+      "psr": 75.336,
+      "yama_ici": true
+    },
+    {
+      "t": 4,
+      "iou": 0.2023,
+      "durum": "KILITLI",
+      "psr": 64.299,
+      "yama_ici": true
+    },
+    {
+      "t": 5,
+      "iou": 0.2084,
+      "durum": "KILITLI",
+      "psr": 21.413,
+      "yama_ici": true
+    },
+    {
+      "t": 6,
+      "iou": 0.2116,
+      "durum": "KILITLI",
+      "psr": 26.811,
+      "yama_ici": true
+    },
+    {
+      "t": 7,
+      "iou": 0.213,
+      "durum": "KILITLI",
+      "psr": 32.717,
+      "yama_ici": true
+    },
+    {
+      "t": 8,
+      "iou": 0.1199,
+      "durum": "KILITLI",
+      "psr": 38.308,
+      "yama_ici": true
+    },
+    {
+      "t": 9,
+      "iou": 0.1199,
+      "durum": "KILITLI",
+      "psr": 15.472,
+      "yama_ici": true
+    },
+    {
+      "t": 10,
+      "iou": 0.1199,
+      "durum": "KILITLI",
+      "psr": 12.273,
+      "yama_ici": true
+    },
+    {
+      "t": 11,
+      "iou": 0.12,
+      "durum": "KILITLI",
+      "psr": 16.069,
+      "yama_ici": true
+    },
+    {
+      "t": 12,
+      "iou": 0.1607,
+      "durum": "KILITLI",
+      "psr": 21.928,
+      "yama_ici": true
+    },
+    {
+      "t": 13,
+      "iou": 0.1609,
+      "durum": "KILITLI",
+      "psr": 24.414,
+      "yama_ici": true
+    },
+    {
+      "t": 14,
+      "iou": 0.161,
+      "durum": "KILITLI",
+      "psr": 25.406,
+      "yama_ici": true
+    },
+    {
+      "t": 15,
+      "iou": 0.1612,
+      "durum": "KILITLI",
+      "psr": 24.667,
+      "yama_ici": true
+    },
+    {
+      "t": 16,
+      "iou": 0.2117,
+      "durum": "KILITLI",
+      "psr": 23.778,
+      "yama_ici": true
+    },
+    {
+      "t": 17,
+      "iou": 0.2119,
+      "durum": "KILITLI",
+      "psr": 34.196,
+      "yama_ici": true
+    },
+    {
+      "t": 18,
+      "iou": 0.212,
+      "durum": "KILITLI",
+      "psr": 38.175,
+      "yama_ici": true
+    },
+    {
+      "t": 19,
+      "iou": 0.2122,
+      "durum": "KILITLI",
+      "psr": 35.554,
+      "yama_ici": true
+    },
+    {
+      "t": 20,
+      "iou": 0.2714,
+      "durum": "KILITLI",
+      "psr": 35.619,
+      "yama_ici": true
+    },
+    {
+      "t": 21,
+      "iou": 0.2719,
+      "durum": "KILITLI",
+      "psr": 38.247,
+      "yama_ici": true
+    },
+    {
+      "t": 22,
+      "iou": 0.2724,
+      "durum": "KILITLI",
+      "psr": 37.942,
+      "yama_ici": true
+    },
+    {
+      "t": 23,
+      "iou": 0.2729,
+      "durum": "KILITLI",
+      "psr": 46.33,
+      "yama_ici": true
+    },
+    {
+      "t": 24,
+      "iou": 0.3409,
+      "durum": "KILITLI",
+      "psr": 50.761,
+      "yama_ici": true
+    },
+    {
+      "t": 25,
+      "iou": 0.3414,
+      "durum": "KILITLI",
+      "psr": 52.25,
+      "yama_ici": true
+    },
+    {
+      "t": 26,
+      "iou": 0.3407,
+      "durum": "KILITLI",
+      "psr": 62.606,
+      "yama_ici": true
+    },
+    {
+      "t": 27,
+      "iou": 0.3405,
+      "durum": "KILITLI",
+      "psr": 68.035,
+      "yama_ici": true
+    },
+    {
+      "t": 28,
+      "iou": 0.415,
+      "durum": "KILITLI",
+      "psr": 72.756,
+      "yama_ici": true
+    },
+    {
+      "t": 29,
+      "iou": 0.4129,
+      "durum": "KILITLI",
+      "psr": 51.324,
+      "yama_ici": true
+    },
+    {
+      "t": 30,
+      "iou": 0.4109,
+      "durum": "KILITLI",
+      "psr": 65.689,
+      "yama_ici": true
+    },
+    {
+      "t": 31,
+      "iou": 0.4096,
+      "durum": "KILITLI",
+      "psr": 74.589,
+      "yama_ici": true
+    },
+    {
+      "t": 32,
+      "iou": 0.4857,
+      "durum": "KILITLI",
+      "psr": 69.193,
+      "yama_ici": true
+    },
+    {
+      "t": 33,
+      "iou": 0.4821,
+      "durum": "KILITLI",
+      "psr": 61.562,
+      "yama_ici": true
+    },
+    {
+      "t": 34,
+      "iou": 0.4799,
+      "durum": "KILITLI",
+      "psr": 72.232,
+      "yama_ici": true
+    },
+    {
+      "t": 35,
+      "iou": 0.4779,
+      "durum": "KILITLI",
+      "psr": 73.68,
+      "yama_ici": true
+    },
+    {
+      "t": 36,
+      "iou": 0.557,
+      "durum": "KILITLI",
+      "psr": 92.322,
+      "yama_ici": true
+    },
+    {
+      "t": 37,
+      "iou": 0.5545,
+      "durum": "KILITLI",
+      "psr": 72.509,
+      "yama_ici": true
+    },
+    {
+      "t": 38,
+      "iou": 0.5529,
+      "durum": "KILITLI",
+      "psr": 80.03,
+      "yama_ici": true
+    },
+    {
+      "t": 39,
+      "iou": 0.5523,
+      "durum": "KILITLI",
+      "psr": 81.651,
+      "yama_ici": true
+    },
+    {
+      "t": 40,
+      "iou": 0.6288,
+      "durum": "KILITLI",
+      "psr": 96.055,
+      "yama_ici": true
+    },
+    {
+      "t": 41,
+      "iou": 0.6232,
+      "durum": "KILITLI",
+      "psr": 79.525,
+      "yama_ici": true
+    },
+    {
+      "t": 42,
+      "iou": 0.6193,
+      "durum": "KILITLI",
+      "psr": 93.71,
+      "yama_ici": true
+    },
+    {
+      "t": 43,
+      "iou": 0.6174,
+      "durum": "KILITLI",
+      "psr": 102.767,
+      "yama_ici": true
+    },
+    {
+      "t": 44,
+      "iou": 0.6928,
+      "durum": "KILITLI",
+      "psr": 112.292,
+      "yama_ici": true
+    },
+    {
+      "t": 45,
+      "iou": 0.6878,
+      "durum": "KILITLI",
+      "psr": 93.814,
+      "yama_ici": true
+    },
+    {
+      "t": 46,
+      "iou": 0.6849,
+      "durum": "KILITLI",
+      "psr": 98.457,
+      "yama_ici": true
+    },
+    {
+      "t": 47,
+      "iou": 0.685,
+      "durum": "KILITLI",
+      "psr": 107.245,
+      "yama_ici": true
+    },
+    {
+      "t": 48,
+      "iou": 0.7587,
+      "durum": "KILITLI",
+      "psr": 98.583,
+      "yama_ici": true
+    },
+    {
+      "t": 49,
+      "iou": 0.7505,
+      "durum": "KILITLI",
+      "psr": 112.386,
+      "yama_ici": true
+    },
+    {
+      "t": 50,
+      "iou": 0.7462,
+      "durum": "KILITLI",
+      "psr": 93.216,
+      "yama_ici": true
+    },
+    {
+      "t": 51,
+      "iou": 0.7454,
+      "durum": "KILITLI",
+      "psr": 89.035,
+      "yama_ici": true
+    },
+    {
+      "t": 52,
+      "iou": 0.8427,
+      "durum": "KILITLI",
+      "psr": 95.145,
+      "yama_ici": true
+    },
+    {
+      "t": 53,
+      "iou": 0.8349,
+      "durum": "KILITLI",
+      "psr": 104.206,
+      "yama_ici": true
+    },
+    {
+      "t": 54,
+      "iou": 0.8191,
+      "durum": "KILITLI",
+      "psr": 93.971,
+      "yama_ici": true
+    },
+    {
+      "t": 55,
+      "iou": 0.8111,
+      "durum": "KILITLI",
+      "psr": 105.465,
+      "yama_ici": true
+    },
+    {
+      "t": 56,
+      "iou": 0.852,
+      "durum": "KILITLI",
+      "psr": 96.297,
+      "yama_ici": true
+    },
+    {
+      "t": 57,
+      "iou": 0.8447,
+      "durum": "KILITLI",
+      "psr": 104.707,
+      "yama_ici": true
+    },
+    {
+      "t": 58,
+      "iou": 0.8419,
+      "durum": "KILITLI",
+      "psr": 96.014,
+      "yama_ici": true
+    },
+    {
+      "t": 59,
+      "iou": 0.8435,
+      "durum": "KILITLI",
+      "psr": 95.635,
+      "yama_ici": true
+    },
+    {
+      "t": 60,
+      "iou": 0.881,
+      "durum": "KILITLI",
+      "psr": 92.211,
+      "yama_ici": true
+    },
+    {
+      "t": 61,
+      "iou": 0.8694,
+      "durum": "KILITLI",
+      "psr": 77.673,
+      "yama_ici": true
+    },
+    {
+      "t": 62,
+      "iou": 0.86,
+      "durum": "KILITLI",
+      "psr": 84.465,
+      "yama_ici": true
+    },
+    {
+      "t": 63,
+      "iou": 0.8567,
+      "durum": "KILITLI",
+      "psr": 81.521,
+      "yama_ici": true
+    },
+    {
+      "t": 64,
+      "iou": 0.889,
+      "durum": "KILITLI",
+      "psr": 86.207,
+      "yama_ici": true
+    },
+    {
+      "t": 65,
+      "iou": 0.8755,
+      "durum": "KILITLI",
+      "psr": 79.583,
+      "yama_ici": true
+    },
+    {
+      "t": 66,
+      "iou": 0.865,
+      "durum": "KILITLI",
+      "psr": 89.548,
+      "yama_ici": true
+    },
+    {
+      "t": 67,
+      "iou": 0.8594,
+      "durum": "KILITLI",
+      "psr": 106.475,
+      "yama_ici": true
+    },
+    {
+      "t": 68,
+      "iou": 0.8796,
+      "durum": "KILITLI",
+      "psr": 108.123,
+      "yama_ici": true
+    },
+    {
+      "t": 69,
+      "iou": 0.8681,
+      "durum": "KILITLI",
+      "psr": 95.4,
+      "yama_ici": true
+    },
+    {
+      "t": 70,
+      "iou": 0.8602,
+      "durum": "KILITLI",
+      "psr": 113.927,
+      "yama_ici": true
+    },
+    {
+      "t": 71,
+      "iou": 0.8542,
+      "durum": "KILITLI",
+      "psr": 114.062,
+      "yama_ici": true
+    },
+    {
+      "t": 72,
+      "iou": 0.8714,
+      "durum": "KILITLI",
+      "psr": 134.863,
+      "yama_ici": true
+    },
+    {
+      "t": 73,
+      "iou": 0.8593,
+      "durum": "KILITLI",
+      "psr": 125.255,
+      "yama_ici": true
+    },
+    {
+      "t": 74,
+      "iou": 0.8523,
+      "durum": "KILITLI",
+      "psr": 126.538,
+      "yama_ici": true
+    },
+    {
+      "t": 75,
+      "iou": 0.8497,
+      "durum": "KILITLI",
+      "psr": 122.339,
+      "yama_ici": true
+    },
+    {
+      "t": 76,
+      "iou": 0.8714,
+      "durum": "KILITLI",
+      "psr": 126.835,
+      "yama_ici": true
+    },
+    {
+      "t": 77,
+      "iou": 0.8569,
+      "durum": "KILITLI",
+      "psr": 117.053,
+      "yama_ici": true
+    },
+    {
+      "t": 78,
+      "iou": 0.848,
+      "durum": "KILITLI",
+      "psr": 124.99,
+      "yama_ici": true
+    },
+    {
+      "t": 79,
+      "iou": 0.8446,
+      "durum": "KILITLI",
+      "psr": 123.719,
+      "yama_ici": true
+    },
+    {
+      "t": 80,
+      "iou": 0.8272,
+      "durum": "KILITLI",
+      "psr": 43.888,
+      "yama_ici": true
+    },
+    {
+      "t": 81,
+      "iou": 0.8361,
+      "durum": "KILITLI",
+      "psr": 31.447,
+      "yama_ici": true
+    },
+    {
+      "t": 82,
+      "iou": 0.8465,
+      "durum": "KILITLI",
+      "psr": 28.83,
+      "yama_ici": true
+    },
+    {
+      "t": 83,
+      "iou": 0.8472,
+      "durum": "KILITLI",
+      "psr": 27.306,
+      "yama_ici": true
+    },
+    {
+      "t": 84,
+      "iou": 0.8748,
+      "durum": "KILITLI",
+      "psr": 27.065,
+      "yama_ici": true
+    },
+    {
+      "t": 85,
+      "iou": 0.8589,
+      "durum": "KILITLI",
+      "psr": 27.75,
+      "yama_ici": true
+    },
+    {
+      "t": 86,
+      "iou": 0.8456,
+      "durum": "KILITLI",
+      "psr": 29.596,
+      "yama_ici": true
+    },
+    {
+      "t": 87,
+      "iou": 0.8421,
+      "durum": "KILITLI",
+      "psr": 32.337,
+      "yama_ici": true
+    },
+    {
+      "t": 88,
+      "iou": 0.5834,
+      "durum": "KILITLI",
+      "psr": 32.538,
+      "yama_ici": true
+    },
+    {
+      "t": 89,
+      "iou": 0.6907,
+      "durum": "KILITLI",
+      "psr": 13.403,
+      "yama_ici": true
+    },
+    {
+      "t": 90,
+      "iou": 0.6922,
+      "durum": "KILITLI",
+      "psr": 20.491,
+      "yama_ici": true
+    },
+    {
+      "t": 91,
+      "iou": 0.6927,
+      "durum": "KILITLI",
+      "psr": 25.223,
+      "yama_ici": true
+    },
+    {
+      "t": 92,
+      "iou": 0.5554,
+      "durum": "KILITLI",
+      "psr": 25.098,
+      "yama_ici": true
+    },
+    {
+      "t": 93,
+      "iou": 0.5558,
+      "durum": "KILITLI",
+      "psr": 12.666,
+      "yama_ici": true
+    },
+    {
+      "t": 94,
+      "iou": 0.5562,
+      "durum": "KILITLI",
+      "psr": 16.966,
+      "yama_ici": true
+    },
+    {
+      "t": 95,
+      "iou": 0.5567,
+      "durum": "KILITLI",
+      "psr": 19.648,
+      "yama_ici": true
+    },
+    {
+      "t": 96,
+      "iou": 0.5034,
+      "durum": "KILITLI",
+      "psr": 20.651,
+      "yama_ici": true
+    },
+    {
+      "t": 97,
+      "iou": 0.5037,
+      "durum": "KILITLI",
+      "psr": 19.263,
+      "yama_ici": true
+    },
+    {
+      "t": 98,
+      "iou": 0.5041,
+      "durum": "KILITLI",
+      "psr": 21.359,
+      "yama_ici": true
+    },
+    {
+      "t": 99,
+      "iou": 0.5045,
+      "durum": "KILITLI",
+      "psr": 22.266,
+      "yama_ici": true
+    },
+    {
+      "t": 100,
+      "iou": 0.4804,
+      "durum": "KILITLI",
+      "psr": 23.01,
+      "yama_ici": true
+    },
+    {
+      "t": 101,
+      "iou": 0.4807,
+      "durum": "KILITLI",
+      "psr": 18.915,
+      "yama_ici": true
+    },
+    {
+      "t": 102,
+      "iou": 0.4424,
+      "durum": "KILITLI",
+      "psr": 16.23,
+      "yama_ici": true
+    },
+    {
+      "t": 103,
+      "iou": 0.3599,
+      "durum": "KILITLI",
+      "psr": 16.518,
+      "yama_ici": true
+    },
+    {
+      "t": 104,
+      "iou": 0.3576,
+      "durum": "KILITLI",
+      "psr": 18.752,
+      "yama_ici": true
+    },
+    {
+      "t": 105,
+      "iou": 0.2903,
+      "durum": "KILITLI",
+      "psr": 19.351,
+      "yama_ici": true
+    },
+    {
+      "t": 106,
+      "iou": 0.2343,
+      "durum": "KILITLI",
+      "psr": 22.52,
+      "yama_ici": true
+    },
+    {
+      "t": 107,
+      "iou": 0.1898,
+      "durum": "KILITLI",
+      "psr": 26.956,
+      "yama_ici": true
+    },
+    {
+      "t": 108,
+      "iou": 0.242,
+      "durum": "KILITLI",
+      "psr": 28.943,
+      "yama_ici": true
+    },
+    {
+      "t": 109,
+      "iou": 0.1816,
+      "durum": "KILITLI",
+      "psr": 24.207,
+      "yama_ici": true
+    },
+    {
+      "t": 110,
+      "iou": 0.1304,
+      "durum": "KILITLI",
+      "psr": 33.256,
+      "yama_ici": true
+    },
+    {
+      "t": 111,
+      "iou": 0.0944,
+      "durum": "KILITLI",
+      "psr": 43.439,
+      "yama_ici": true
+    },
+    {
+      "t": 112,
+      "iou": 0.16,
+      "durum": "KILITLI",
+      "psr": 53.703,
+      "yama_ici": true
+    },
+    {
+      "t": 113,
+      "iou": 0.1074,
+      "durum": "KILITLI",
+      "psr": 43.376,
+      "yama_ici": true
+    },
+    {
+      "t": 114,
+      "iou": 0.0617,
+      "durum": "KILITLI",
+      "psr": 51.304,
+      "yama_ici": true
+    },
+    {
+      "t": 115,
+      "iou": 0.029,
+      "durum": "KILITLI",
+      "psr": 53.484,
+      "yama_ici": true
+    },
+    {
+      "t": 116,
+      "iou": 0.0964,
+      "durum": "KILITLI",
+      "psr": 48.65,
+      "yama_ici": true
+    },
+    {
+      "t": 117,
+      "iou": 0.0484,
+      "durum": "KILITLI",
+      "psr": 34.492,
+      "yama_ici": true
+    },
+    {
+      "t": 118,
+      "iou": 0.0075,
+      "durum": "KILITLI",
+      "psr": 41.315,
+      "yama_ici": true
+    },
+    {
+      "t": 119,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 46.877,
+      "yama_ici": true
+    },
+    {
+      "t": 120,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 50.678,
+      "yama_ici": true
+    },
+    {
+      "t": 121,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 48.956,
+      "yama_ici": true
+    },
+    {
+      "t": 122,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 63.158,
+      "yama_ici": true
+    },
+    {
+      "t": 123,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 74.936,
+      "yama_ici": true
+    },
+    {
+      "t": 124,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 80.936,
+      "yama_ici": true
+    },
+    {
+      "t": 125,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 71.784,
+      "yama_ici": true
+    },
+    {
+      "t": 126,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 81.842,
+      "yama_ici": true
+    },
+    {
+      "t": 127,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 93.75,
+      "yama_ici": true
+    },
+    {
+      "t": 128,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 106.231,
+      "yama_ici": true
+    },
+    {
+      "t": 129,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 93.392,
+      "yama_ici": true
+    },
+    {
+      "t": 130,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 111.818,
+      "yama_ici": true
+    },
+    {
+      "t": 131,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 134.157,
+      "yama_ici": true
+    },
+    {
+      "t": 132,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 143.122,
+      "yama_ici": true
+    },
+    {
+      "t": 133,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 101.564,
+      "yama_ici": true
+    },
+    {
+      "t": 134,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 129.645,
+      "yama_ici": true
+    },
+    {
+      "t": 135,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 139.664,
+      "yama_ici": true
+    },
+    {
+      "t": 136,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 164.313,
+      "yama_ici": true
+    },
+    {
+      "t": 137,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 119.252,
+      "yama_ici": true
+    },
+    {
+      "t": 138,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 135.427,
+      "yama_ici": true
+    },
+    {
+      "t": 139,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 175.333,
+      "yama_ici": true
+    },
+    {
+      "t": 140,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 164.97,
+      "yama_ici": true
+    },
+    {
+      "t": 141,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 111.187,
+      "yama_ici": true
+    },
+    {
+      "t": 142,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 156.615,
+      "yama_ici": true
+    },
+    {
+      "t": 143,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 182.972,
+      "yama_ici": true
+    },
+    {
+      "t": 144,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 199.557,
+      "yama_ici": true
+    },
+    {
+      "t": 145,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 123.118,
+      "yama_ici": true
+    },
+    {
+      "t": 146,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 164.409,
+      "yama_ici": true
+    },
+    {
+      "t": 147,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 199.673,
+      "yama_ici": true
+    },
+    {
+      "t": 148,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 205.92,
+      "yama_ici": true
+    },
+    {
+      "t": 149,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 122.454,
+      "yama_ici": true
+    },
+    {
+      "t": 150,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 168.882,
+      "yama_ici": true
+    },
+    {
+      "t": 151,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 172.311,
+      "yama_ici": true
+    },
+    {
+      "t": 152,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 174.62,
+      "yama_ici": true
+    },
+    {
+      "t": 153,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 122.322,
+      "yama_ici": true
+    },
+    {
+      "t": 154,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 168.259,
+      "yama_ici": true
+    },
+    {
+      "t": 155,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 170.201,
+      "yama_ici": true
+    },
+    {
+      "t": 156,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 183.535,
+      "yama_ici": true
+    },
+    {
+      "t": 157,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 116.397,
+      "yama_ici": true
+    },
+    {
+      "t": 158,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 172.305,
+      "yama_ici": true
+    },
+    {
+      "t": 159,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 170.082,
+      "yama_ici": true
+    },
+    {
+      "t": 160,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 181.134,
+      "yama_ici": true
+    },
+    {
+      "t": 161,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 114.026,
+      "yama_ici": true
+    },
+    {
+      "t": 162,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 156.768,
+      "yama_ici": true
+    },
+    {
+      "t": 163,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 171.911,
+      "yama_ici": true
+    },
+    {
+      "t": 164,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 164.98,
+      "yama_ici": true
+    },
+    {
+      "t": 165,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 123.465,
+      "yama_ici": true
+    },
+    {
+      "t": 166,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 148.682,
+      "yama_ici": true
+    },
+    {
+      "t": 167,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 210.707,
+      "yama_ici": true
+    },
+    {
+      "t": 168,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 165.945,
+      "yama_ici": true
+    },
+    {
+      "t": 169,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 112.715,
+      "yama_ici": true
+    },
+    {
+      "t": 170,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 156.666,
+      "yama_ici": true
+    },
+    {
+      "t": 171,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 179.068,
+      "yama_ici": true
+    },
+    {
+      "t": 172,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 167.992,
+      "yama_ici": true
+    },
+    {
+      "t": 173,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 113.093,
+      "yama_ici": true
+    },
+    {
+      "t": 174,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 146.82,
+      "yama_ici": true
+    },
+    {
+      "t": 175,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 200.3,
+      "yama_ici": true
+    },
+    {
+      "t": 176,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 184.047,
+      "yama_ici": true
+    },
+    {
+      "t": 177,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 23.418,
+      "yama_ici": true
+    },
+    {
+      "t": 178,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 33.917,
+      "yama_ici": true
+    },
+    {
+      "t": 179,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 36.062,
+      "yama_ici": true
+    },
+    {
+      "t": 180,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 40.082,
+      "yama_ici": true
+    },
+    {
+      "t": 181,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 17.379,
+      "yama_ici": true
+    },
+    {
+      "t": 182,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 14.288,
+      "yama_ici": true
+    },
+    {
+      "t": 183,
+      "iou": 0.0,
+      "durum": "KILITLI",
+      "psr": 12.47,
+      "yama_ici": true
+    },
+    {
+      "t": 184,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 185,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 186,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 187,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 188,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 189,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 190,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 191,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 192,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 193,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 194,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 195,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 196,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 197,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 198,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 199,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 200,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 201,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 202,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 203,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 204,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 205,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 206,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 207,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 208,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 209,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 210,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 211,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 212,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 213,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 214,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 215,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 216,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 217,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 218,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 219,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 220,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 221,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 222,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 223,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 224,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 225,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 226,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 227,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 228,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 229,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 230,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 231,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 232,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 233,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 234,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 235,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 236,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 237,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 238,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 239,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 240,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 241,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 242,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 243,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 244,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 245,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 246,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 247,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 248,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 249,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 250,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 251,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 252,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 253,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 254,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 255,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 256,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 257,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 258,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 259,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 260,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 261,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 262,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 263,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 264,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 265,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 266,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 267,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 268,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 269,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 270,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 271,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 272,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 273,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 274,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 275,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 276,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 277,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 278,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 279,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 280,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 281,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 282,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 283,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 284,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 285,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 286,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 287,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 288,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 289,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 290,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 291,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 292,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 293,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 294,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 295,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 296,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 297,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 298,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 299,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 300,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 301,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 302,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 303,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 304,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 305,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 306,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 307,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 308,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 309,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 310,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 311,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 312,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 313,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 314,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 315,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 316,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 317,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 318,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 319,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 320,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 321,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 322,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 323,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 324,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 325,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 326,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 327,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 328,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 329,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 330,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 331,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 332,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 333,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 334,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 335,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 336,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 337,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 338,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 339,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 340,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 341,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 342,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 343,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 344,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 345,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 346,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 347,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 348,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 349,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 350,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 351,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 352,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 353,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 354,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 355,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 356,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 357,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 358,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 359,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 360,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 361,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 362,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 363,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 364,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 365,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 366,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 367,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 368,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 369,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 370,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 371,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 372,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 373,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 374,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 375,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 376,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 377,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 378,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 379,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 380,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 381,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 382,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 383,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 384,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 385,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 386,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 387,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 388,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 389,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 390,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 391,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 392,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 393,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 394,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 395,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 396,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 397,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 398,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 399,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 400,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 401,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 402,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 403,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 404,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 405,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 406,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 407,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 408,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 409,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 410,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 411,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 412,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 413,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 414,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 415,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 416,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 417,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 418,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 419,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 420,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 421,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 422,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 423,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 424,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 425,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 426,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 427,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 428,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 429,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 430,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 431,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 432,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 433,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 434,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 435,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 436,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 437,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 438,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 439,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 440,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 441,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 442,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 443,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 444,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 445,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 446,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 447,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 448,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 449,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 450,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 451,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 452,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 453,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 454,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 455,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 456,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 457,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 458,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 459,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 460,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 461,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 462,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 463,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 464,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 465,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 466,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 467,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 468,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 469,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 470,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 471,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 472,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 473,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 474,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 475,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 476,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 477,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 478,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 479,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 480,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 481,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 482,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 483,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 484,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 485,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 486,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 487,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 488,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 489,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 490,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 491,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 492,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 493,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 494,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 495,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 496,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 497,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 498,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    },
+    {
+      "t": 499,
+      "iou": 0.0,
+      "durum": "KAYIP",
+      "psr": 12.842,
+      "yama_ici": true
+    }
+  ]
+}

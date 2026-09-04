@@ -1,0 +1,64 @@
+{
+  "senaryo": "Y1_A4_irtifa",
+  "aile": "A11.1",
+  "siddet": "",
+  "beklenen": "irtifa 38.3 - 108.3 m -> hedef 60 - 21 px salinim",
+  "etiketler": [
+    "irtifa",
+    "olcek",
+    "celdirici",
+    "gercek_yatak"
+  ],
+  "aciklama": "Irtifa salinimi +-35 m (f=0.2 Hz) (GERCEK yatak)",
+  "amac": "Olcek kanali, gercek yatakta tekrar",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 11.4,
+    "rtf": 0.9749161825427113,
+    "poz_ornegi": {
+      "hedef": 837,
+      "celdirici": 837,
+      "celdirici2": 837,
+      "drone": 837
+    },
+    "cmd_vel_mesaj": 837,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

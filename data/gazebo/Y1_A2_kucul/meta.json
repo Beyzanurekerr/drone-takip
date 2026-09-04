@@ -1,0 +1,64 @@
+{
+  "senaryo": "Y1_A2_kucul",
+  "aile": "A11.1",
+  "siddet": "",
+  "beklenen": "hedef 60 -> 8 px, 600 kare",
+  "etiketler": [
+    "kucultme",
+    "irtifa",
+    "celdirici",
+    "gercek_yatak"
+  ],
+  "aciklama": "Irtifa rampasi 38.3 -> 287.5 m (GERCEK yatak)",
+  "amac": "Dedektor recall kapisi: kucuk hedef gercek dokuda da tutuyor mu?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 600,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 21.4,
+    "rtf": 1.0092415863148756,
+    "poz_ornegi": {
+      "hedef": 1620,
+      "celdirici": 1620,
+      "celdirici2": 1620,
+      "drone": 1620
+    },
+    "cmd_vel_mesaj": 1,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

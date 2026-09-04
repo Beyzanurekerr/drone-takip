@@ -43,9 +43,30 @@ def zemin_dokusu(seed=1, n=None):
     return cv2.transpose(_zemin_dokusu_ham(seed=seed, n=n))
 
 
-def _zemin_dokusu_ham(seed=1, n=None):
-    """zemin_dokusu'nun devrik ALINMADAN onceki hali (A11.1: hibrit yama icin)."""
+def _zemin_dokusu_ham(seed=1, n=None, texel_pm=None, icerik_zemin_m=None):
+    """zemin_dokusu'nun devrik ALINMADAN onceki hali (A11.1: hibrit yama icin).
+
+    `texel_pm`/`icerik_zemin_m` verilmezse (VARSAYILAN - A1-A11 dahil TUM
+    mevcut cagiranlar) davranis BIREBIR eskisi gibidir (modul sabitleri
+    tpm=12.8, zm=160 - md5 ile dogrulandi, DEGISMEDI).
+
+    A11.1/Y1 DUZELTMESI: modul sabitleri icerigi (yol/bina/agac) hep
+    12.8 texel/m ile 160 m'lik bir alana YERLESTIRIYORDU, ama SDF kutusu
+    A11 ailesinde 560 m (n=4096 -> fiili goruntulenen yogunluk 7.31
+    texel/m). Yani icerik OLMASI GEREKENDEN ~1.75x kucuk render oluyordu
+    VE m2t()'nin dondurdugu texel, dunya metresine YANLIS carpanla
+    cevriliyordu (bir nesne "world x=16 m"de olsun diye yerlestirilse bile
+    Gazebo onu fiilen baska bir x'te gosterirdi). A9-A11 arsivindeki
+    HICBIR karsilastirma bundan etkilenmedi (hep AYNI tabanla, gorece
+    olcum yapildi) ama Y1 gercek doku/mesh'i DOGRU dunya konumuna
+    oturtmak zorunda (yoksa "gercek doku" iddiasi ve renk_dcf kayma
+    olcumu bu hatanin urunu olabilir). Y1 bu yuzden dpx/sen.zemin_m'i
+    ACIKCA gecirir (bkz. dunya_yaz, zemin_dokusu_hibrit); A9-A11 arsivi
+    DOKUNULMADAN modul sabitleriyle calismaya devam eder.
+    """
     n = DOKU_PX if n is None else int(n)
+    tpm = TEXEL_PM if texel_pm is None else float(texel_pm)
+    zm = ZEMIN_M if icerik_zemin_m is None else float(icerik_zemin_m)
     rng = np.random.default_rng(seed)
 
     g = (_gurultu(n, 96, rng) * 0.55 + _gurultu(n, 24, rng) * 0.30
@@ -59,15 +80,15 @@ def _zemin_dokusu_ham(seed=1, n=None):
 
     def m2t(xm, ym):
         """dunya metre -> texel (sutun, satir)."""
-        return int(round(n / 2 + xm * TEXEL_PM)), int(round(n / 2 - ym * TEXEL_PM))
+        return int(round(n / 2 + xm * tpm)), int(round(n / 2 - ym * tpm))
 
     def dm(v):
-        return int(round(v * TEXEL_PM))
+        return int(round(v * tpm))
 
     # --- ana yol: y = 0 ekseni boyunca, 9 m genislik ---
     yol_w = 9.0
-    x0, yust = m2t(-ZEMIN_M / 2, +yol_w / 2)
-    x1, yalt = m2t(+ZEMIN_M / 2, -yol_w / 2)
+    x0, yust = m2t(-zm / 2, +yol_w / 2)
+    x1, yalt = m2t(+zm / 2, -yol_w / 2)
     cv2.rectangle(img, (x0, yust), (x1, yalt), (68, 68, 70), -1)
     # asfalt greni: LK'nin yol uzerinde de kose bulabilmesi icin sart
     asf = rng.integers(-9, 9, (yalt - yust, x1 - x0, 1), dtype=np.int16)
@@ -75,7 +96,7 @@ def _zemin_dokusu_ham(seed=1, n=None):
         img[yust:yalt, x0:x1].astype(np.int16) + asf, 0, 255).astype(np.uint8)
     # orta kesikli serit (9 m aralik, 3 m cizgi)
     ym = m2t(0, 0)[1]
-    for xm in np.arange(-ZEMIN_M / 2, ZEMIN_M / 2, 9.0):
+    for xm in np.arange(-zm / 2, zm / 2, 9.0):
         a, _ = m2t(xm, 0)
         cv2.rectangle(img, (a, ym - 2), (a + dm(3.0), ym + 2), (215, 215, 215), -1)
     # kenar cizgileri
@@ -83,14 +104,14 @@ def _zemin_dokusu_ham(seed=1, n=None):
     cv2.line(img, (x0, yalt - 3), (x1, yalt - 3), (200, 200, 200), 2)
 
     # --- dikey yan yollar ---
-    for xm in np.arange(-ZEMIN_M / 2 + 20, ZEMIN_M / 2, 45.0):
+    for xm in np.arange(-zm / 2 + 20, zm / 2, 45.0):
         a, _ = m2t(xm - 3.5, 0)
         b, _ = m2t(xm + 3.5, 0)
         cv2.rectangle(img, (a, 0), (b, n), (66, 66, 68), -1)
 
     # --- binalar / agaclar / calilar: LK'nin kose kaynagi ---
     for _ in range(140):
-        bx, by = rng.uniform(-ZEMIN_M / 2, ZEMIN_M / 2, 2)
+        bx, by = rng.uniform(-zm / 2, zm / 2, 2)
         if abs(by) < 14:
             continue
         w_, h_ = rng.uniform(8, 26, 2)
@@ -99,22 +120,22 @@ def _zemin_dokusu_ham(seed=1, n=None):
         cv2.rectangle(img, p0, p1, col, -1)
         cv2.rectangle(img, p0, p1, tuple(int(v * 0.6) for v in col), 3)
     for _ in range(600):
-        tx, ty = rng.uniform(-ZEMIN_M / 2, ZEMIN_M / 2, 2)
+        tx, ty = rng.uniform(-zm / 2, zm / 2, 2)
         if abs(ty) < 8:
             continue
-        cv2.circle(img, m2t(tx, ty), int(rng.uniform(2, 5) * TEXEL_PM), (30, 70, 35), -1)
+        cv2.circle(img, m2t(tx, ty), int(rng.uniform(2, 5) * tpm), (30, 70, 35), -1)
     # kucuk olcekli detay - ego-motion'in can damari
     for _ in range(6000):
-        tx, ty = rng.uniform(-ZEMIN_M / 2, ZEMIN_M / 2, 2)
+        tx, ty = rng.uniform(-zm / 2, zm / 2, 2)
         if abs(ty) < 7:
             continue
-        r = max(1, int(rng.uniform(0.5, 1.5) * TEXEL_PM))
+        r = max(1, int(rng.uniform(0.5, 1.5) * tpm))
         col = (int(rng.integers(25, 60)), int(rng.integers(60, 110)),
                int(rng.integers(25, 60)))
         cv2.circle(img, m2t(tx, ty), r, col, -1)
     # tarla sinirlari
     for _ in range(60):
-        tx, ty = rng.uniform(-ZEMIN_M / 2, ZEMIN_M / 2, 2)
+        tx, ty = rng.uniform(-zm / 2, zm / 2, 2)
         L = rng.uniform(20, 70)
         if rng.random() < 0.5:
             cv2.line(img, m2t(tx, ty), m2t(tx + L, ty), (60, 95, 75), 4)
@@ -162,22 +183,87 @@ GERCEK_ZEMIN_YAMA = "data/gazebo/_assets/zemin_gercek_kirpim.png"
 # haric kutu yok, oteki 4 kutu y<175'te, kirpim disinda kaldi).
 GERCEK_ZEMIN_MERKEZ_M = (16.0, -2.0)   # A1..A6/Y1 hedef yolunun (-24..+56) ortasi
 GERCEK_ZEMIN_TUY_PX = 60               # feather kenar genisligi (texel)
+# Yamanin KENDI piksel uzayinda (1920x880), temizlenen arac bolgesi - KOL 2
+# icin: hareket biriktirme burada bir "hayalet" bulursa kaynagi bilinsin.
+# (x-pad, y-pad, x+w+pad, y+h+pad), pad=20 - inpaint cagrisindaki MASKE ile
+# birebir (bkz. A11_1_ONKAYIT.md, data/gazebo/_assets/zemin_gercek_kirpim.png
+# ureten komut).
+INPAINT_PIKSEL_KUTUSU = (1111, 103, 1261, 263)
 
 
-def zemin_dokusu_hibrit(seed=1, n=None):
+def _yama_yerlesimi(n, zemin_m):
+    """(tx0, ty0, yw, yh, tpm) - yamanin HAM (devriksiz) tuvaldeki texel
+    yerlesimi. zemin_dokusu_hibrit + Y1 dunya-koordinat yardimcilari (KAPSAM
+    ve INPAINT konumu) AYNI bu fonksiyonu kullanir - tek dogruluk kaynagi."""
+    tpm = n / float(zemin_m)
+    yama_boyutu = cv2.imread(GERCEK_ZEMIN_YAMA)
+    if yama_boyutu is None:
+        raise FileNotFoundError(GERCEK_ZEMIN_YAMA)
+    yh, yw = yama_boyutu.shape[:2]
+    cx_m, cy_m = GERCEK_ZEMIN_MERKEZ_M
+    cx_t = int(round(n / 2 + cx_m * tpm))
+    cy_t = int(round(n / 2 - cy_m * tpm))
+    tx0, ty0 = cx_t - yw // 2, cy_t - yh // 2
+    return tx0, ty0, yw, yh, tpm
+
+
+def _texel_dunya(tx, ty, n, tpm):
+    """HAM tuval texel -> dunya metre (m2t'nin tersi)."""
+    return (tx - n / 2.0) / tpm, (n / 2.0 - ty) / tpm
+
+
+def yama_dunya_sinirlari(n, zemin_m, temiz=False):
+    """Yamanin dunya-metre AABB'si: (x_min, x_max, y_min, y_max).
+
+    `n`, `zemin_m`: cagiran senaryonun `doku_px`/`zemin_m`'i (ORNEGIN A11_DOKU_PX
+    =4096, A11_ZEMIN_M=560.0 - gazebo/senaryolar.py'den) - bu modul bu
+    sabitleri KENDI ICINDE TUTMAZ (senaryolar.py'ye bagimlilik olusturmamak
+    icin), cagiran acikca gecirir.
+
+    `temiz=True`: feather bandi HARIC (yalniz SAF gercek piksel, procedurelle
+    hic karismamis bolge) - Y2 (2) talebindeki "yama_ici" bayragi bunu
+    kullanmali, sinirdaki blend bolgesi ne tam gercek ne tam prosedurel."""
+    n = int(n)
+    tx0, ty0, yw, yh, tpm = _yama_yerlesimi(n, zemin_m)
+    pay = GERCEK_ZEMIN_TUY_PX if temiz else 0
+    x0, y1 = _texel_dunya(tx0 + pay, ty0 + pay, n, tpm)
+    x1, y0 = _texel_dunya(tx0 + yw - pay, ty0 + yh - pay, n, tpm)
+    return min(x0, x1), max(x0, x1), min(y0, y1), max(y0, y1)
+
+
+def inpaint_dunya_bolgesi(n, zemin_m):
+    """Temizlenen aracin dunya-metre AABB'si (x_min,x_max,y_min,y_max)."""
+    n = int(n)
+    tx0, ty0, yw, yh, tpm = _yama_yerlesimi(n, zemin_m)
+    px0, py0, px1, py1 = INPAINT_PIKSEL_KUTUSU
+    x0, y1 = _texel_dunya(tx0 + px0, ty0 + py0, n, tpm)
+    x1, y0 = _texel_dunya(tx0 + px1, ty0 + py1, n, tpm)
+    return min(x0, x1), max(x0, x1), min(y0, y1), max(y0, y1)
+
+
+def zemin_dokusu_hibrit(seed=1, n=None, zemin_m=None):
     """Prosedurel taban (LK korner kaynagi, kenar/yuksek irtifa) + merkeze
-    yerlestirilmis GERCEK VisDrone yamasi (feather ile karistirilmis)."""
-    taban = _zemin_dokusu_ham(seed=seed, n=n)
+    yerlestirilmis GERCEK VisDrone yamasi (feather ile karistirilmis).
+
+    `zemin_m` ZORUNLU ETKİLİ parametre: SDF kutusunun fiili kenar uzunlugu
+    (A11 ailesinde 560.0). Fiili texel/m yogunlugu buradan (n/zemin_m)
+    hesaplanir ve HEM prosedurel tabana HEM yamanin kendi yerlesimine
+    gecirilir - ikisi ayni (dogru) olcekte olmazsa yama ile etrafindaki
+    prosedurel doku farkli buyuklukte "gorunur" (dikis noktasinda ani bir
+    yogunluk sicramasi olur). Verilmezse (varsayilan davranis KORUNUR,
+    eski/hatali TEXEL_PM=12.8 kullanilir) - yalnizca geriye-donuk uyumluluk
+    icin, YENI cagirandan HER ZAMAN acikca gecirilmeli (bkz. dunya_yaz).
+    """
+    zm_fiili = ZEMIN_M if zemin_m is None else float(zemin_m)
+    tpm = (DOKU_PX / ZEMIN_M) if n is None and zemin_m is None else (
+        (DOKU_PX if n is None else int(n)) / zm_fiili)
+    taban = _zemin_dokusu_ham(seed=seed, n=n, texel_pm=tpm, icerik_zemin_m=zm_fiili)
     n = taban.shape[0]
     yama = cv2.imread(GERCEK_ZEMIN_YAMA)
     if yama is None:
         raise FileNotFoundError(GERCEK_ZEMIN_YAMA)
-    yh, yw = yama.shape[:2]
-
-    cx_m, cy_m = GERCEK_ZEMIN_MERKEZ_M
-    cx_t = int(round(n / 2 + cx_m * TEXEL_PM))
-    cy_t = int(round(n / 2 - cy_m * TEXEL_PM))
-    tx0, ty0 = cx_t - yw // 2, cy_t - yh // 2
+    tx0, ty0, yw, yh, tpm_dogrula = _yama_yerlesimi(n, zm_fiili)
+    assert abs(tpm_dogrula - tpm) < 1e-9
     if tx0 < 0 or ty0 < 0 or tx0 + yw > n or ty0 + yh > n:
         raise ValueError(
             f"gercek yama ({yw}x{yh}) taban tuvaline ({n}x{n}) sigmiyor "
@@ -431,9 +517,11 @@ def dunya_yaz(sen, kok="data/gazebo"):
     if zemin_tipi == "gercek":
         # A11.1/Y1: sabit (tohumsuz) - GERCEK_ZEMIN_YAMA + merkez tek bir
         # yerlesim tanimlar, seed'e gore degismez.
-        kaynak_doku = os.path.join(onbellek, f"zemin_gercek_{dpx}.png")
+        zm_sen = getattr(sen, "zemin_m", ZEMIN_M)
+        kaynak_doku = os.path.join(onbellek, f"zemin_gercek_{dpx}_{zm_sen:.0f}.png")
         if not os.path.exists(kaynak_doku):
-            cv2.imwrite(kaynak_doku, zemin_dokusu_hibrit(seed=sen.doku_seed, n=dpx))
+            cv2.imwrite(kaynak_doku, zemin_dokusu_hibrit(seed=sen.doku_seed, n=dpx,
+                                                          zemin_m=zm_sen))
     else:
         kaynak_doku = os.path.join(onbellek, f"zemin_{sen.doku_seed}_{dpx}.png")
         if not os.path.exists(kaynak_doku):
