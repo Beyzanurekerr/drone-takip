@@ -181,7 +181,12 @@ GERCEK_ZEMIN_YAMA = "data/gazebo/_assets/zemin_gercek_kirpim.png"
 # Kaynak: VisDrone2019-DET 0000283_01001_d_0000679.jpg, kirpim [y 200:1080,
 # x 0:1920], tek arac (1131,323,110,120) cv2.inpaint ile temizlendi (arac
 # haric kutu yok, oteki 4 kutu y<175'te, kirpim disinda kaldi).
-GERCEK_ZEMIN_MERKEZ_M = (16.0, -2.0)   # A1..A6/Y1 hedef yolunun (-24..+56) ortasi
+# A11.3/Y1.2: izgara kaydirildi - operasyon alani (x[-68.8,72.0], y[-9,29.1])
+# artik TEK hucre (sol-ust) icinde kaliyor, ic dikisler (Y1.1'in "cifte
+# pozlama" bulgusu) operasyon alaninin disina dustu. Eski deger (16,-2)
+# grid KESISIMINI operasyon alaninin ORTASINA koyuyordu - Y1.2 bunu
+# DUZELTIYOR (bkz. gazebo/y1_yama_uret.py, A11_3_ONKAYIT.md).
+GERCEK_ZEMIN_MERKEZ_M = (90.35, -41.25)
 GERCEK_ZEMIN_TUY_PX = 60               # feather kenar genisligi (texel)
 # Yamanin KENDI piksel uzayinda (A11.2/Y1.1: 2200x1300, 2x2 dort-sahne
 # bilesik - gazebo/y1_yama_uret.py), temizlenen arac bolgesi - KOL 2 icin:
@@ -189,7 +194,7 @@ GERCEK_ZEMIN_TUY_PX = 60               # feather kenar genisligi (texel)
 # hucredeki (eski tek-yama, pad=20 inpaint) aracin bilesik uzaydaki konumu -
 # `y1_yama_uret.py --  data/gazebo/_assets/inpaint_konum_v2.json` ile
 # URETILDI, elle hesaplanmadi.
-INPAINT_PIKSEL_KUTUSU = (701, 83, 822, 212)
+INPAINT_PIKSEL_KUTUSU = (819, 95, 957, 242)
 
 
 def _yama_yerlesimi(n, zemin_m):

@@ -98,6 +98,29 @@ def yama_ici_mi(kam_x, kam_y, kam_z, genislik, yukseklik, odak_px):
             and y_min <= kam_y - yaricap and kam_y + yaricap <= y_max)
 
 
+def dikis_yakini_mi(kam_x, kam_y, kam_z, genislik, yukseklik, odak_px):
+    """Kamera GERCEKTEN yamayi gorurken (kendisi yama sinirlari icindeyken),
+    gorus alani IC DIKISLERDEN (2x2 izgaranin kesisim cizgileri) birinin
+    yaricap kadar yakinina giriyor mu? `kam_z` disari cikinca (yuksek
+    irtifa) yaricap dev buyuyup dikisi "uzaktan" kapsayabilir - bu YAMAYI
+    HIC GORMEDEN "dikise yakin" saymak anlamsiz olurdu, o yuzden once
+    KAMERANIN KENDISI yama sinirlari icinde mi kontrol edilir (yama_ici_mi
+    ile AYNI 'tam' sinir, ama nokta-icinde testi, yaricap-genisletilmis
+    degil)."""
+    from gazebo.dunya_uret import GERCEK_ZEMIN_MERKEZ_M
+    x_min, x_max, y_min, y_max = yama_dunya_sinirlari(
+        A11_DOKU_PX, A11_ZEMIN_M, temiz=False)
+    if not (x_min <= kam_x <= x_max and y_min <= kam_y <= y_max):
+        return False
+    dikis_x, dikis_y = GERCEK_ZEMIN_MERKEZ_M
+    fov_h = fov_hesapla(genislik, odak_px)
+    fov_v = fov_hesapla(yukseklik, odak_px)
+    yaricap = kam_z * math.hypot(math.tan(fov_h / 2.0), math.tan(fov_v / 2.0))
+    dikey_dikis = (x_min <= dikis_x <= x_max) and (abs(kam_x - dikis_x) <= yaricap)
+    yatay_dikis = (y_min <= dikis_y <= y_max) and (abs(kam_y - dikis_y) <= yaricap)
+    return bool(dikey_dikis or yatay_dikis)
+
+
 # --------------------------------------------------------------------------
 # RECALL TABLOSU
 # --------------------------------------------------------------------------

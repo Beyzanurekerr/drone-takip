@@ -1,9 +1,9 @@
 {
   "tasma": {
     "toplam_kare": 2400,
-    "yama_ici": 1405,
-    "tasma": 995,
-    "tasma_orani": 0.4146
+    "yama_ici": 1159,
+    "tasma": 1241,
+    "tasma_orani": 0.5171
   },
   "gercek_referans": {
     "40px": 0.75,
@@ -14,54 +14,44 @@
   "tam_kare_tablo": {
     "60x22": [
       958,
-      850,
-      0.8873
+      849,
+      0.8862
     ],
     "40x15": [
       149,
-      31,
-      0.2081
+      107,
+      0.7181
     ],
     "30x12": [
-      176,
-      0,
-      0.0
-    ],
-    "20x10": [
-      122,
-      0,
-      0.0
+      52,
+      24,
+      0.4615
     ]
   },
   "roi_4x_tablo": {
     "60x22": [
       958,
-      660,
-      0.6889
+      864,
+      0.9019
     ],
     "40x15": [
       149,
-      139,
-      0.9329
+      128,
+      0.8591
     ],
     "30x12": [
-      176,
-      152,
-      0.8636
-    ],
-    "20x10": [
-      122,
-      92,
-      0.7541
+      52,
+      52,
+      1.0
     ]
   },
   "kapi": {
     "tam_kare_40px": {
       "n": 101,
-      "recall": 0.0891,
+      "recall": 0.7327,
       "referans": 0.75,
-      "fark": -0.6609,
-      "gecti": false
+      "fark": -0.0173,
+      "gecti": true
     },
     "roi_40px": {
       "n": 101,
@@ -71,11 +61,12 @@
       "gecti": false
     },
     "roi_20px": {
-      "n": 122,
-      "recall": 0.7541,
+      "n": 0,
+      "recall": null,
       "referans": 0.2125,
-      "fark": 0.5416,
-      "gecti": false
+      "fark": null,
+      "gecti": false,
+      "not": "orneklem yok"
     }
   },
   "genel_kapi_gecti": false

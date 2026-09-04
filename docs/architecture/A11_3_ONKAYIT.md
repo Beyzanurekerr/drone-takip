@@ -109,4 +109,92 @@ Talimat (birebir): *"Izgarayı operasyon alanı tek karo içinde kalacak
 ölç. Kapı İKİ YÖNLÜ: |Gazebo − gerçek| ≤ 0.10, aşağı ve yukarı. Yukarı
 kalırsa Y1.2'ye gürültü/bulanıklık modeli eklenir (ön-kayıt, sonra)."*
 
-(Bu bölüm aşağıda, aynı turda tamamlandı.)
+### Izgara kaydırıldı
+Operasyon zarfı (`gazebo/senaryolar.py:Y1_AILE` entegrasyonu ile ölçüldü):
+`x∈[−68.8, 72.0]`, `y∈[−9.0, 29.1]`. 15 m pay eklenip `x∈[−84,87]`
+(171 m), `y∈[−24,44]` (68 m) hedef alındı. Hücre boyutu büyütüldü
+(`gazebo/y1_yama_uret.py`: `1300×750 px` = 177.7×102.5 m/hücre, önceki
+1100×650) ki bu zarf **TEK hücreye** sığsın. Izgara kesişimi
+(`GERCEK_ZEMIN_MERKEZ_M`) operasyon alanının merkezinden **bir yarım-
+hücre kadar** kaydırıldı: `(16, −2) → (90.35, −41.25)`. Sonuç: 4 sahne
+hâlâ var (300.8→**355.5×205.1 m**, ≥300×170 m talimatı hâlâ geçiliyor),
+ama artık hepsi operasyon alanının **dışında**.
+
+**Kaynak-dosya kendine-referans hatası bulundu ve düzeltildi:**
+`y1_yama_uret.py`, sol-üst hücreyi `zemin_gercek_kirpim.png`'den
+okuyordu — ama script HER KOŞUMDA aynı dosyanın ÜZERİNE yazıyor. İkinci
+koşum (Y1.2) kendi ÖNCEKİ (2×2 bileşik) çıktısını girdi olarak
+okuyup yeniden gömecekti (sessiz bozulma — "bileşik içinde bileşik").
+Orijinal tek-sahne dosyası git geçmişinden (`0947aa4`) kurtarılıp
+`zemin_gercek_kirpim_v1_tek.png` olarak **değişmez** bir girdi haline
+getirildi; `zemin_gercek_kirpim.png` artık YALNIZ çıktı.
+
+### dikiş_yakini bayrağı ve kontrol ölçümü
+`gazebo/y1_ortak.py:dikis_yakini_mi()` — kamera GERÇEKTEN yamayı
+görüyorken (kendisi yama sınırları içindeyken, aksi hâlde yüksek irtifada
+yarıçap devasa büyüyüp dikişi anlamsızca "uzaktan" kapsıyordu — bu ilk
+sürümde bulunup düzeltildi), görüş alanının iç dikişlerden birine
+yarıçap kadar yakın olup olmadığını döner.
+
+**Ölçüldü (6 senaryo, 2400 kare):** yama-içi karelerin (n=1159) yalnızca
+**%10.2'si (118 kare)** artık dikişe yakın — Y1.1'de bu oran fiilen
+operasyon alanının TAMAMIYDI (kesişim tam merkezdeydi). Kaydırma
+niyet edilen etkiyi yapıyor, sıfıra indirmese de.
+
+### Kapı yeniden ölçüldü (A6, ±0.10, aynı gerçek-veri referansı)
+
+| Ölçüt | Y1.1 (kaymamış) | **Y1.2 (kaydırılmış)** | referans | Y1.2 sonuç |
+|---|---:|---:|---:|---|
+| tam-kare @40px | 0.089 | **0.733** | 0.750 | fark −0.017 → **GEÇTİ** |
+| ROI-4× @40px | 0.970 | 0.970 | 0.750 | fark +0.220 → KALDI (yukarı) |
+| ROI-4× @20px | 0.754 (n=122) | ölçülemedi (n=0) | 0.2125 | KALDI (veri yok) |
+
+**Tam-kare @40px, dikiş düzeltmesiyle 0.089 → 0.733'e sıçradı ve ARTIK
+GEÇİYOR** — bu, Y1.1'in "dikiş = çifte pozlama" teşhisinin doğru
+olduğunun doğrudan kanıtı: sorunu çözen şey ne modelin ne de gerçek-veri
+referansının değişmesiydi, yalnızca dikişlerin operasyon alanının
+dışına taşınmasıydı.
+
+**ROI hâlâ KALDI, ama YUKARI yönde** (Gazebo 0.970 ≫ gerçek 0.750) —
+talimatın öngördüğü tam bu durum: *"Yukarı kalırsa Y1.2'ye gürültü/
+bulanıklık modeli eklenir (ön-kayıt, sonra)."* **ÖN-KAYIT (uygulanmadı,
+sıradaki adım):** ROI'nin gerçek veriden bu kadar iyi çıkmasının en
+olası nedeni, Gazebo render'ının VisDrone'un gerçek kamera/sıkıştırma
+zincirinde bulunan hareket bulanıklığı, sensör gürültüsü ve JPEG
+sıkıştırma artefaktlarından ARINMIŞ olması — ROI'nin 4× büyütmesi bu
+"temiz" görüntüde neredeyse mükemmel çalışıyor, gerçek dünyada
+bulanıklaşan kenarlar üzerinde çalışamayacağı kadar iyi. Öneri: kareye
+hafif Gaussian bulanıklık + sensör gürültüsü (mevcut `sim/world.py` ya
+da SDF `<noise>` bloğundaki ZATEN VAR OLAN gürültü mekanizması
+büyütülerek) eklenip ROI recall'ünün gerçek referansa yaklaşıp
+yaklaşmadığı ölçülmeli.
+
+**20px verisi hâlâ yok** — ızgara kaydırması, kapsamı ~%48'e düşürdü
+(Y1.1'in %58.5'inden) ve özellikle en yüksek irtifa (20px hedef boyutu)
+aralığını yama dışına itti. Dikiş ile kapsam arasında bir ödünleşim var;
+bu turda dikiş önceliklendirildi (talimatın açık isteği).
+
+### Feather genişliği (dar vs mevcut) — BU TURDA ÖLÇÜLMEDİ
+Zaman kısıtı nedeniyle yalnız `T=60` (mevcut) tam ölçüldü. `T=20` (dar)
+karşılaştırması için altyapı hazır (`y1_yama_uret.py:uret(t=...)` ve
+`yaz(cikti_adi=..., t=...)` parametrik) ama Gazebo'da yeniden kayıt
+gerektirdiği için (yalnız statik doku değil, gerçek render) bu turda
+koşulmadı. **Sıradaki adım (ön-kaydedildi, sonra):** `Y1_A2_kucul`'u
+(dikişe en yakın geçen senaryolardan biri) hem T=60 hem T=20 ile
+yeniden kaydedip yalnız `dikis_yakini` alt kümesinde recall kıyaslamak.
+
+### Genel kapı: hâlâ KALDI, ama nitelik değişti
+Y1.1'de üç alt-ölçütün hepsi ciddi biçimde kalıyordu (özellikle tam-kare
+çökmüştü). Y1.2'de **tam-kare artık geçiyor**; kalan iki açık madde
+(ROI'nin gerçek-üstü performansı, 20px veri boşluğu) farklı, daha dar
+kapsamlı sorunlar — her ikisi de yukarıda somut, ön-kayıtlı bir sıradaki
+adımla eşleşiyor.
+
+**Y2/Y3 KOŞULMADI.** Talimatın çift koşulu ("T2'den K6 geçen bir
+düzeltme + Y1 kapısı") sağlanmıyor: Y1 kapısı hâlâ genel olarak KALDI
+(yalnız bir alt-ölçütü geçti), ve T2'nin K6 geçen tek kolu (T2b) A1'i
+300 kareye taşımadı. **DUR.**
+
+Ham veri: `cikti/a11_2_y11_kapi.json` (bu ölçümle üzerine yazıldı —
+Y1.1'in eski sonucu artık yalnız bu belgenin Y1.1 bölümünde/git
+geçmişinde duruyor).

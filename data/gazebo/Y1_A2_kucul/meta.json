@@ -48,13 +48,13 @@
     }
   ],
   "kayit": {
-    "sure_s": 23.7,
-    "rtf": 1.0027500223212191,
+    "sure_s": 23.8,
+    "rtf": 0.9517073175188484,
     "poz_ornegi": {
-      "hedef": 1624,
-      "celdirici": 1624,
-      "celdirici2": 1624,
-      "drone": 1624
+      "hedef": 1637,
+      "celdirici": 1637,
+      "celdirici2": 1637,
+      "drone": 1637
     },
     "cmd_vel_mesaj": 1,
     "senkron_bosluk_ms_ort": 2.667,
