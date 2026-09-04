@@ -493,7 +493,10 @@ class Kayitci:
         # (~90 m) yanlislikla "zemin disi" sayiliyordu (gercekte 560/2=280
         # icinde). getattr, A1-A11'in zaten var olan davranisini KORUR
         # (sen.zemin_m yoksa/varsayilansa ayni 160 kullanilir).
-        yari = getattr(self.sen, "zemin_m", ZEMIN_M) / 2.0
+        # DEMO/baylands: sonlu bir "zemin kutusu" YOK (Fuel terrain modeli,
+        # dunya_uret.py:_ZEMIN_BAYLANDS) - bu sinir orada ANLAMSIZ, atlanir.
+        baylands_mi = getattr(self.sen, "zemin_tipi", "prosedurel") == "baylands"
+        yari = None if baylands_mi else getattr(self.sen, "zemin_m", ZEMIN_M) / 2.0
         for a in self.sen.araclar:
             x, y, z = (float(ilk[i[f"{a.ad}_{s}"]]) for s in ("x", "y", "z"))
             bek_z = a.H / 2.0
@@ -506,7 +509,7 @@ class Kayitci:
                 raise RuntimeError(
                     f"{a.ad}: z = {z:.2f} m, beklenen {bek_z:.2f} m "
                     f"(arac zemine oturmuyor - yercekimi/fizik sorunu)")
-            if max(abs(x), abs(y)) > yari:
+            if yari is not None and max(abs(x), abs(y)) > yari:
                 raise RuntimeError(f"{a.ad} zemin disinda: ({x:.1f}, {y:.1f})")
         self._kamera_denetimi(satirlar, i)
 

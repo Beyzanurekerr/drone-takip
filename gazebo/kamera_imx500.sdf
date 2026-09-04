@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<!-- Raspberry Pi AI Camera (IMX500) - DEMO dalinin TEK kamera tanimi.
+     DEMO_DALI planinin Adim 2a'si. Bu dosya kendi basina bir SDF MODELIDIR
+     (link icinde tek bir kamera sensoru) - Adim 2c'de drone govdesine
+     `<include>` ile ya da (Gazebo `<include>` yerel dosya URI'lerini her
+     surumde ayni bicimde cozmedigi icin) `gazebo/dunya_uret.py`'nin XML'i
+     DOGRUDAN gomdugu bir sablon olarak kullanilir - hangi yol secilirse
+     secilsin SAYILAR BURADAN okunur, ikinci bir yerde TEKRAR YAZILMAZ.
+
+     SAYILARIN KAYNAGI:
+       horizontal_fov = 1.1519 rad (66 derece) - IMX500/Pi AI Camera'nin
+         yayinlanan gorus acisi (66 derece x 52 derece, biz kare-degil
+         piksel oranini <image> genislik/yukseklik'ten tasiyoruz).
+       2028x1520 - IMX500 sensorunun tam-cozunurluk (4:3 binned) modu.
+       odak_px = 1561: turetildi, UYDURULMADI -
+         odak_px = (genislik/2) / tan(horizontal_fov/2)
+                  = 1014 / tan(0.57595 rad) = 1014 / 0.64967 = 1560.7 =~ 1561
+         (gazebo/dunya_uret.py:fov_hesapla'nin TERSI - o odaktan fov'u,
+         burada fov'dan odagi turetiyoruz; ikisi de "odak px" tanimini
+         PAYLASIYOR, ayri bir tanim UYDURULMADI.)
+       k1 = -0.02: IMX500 gibi genis-acili sabit-odakli kameralarda
+         tipik hafif fici (pincushion DEGIL, negatif k1 = fici) distorsiyon
+         mertebesi - dbNSFP tarzi bir "olculmus" sabit degil, MAKUL bir
+         BASLANGIC degeri; gercek donanim eline gecince (bkz.
+         PI_KURULUM.md/PI_OLCUM.md) kalibrasyonla DUZELTILMELI.
+       gauss stddev 0.01 - dunya_uret.py'nin mevcut varsayilan gurultu
+         mertebesiyle (0.007) AYNI BUYUKLUK SINIFINDA, IMX500'un biraz
+         daha gurultulu kucuk sensorunu yansitmak icin hafif yukseltildi.
+       30 fps - IMX500'un tam-cozunurlukte belgelenmis video kare hizi.
+       nadir poz: gazebo/senaryolar.py:KAM_ROT = (roll=0, pitch=pi/2,
+         yaw=pi/2) BIREBIR AYNISI - YENIDEN TURETILMEDI. O sabitin kendi
+         yorumu (senaryolar.py): "+90 pitch -> optik eksen dunya -Z (nadir),
+         +90 yaw -> dunya +X goruntude SAGA, dunya +Y YUKARI". Yalniz pitch
+         vermek (yaw=0) goruntuyu 90 derece YANLIS eksende dondururdu -
+         bu, mevcut sistemde ZATEN olculmus/dogrulanmis bir tuzak
+         (gazebo/senaryolar.py'nin dosya basligindaki "KAMERA YERLESIMI"
+         bolumu), burada TEKRARLANMADI.
+-->
+<sdf version="1.9">
+  <model name="imx500_kamera">
+    <static>true</static>
+    <link name="govde">
+      <sensor name="imx500" type="camera">
+        <pose>0 0 0 0 1.5707963268 1.5707963268</pose>
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <topic>kamera</topic>
+        <camera>
+          <horizontal_fov>1.1519</horizontal_fov>
+          <image>
+            <width>2028</width>
+            <height>1520</height>
+            <format>R8G8B8</format>
+          </image>
+          <distortion>
+            <k1>-0.02</k1>
+            <k2>0.0</k2>
+            <k3>0.0</k3>
+            <p1>0.0</p1>
+            <p2>0.0</p2>
+            <center>0.5 0.5</center>
+          </distortion>
+          <clip>
+            <near>0.5</near>
+            <far>800</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </camera>
+      </sensor>
+    </link>
+  </model>
+</sdf>

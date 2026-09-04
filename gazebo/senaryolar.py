@@ -106,6 +106,38 @@ def genlik_konum(A, f):
     return A / (2.0 * math.pi * f)
 
 
+def parcali_hiz_profili(segmentler, gecis_s=0.6):
+    """DEMO dali/Adim 2c: zaman -> (v_ileri, v_yanal, wz) PARCALI profil.
+
+    `segmentler`: [(sure_s, v_ileri, wz), ...] - her biri kendi suresince
+    o (v,wz) ciftini hedefler. Segmentler ARASI GECIS `gecis_s` saniyede
+    KOSINUS ile yumusatilir (ayni gerekce `kosinus()`'takiyle: VelocityControl
+    kinematik oldugu icin ani hiz sicramasi konumda ani bir "zikzak" olarak
+    goruntude belirir - `yamuk()` de AYNI ilkeyi kullanir, burada iki
+    KOMSU sabit-hiz plato'sunu birbirine baglamak icin genellestirildi).
+    """
+    sinirlar = [0.0]
+    for sure, _, _ in segmentler:
+        sinirlar.append(sinirlar[-1] + float(sure))
+
+    def profil(t):
+        # hangi segmentteyiz
+        i = 0
+        while i < len(segmentler) - 1 and t >= sinirlar[i + 1]:
+            i += 1
+        v, wz = segmentler[i][1], segmentler[i][2]
+        # onceki segmentten GECIS penceresindeyse yumusat (ilk segment haric)
+        if i > 0:
+            dt = t - sinirlar[i]
+            if dt < gecis_s:
+                v_onc, wz_onc = segmentler[i - 1][1], segmentler[i - 1][2]
+                a = 0.5 - 0.5 * math.cos(math.pi * dt / gecis_s)   # 0->1 yumusak
+                v = v_onc + a * (v - v_onc)
+                wz = wz_onc + a * (wz - wz_onc)
+        return (v, 0.0, wz)
+    return profil
+
+
 def yamuk(t0, ramp, sure):
     """0 -> 1 -> 0 yamuk darbe: [t0, t0+sure] arasi 1, kenarlarda `ramp` s rampa."""
     def g(t):
@@ -170,6 +202,7 @@ class GzSenaryo:
     yukseklik: int = 480
     odak_px: float = ODAK_PX
     gurultu: float = 0.007
+    kam_k1: float = 0.0                 # DEMO/IMX500: radyal distorsiyon (kamera_imx500.sdf)
     # --- kosum ---
     adim: float = 1.0 / 240.0           # kamera periyodunun tam boleni (8 adim/kare)
     kare: int = 300
@@ -803,3 +836,123 @@ K_MOD_AILE = [Y1_A7_kucuk, Y1_A8_cok_kucuk]
 SENARYOLAR.update({f.__name__: f for f in K_MOD_AILE})
 
 SENARYOLAR.update({f.__name__: f for f in A11_AILE})
+
+
+# ---------------------------------------------------------------------------
+# DEMO DALI - Adim 2c/2d/2e (docs/architecture SILINDI, ayrinti commit
+# mesajlarinda + demo dalinin kendi README'sinde - Adim 6)
+# ---------------------------------------------------------------------------
+# IMX500 (gazebo/kamera_imx500.sdf ile AYNI sayilar - TEK kaynak, burada
+# TEKRAR TURETILMEDI, sadece kopyalandi).
+IMX500_GEN, IMX500_YUK = 2028, 1520
+IMX500_ODAK_PX = 1561.0        # = (2028/2)/tan(1.1519/2), kamera_imx500.sdf
+IMX500_HZ = 30.0
+IMX500_GURULTU = 0.01
+IMX500_K1 = -0.02
+DEMO_HIZ = 10.0                 # 8-12 m/s bandinin ortasi
+
+# baylands'in "park" modeli world (205,155,-1)'e gomulu (bkz. dunya_uret.py:
+# _ZEMIN_BAYLANDS) - arac/kamera merkezi o civara yerlestirildi. Z=0
+# VARSAYIMDIR (terrain yuksekligi olculmedi) - Adim 2c'nin tek-kare smoke
+# testinde GORSEL olarak dogrulanip GEREKIRSE duzeltilecek.
+DEMO_MERKEZ_X, DEMO_MERKEZ_Y, DEMO_ARAC_Z = 205.0, 155.0, 0.0
+
+
+def _demo_araclar(hedef_profil, celdirici_var=True):
+    araclar = [
+        Arac("hedef", x0=DEMO_MERKEZ_X - 30.0, y0=DEMO_MERKEZ_Y, yaw=0.0,
+             vx=DEMO_HIZ, renk=(0.16, 0.16, 0.75), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H, profil=hedef_profil),
+    ]
+    if celdirici_var:
+        # 2 celdirici, TERS yonde (yaw=pi), hedefin yolunun <=10 m yaninda
+        # baslar - "hedefin <=10 m yanindan ters yonde gecmesi" (Adim 2c
+        # netlestirmesi) boylece hedef ilerlerken celdiriciler onu KARSIDAN
+        # gecer.
+        araclar += [
+            Arac("celdirici", x0=DEMO_MERKEZ_X + 40.0, y0=DEMO_MERKEZ_Y + 6.0,
+                 yaw=math.pi, vx=DEMO_HIZ, renk=(0.75, 0.65, 0.15),
+                 mesh="hatchback", L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+            Arac("celdirici2", x0=DEMO_MERKEZ_X + 55.0, y0=DEMO_MERKEZ_Y - 6.0,
+                 yaw=math.pi, vx=DEMO_HIZ * 1.1, renk=(0.65, 0.15, 0.55),
+                 mesh="hatchback", L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+        ]
+    return araclar
+
+
+def _demo(ad, aciklama, amac, beklenen, kam_profil, kam_z, kare,
+          hedef_profil=None, celdirici_var=True, etiketler=()):
+    return GzSenaryo(
+        ad=ad, aciklama=aciklama, amac=amac,
+        araclar=_demo_araclar(hedef_profil, celdirici_var),
+        hedef_ad="hedef", kam_x=DEMO_MERKEZ_X - 30.0, kam_y=DEMO_MERKEZ_Y,
+        kam_z=kam_z, kam_profil=kam_profil, drone_statik=False, kare=kare,
+        zemin_tipi="baylands", genislik=IMX500_GEN, yukseklik=IMX500_YUK,
+        odak_px=IMX500_ODAK_PX, kam_hz=IMX500_HZ, gurultu=IMX500_GURULTU,
+        kam_k1=IMX500_K1, aile="DEMO", siddet="", beklenen=beklenen,
+        etiketler=list(etiketler))
+
+
+def Demo_kucul(kare=None):
+    """Adim 5 kabul senaryosu 'kucul': irtifa 50->200 m (60->20 px), hedef
+    2 viraj alir (parcali_hiz_profili: duz - sola viraj - duz - saga viraj -
+    duz)."""
+    sure_s = 40.0
+    kare = kare if kare is not None else int(sure_s * IMX500_HZ)
+    dt = sure_s / 6.0
+    hedef_profil = parcali_hiz_profili([
+        (dt, DEMO_HIZ, 0.0),
+        (dt, DEMO_HIZ, math.radians(30) / dt),      # 1. viraj: ~30 derece sola
+        (dt, DEMO_HIZ, 0.0),
+        (dt, DEMO_HIZ, -math.radians(45) / dt),      # 2. viraj: ~45 derece saga
+        (dt, DEMO_HIZ, 0.0),
+        (dt, DEMO_HIZ, 0.0),
+    ])
+    vz = (200.0 - 50.0) / sure_s
+    kam_profil = _demo_kam_profil(vz=vz)
+    return _demo("Demo_kucul", "Irtifa rampasi 50->200 m, hedef 2 viraj alir",
+                 "Adim 5 kabul: kilit kesintisiz, KORUMA'ya (20 px) gecis gorunur",
+                 "hedef 60 -> 20 px, hassasiyet >=%95", kam_profil,
+                 kam_z=50.0, kare=kare, hedef_profil=hedef_profil,
+                 celdirici_var=False, etiketler=["demo", "kucul", "kucultme", "viraj"])
+
+
+def Demo_celdirici(kare=None):
+    """Adim 5 kabul senaryosu 'celdirici': sabit 80 m, 2 arac hedefin
+    <=10 m yanindan TERS yonde gecer."""
+    sure_s = 20.0
+    kare = kare if kare is not None else int(sure_s * IMX500_HZ)
+    return _demo("Demo_celdirici", "Sabit 80 m, 2 celdirici hedefin <=10 m yanindan gecer",
+                 "Adim 5 kabul: yanlis hedefe gecis SIFIR",
+                 "celdiriciler ~t=4-6 s civarinda hedefi gecer", _demo_kam_profil(),
+                 kam_z=80.0, kare=kare, celdirici_var=True,
+                 etiketler=["demo", "celdirici", "yanlis_kilit"])
+
+
+def Demo_kopus(kare=None):
+    """Adim 5 kabul senaryosu 'kopus': sabit 80 m, hedef ~1 s agac/yapi
+    altindan gecer. YER: DEMO_MERKEZ civari VARSAYIM - Adim 5'te gorsel
+    dogrulamayla (agac/bina gercekten hedefi kapatiyor mu) KESINLESTIRILECEK,
+    burada yalniz KAPASITE (rota + sure) kuruluyor."""
+    sure_s = 15.0
+    kare = kare if kare is not None else int(sure_s * IMX500_HZ)
+    return _demo("Demo_kopus", "Sabit 80 m, hedef ~1 s ortuluyor (yer Adim 5'te dogrulanacak)",
+                 "Adim 5 kabul: <=2 s icinde DOGRU hedefe donus, yanlis kilit 0",
+                 "kopus ~t=7-8 s civarinda, konum Adim 5'te gorsel dogrulanacak",
+                 _demo_kam_profil(), kam_z=80.0, kare=kare, celdirici_var=False,
+                 etiketler=["demo", "kopus", "oklüzyon"])
+
+
+def _demo_kam_profil(vz=0.0):
+    """DEMO kamerasi hedefi TAKIP EDER (A1-A11 ailesiyle AYNI ilke - hedef
+    goruntude nominal sabit kalir); DEMO_HIZ ile +X yonunde suzulur."""
+    sifir = (lambda t: 0.0)
+    fz = (lambda t: vz) if vz else sifir
+
+    def profil(t):
+        return (DEMO_HIZ, 0.0, fz(t), 0.0, 0.0, 0.0)
+    return profil
+
+
+DEMO_AILE = [Demo_kucul, Demo_celdirici, Demo_kopus]
+SENARYOLAR.update({f.__name__: f for f in DEMO_AILE})

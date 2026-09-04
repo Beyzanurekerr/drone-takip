@@ -389,6 +389,57 @@ _HIZ_KONTROL = """      <plugin filename="gz-sim-velocity-control-system"
         <initial_angular>{wx} {wy} {wz}</initial_angular>
       </plugin>"""
 
+_ZEMIN_PROSEDUREL = """    <!-- zemin: tek buyuk kutu + uretilmis albedo dokusu -->
+    <model name="zemin">
+      <static>true</static>
+      <pose>0 0 -0.10 0 0 0</pose>
+      <link name="l">
+        <collision name="c">
+          <geometry><box><size>{zemin} {zemin} 0.2</size></box></geometry>
+        </collision>
+        <visual name="v">
+          <geometry><box><size>{zemin} {zemin} 0.2</size></box></geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0 0 0 1</specular>
+            <pbr><metal>
+              <albedo_map>zemin.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>1.0</roughness>
+            </metal></pbr>
+          </material>
+        </visual>
+      </link>
+    </model>"""
+
+# DEMO/Adim 2b: PX4-gazebo-models/worlds/baylands.sdf KALIBI (raw.
+# githubusercontent.com/PX4/PX4-gazebo-models/main/worlds/baylands.sdf) -
+# PX4 EKLENTISI YOK, yalniz Fuel include (OpenRobotics/baylands + Coast
+# Water). RTF olculdu: 0.9937 (>=0.30 kapisini rahatca gecti, Harmonic
+# tasimasi GEREKMEDI - bkz. data/gazebo/_baylands_rtf_test/).
+_ZEMIN_BAYLANDS = """    <atmosphere type="adiabatic"/>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/baylands</uri>
+      <name>park</name>
+      <pose>205 155 -1 0 0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Coast Water</uri>
+      <pose relative_to="park">0 0 -2 0 0 0</pose>
+    </include>"""
+
+# IMX500 (Pi AI Camera) radyal distorsiyonu - gazebo/kamera_imx500.sdf ile
+# AYNI sayilar, TEK kaynaktan (o dosyanin basligindaki turetim notuna
+# bakin). k1=0.0 verilirse SDF'in kendi "distorsiyon yok" anlamina gelir -
+# mevcut (prosedurel/gercek) senaryolar bunu boyle kullanir, YENI sayi
+# UYDURULMADI.
+_DISTORSIYON = """            <distortion>
+              <k1>{k1}</k1><k2>0.0</k2><k3>0.0</k3>
+              <p1>0.0</p1><p2>0.0</p2>
+              <center>0.5 0.5</center>
+            </distortion>"""
+
 _DUNYA_SDF = """<?xml version="1.0" ?>
 <!-- URETILMISTIR - elle duzenlemeyin. Kaynak: gazebo/dunya_uret.py -->
 <sdf version="1.9">
@@ -422,29 +473,8 @@ _DUNYA_SDF = """<?xml version="1.0" ?>
       <direction>-0.35 0.25 -0.90</direction>
     </light>
 
-    <!-- zemin: tek buyuk kutu + uretilmis albedo dokusu -->
-    <model name="zemin">
-      <static>true</static>
-      <pose>0 0 -0.10 0 0 0</pose>
-      <link name="l">
-        <collision name="c">
-          <geometry><box><size>{zemin} {zemin} 0.2</size></box></geometry>
-        </collision>
-        <visual name="v">
-          <geometry><box><size>{zemin} {zemin} 0.2</size></box></geometry>
-          <material>
-            <ambient>1 1 1 1</ambient>
-            <diffuse>1 1 1 1</diffuse>
-            <specular>0 0 0 1</specular>
-            <pbr><metal>
-              <albedo_map>zemin.png</albedo_map>
-              <metalness>0.0</metalness>
-              <roughness>1.0</roughness>
-            </metal></pbr>
-          </material>
-        </visual>
-      </link>
-    </model>
+{zemin_bloku}
+
 {araclar}
 
     <!-- drone: kamera tasiyicisi.
@@ -478,6 +508,7 @@ _DUNYA_SDF = """<?xml version="1.0" ?>
             </image>
             <clip><near>0.5</near><far>800</far></clip>
             <noise><type>gaussian</type><mean>0</mean><stddev>{gurultu}</stddev></noise>
+{distorsiyon}
           </camera>
         </sensor>
         <!-- A11/KOL 1: ego telafisi icin IMU. Sensor GOVDEDE, kamera gibi
@@ -512,33 +543,39 @@ def dunya_yaz(sen, kok="data/gazebo"):
     dizin = os.path.join(kok, sen.ad)
     os.makedirs(dizin, exist_ok=True)
 
-    # DOKU ONBELLEGI: 2048^2 uretimi ~10 s surer ve 14 senaryo icin ayni
-    # tohumla ayni dokudur. Bir kez uretilir, senaryo dizinlerine sabit bag
-    # (hardlink) ile takilir - hem hizli hem 14 x 12 MB disk israfi yok.
-    # Bag kurulamayan dosya sistemlerinde kopyaya duser.
-    onbellek = os.path.join(kok, "_doku")
-    os.makedirs(onbellek, exist_ok=True)
-    dpx = int(getattr(sen, "doku_px", DOKU_PX))
     zemin_tipi = getattr(sen, "zemin_tipi", "prosedurel")
-    if zemin_tipi == "gercek":
-        # A11.1/Y1: sabit (tohumsuz) - GERCEK_ZEMIN_YAMA + merkez tek bir
-        # yerlesim tanimlar, seed'e gore degismez.
-        zm_sen = getattr(sen, "zemin_m", ZEMIN_M)
-        kaynak_doku = os.path.join(onbellek, f"zemin_gercek_{dpx}_{zm_sen:.0f}.png")
-        if not os.path.exists(kaynak_doku):
-            cv2.imwrite(kaynak_doku, zemin_dokusu_hibrit(seed=sen.doku_seed, n=dpx,
-                                                          zemin_m=zm_sen))
+    if zemin_tipi == "baylands":
+        # DEMO/Adim 2: doku PNG'si YOK - zemin Fuel'den gelen hazir baylands
+        # modeli. Onbellek/hardlink mekanizmasi bu dalda ATLANIR.
+        zemin_bloku = _ZEMIN_BAYLANDS
     else:
-        kaynak_doku = os.path.join(onbellek, f"zemin_{sen.doku_seed}_{dpx}.png")
-        if not os.path.exists(kaynak_doku):
-            cv2.imwrite(kaynak_doku, zemin_dokusu(seed=sen.doku_seed, n=dpx))
-    doku_yolu = os.path.join(dizin, "zemin.png")
-    if not os.path.exists(doku_yolu):
-        try:
-            os.link(kaynak_doku, doku_yolu)
-        except OSError:
-            import shutil
-            shutil.copyfile(kaynak_doku, doku_yolu)
+        # DOKU ONBELLEGI: 2048^2 uretimi ~10 s surer ve 14 senaryo icin ayni
+        # tohumla ayni dokudur. Bir kez uretilir, senaryo dizinlerine sabit
+        # bag (hardlink) ile takilir - hem hizli hem 14 x 12 MB disk israfi
+        # yok. Bag kurulamayan dosya sistemlerinde kopyaya duser.
+        onbellek = os.path.join(kok, "_doku")
+        os.makedirs(onbellek, exist_ok=True)
+        dpx = int(getattr(sen, "doku_px", DOKU_PX))
+        if zemin_tipi == "gercek":
+            # A11.1/Y1: sabit (tohumsuz) - GERCEK_ZEMIN_YAMA + merkez tek bir
+            # yerlesim tanimlar, seed'e gore degismez.
+            zm_sen = getattr(sen, "zemin_m", ZEMIN_M)
+            kaynak_doku = os.path.join(onbellek, f"zemin_gercek_{dpx}_{zm_sen:.0f}.png")
+            if not os.path.exists(kaynak_doku):
+                cv2.imwrite(kaynak_doku, zemin_dokusu_hibrit(seed=sen.doku_seed, n=dpx,
+                                                              zemin_m=zm_sen))
+        else:
+            kaynak_doku = os.path.join(onbellek, f"zemin_{sen.doku_seed}_{dpx}.png")
+            if not os.path.exists(kaynak_doku):
+                cv2.imwrite(kaynak_doku, zemin_dokusu(seed=sen.doku_seed, n=dpx))
+        doku_yolu = os.path.join(dizin, "zemin.png")
+        if not os.path.exists(doku_yolu):
+            try:
+                os.link(kaynak_doku, doku_yolu)
+            except OSError:
+                import shutil
+                shutil.copyfile(kaynak_doku, doku_yolu)
+        zemin_bloku = _ZEMIN_PROSEDUREL.format(zemin=getattr(sen, "zemin_m", ZEMIN_M))
 
     parcalar = []
     for a in sen.araclar:
@@ -577,14 +614,16 @@ def dunya_yaz(sen, kok="data/gazebo"):
             + "\n" + _POZ_YAYINCI)
 
     sdf = _DUNYA_SDF.format(
-        dunya=sen.ad, adim=sen.adim, zemin=getattr(sen, "zemin_m", ZEMIN_M),
+        dunya=sen.ad, adim=sen.adim,
         imu_hz=getattr(sen, "imu_hz", 200.0),
+        zemin_bloku=zemin_bloku,
         araclar="\n".join(parcalar),
         drone_statik="true" if sen.drone_statik else "false",
         kx=sen.kam_x, ky=sen.kam_y, kz=sen.kam_z,
         kroll=sen.kam_roll, kpitch=sen.kam_pitch, kyaw=sen.kam_yaw,
         kam_hz=sen.kam_hz, fov=fov_hesapla(sen.genislik, sen.odak_px),
         gen=sen.genislik, yuk=sen.yukseklik, gurultu=sen.gurultu,
+        distorsiyon=_DISTORSIYON.format(k1=getattr(sen, "kam_k1", 0.0)),
         drone_eklenti=drone_eklenti)
 
     sdf_yolu = os.path.join(dizin, "dunya.sdf")

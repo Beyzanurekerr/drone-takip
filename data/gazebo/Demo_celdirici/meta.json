@@ -1,0 +1,63 @@
+{
+  "senaryo": "Demo_celdirici",
+  "aile": "DEMO",
+  "siddet": "",
+  "beklenen": "celdiriciler ~t=4-6 s civarinda hedefi gecer",
+  "etiketler": [
+    "demo",
+    "celdirici",
+    "yanlis_kilit"
+  ],
+  "aciklama": "Sabit 80 m, 2 celdirici hedefin <=10 m yanindan gecer",
+  "amac": "Adim 5 kabul: yanlis hedefe gecis SIFIR",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 100,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 2028,
+  "yukseklik": 1520,
+  "fx": 1561.0000534057617,
+  "fy": 1561.0000610351562,
+  "cx": 1014.0,
+  "cy": 760.0,
+  "fov": 1.152164881990054,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 32.4,
+    "rtf": 0.026418357232566653,
+    "poz_ornegi": {
+      "hedef": 280,
+      "celdirici": 280,
+      "celdirici2": 280,
+      "drone": 280
+    },
+    "cmd_vel_mesaj": 1,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}
