@@ -40,6 +40,11 @@ def zemin_dokusu(seed=1, n=None):
     Doku merkezi dunya orijinine denk gelir: texel (i, j) -> dunya
     (x, y) = ((j - N/2)/TEXEL_PM, (N/2 - i)/TEXEL_PM).
     """
+    return cv2.transpose(_zemin_dokusu_ham(seed=seed, n=n))
+
+
+def _zemin_dokusu_ham(seed=1, n=None):
+    """zemin_dokusu'nun devrik ALINMADAN onceki hali (A11.1: hibrit yama icin)."""
     n = DOKU_PX if n is None else int(n)
     rng = np.random.default_rng(seed)
 
@@ -133,8 +138,65 @@ def zemin_dokusu(seed=1, n=None):
     # ilerler (olculdu: yol goruntude dikey, arac yolun 24 m solunda).
     # Devrik alinarak doku dunya eksenleriyle hizalanir. Yansima kalabilir ama
     # zararsiz: yol y = 0 etrafinda, doku gurultusu ise istatistiksel olarak
-    # simetrik.
-    return cv2.transpose(img)
+    # simetrik. Devrigin kendisi zemin_dokusu() sarmalayicisinda alinir (bu
+    # ham fonksiyon HAM DUNYA-EKSENSIZ tuvali doner - A11.1 hibrit yama bu
+    # uzayda calisir, devrik en sonda TEK sefer alinir).
+    return img
+
+
+# ---------------------------------------------------------------------------
+# A11.1/Y1: gercek hava goruntusu dokusu (VisDrone hedefsiz kirpim)
+# ---------------------------------------------------------------------------
+# Tam 560 m alani gercek goruntuyle kaplamak tek bir VisDrone karesinin
+# cozunurlugunu asiyor. Mozaikleme (ayna-tekrar VE duz-tekrar) denendi ve
+# REDDEDILDI: ayna simetrisi yapay bir kaleydoskop-X cizgisi, duz tekrar
+# periyodik yapay bir izgara cizgisi uretiyor - ikisi de "gercek goruntu"
+# degil, KENDI mozaikleme artefaktimizi olcerdik. Bunun yerine: TEK, tekrarsiz,
+# aynasiz bir yama hedef+celdirici operasyon alaninin merkezine yerlestirilir,
+# kenarda prosedurel dokuya feather (yumusak alfa) ile karisir. Yuksek
+# irtifada (>~1 patch yaricapi) kamera yama disina cikip prosedurel dokuyu
+# gorur - BILINCLI kisit, A11_1_ONKAYIT.md'de belgelendi.
+GERCEK_ZEMIN_YAMA = "data/gazebo/_assets/zemin_gercek_kirpim.png"
+# Kaynak: VisDrone2019-DET 0000283_01001_d_0000679.jpg, kirpim [y 200:1080,
+# x 0:1920], tek arac (1131,323,110,120) cv2.inpaint ile temizlendi (arac
+# haric kutu yok, oteki 4 kutu y<175'te, kirpim disinda kaldi).
+GERCEK_ZEMIN_MERKEZ_M = (16.0, -2.0)   # A1..A6/Y1 hedef yolunun (-24..+56) ortasi
+GERCEK_ZEMIN_TUY_PX = 60               # feather kenar genisligi (texel)
+
+
+def zemin_dokusu_hibrit(seed=1, n=None):
+    """Prosedurel taban (LK korner kaynagi, kenar/yuksek irtifa) + merkeze
+    yerlestirilmis GERCEK VisDrone yamasi (feather ile karistirilmis)."""
+    taban = _zemin_dokusu_ham(seed=seed, n=n)
+    n = taban.shape[0]
+    yama = cv2.imread(GERCEK_ZEMIN_YAMA)
+    if yama is None:
+        raise FileNotFoundError(GERCEK_ZEMIN_YAMA)
+    yh, yw = yama.shape[:2]
+
+    cx_m, cy_m = GERCEK_ZEMIN_MERKEZ_M
+    cx_t = int(round(n / 2 + cx_m * TEXEL_PM))
+    cy_t = int(round(n / 2 - cy_m * TEXEL_PM))
+    tx0, ty0 = cx_t - yw // 2, cy_t - yh // 2
+    if tx0 < 0 or ty0 < 0 or tx0 + yw > n or ty0 + yh > n:
+        raise ValueError(
+            f"gercek yama ({yw}x{yh}) taban tuvaline ({n}x{n}) sigmiyor "
+            f"(merkez texel {cx_t},{cy_t}) - n buyutulmeli ya da merkez kaydirilmali")
+
+    t = GERCEK_ZEMIN_TUY_PX
+    mask = np.ones((yh, yw), np.float32)
+    ramp = np.linspace(0.0, 1.0, t, dtype=np.float32)
+    mask[:t, :] *= ramp[:, None]
+    mask[-t:, :] *= ramp[::-1, None]
+    mask[:, :t] *= ramp[None, :]
+    mask[:, -t:] *= ramp[None, ::-1]
+
+    bolge = taban[ty0:ty0 + yh, tx0:tx0 + yw].astype(np.float32)
+    karisim = (yama.astype(np.float32) * mask[..., None]
+               + bolge * (1.0 - mask[..., None]))
+    sonuc = taban.copy()
+    sonuc[ty0:ty0 + yh, tx0:tx0 + yw] = np.clip(karisim, 0, 255).astype(np.uint8)
+    return cv2.transpose(sonuc)
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +231,48 @@ _ARAC_SDF = """
 {hiz_kontrol}
 {poz_yayinci}
     </model>"""
+
+# A11.1/Y1: gercekci dokulu mesh (Fuel). Kutu template'iyle AYNI iskelet
+# (gravity/inertial/hiz_kontrol/poz_yayinci) - yalnizca gorsel farkli, collision
+# YOK (kutu template'inde de yok, kinematik arac hicbir seyle çarpismiyor).
+_ARAC_SDF_MESH = """
+    <model name="{ad}">
+      <static>false</static>
+      <pose>{x} {y} {z} 0 0 {yaw}</pose>
+      <link name="govde">
+        <gravity>false</gravity>
+        <inertial>
+          <mass>1200</mass>
+          <inertia><ixx>500</ixx><iyy>2000</iyy><izz>2200</izz>
+                   <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="mesh">
+          <pose>{mx} {my} {mz} {mroll} {mpitch} {myaw}</pose>
+          <geometry><mesh><scale>{s} {s} {s}</scale><uri>{obj}</uri></mesh></geometry>
+        </visual>
+      </link>
+{hiz_kontrol}
+{poz_yayinci}
+    </model>"""
+
+# Mesh kaydi: obj yolu + olcek + GORSEL yerel pozu. Poz, meshin KENDI bbox
+# merkezini link kokenine (== GT kutusunun merkezi, veri/gazebo.py:
+# _kutu_koseleri, Arac.L/W/H) tasir - aksi halde mesh gorunumu GT kutusuna
+# gore kayik olur (hatchback.obj kendi ekseninde simetrik degil, govde
+# on agirlikli: bbox merkezi geometrik merkezden 0.34 m kayik). Turetme:
+# A11_1_ONKAYIT.md.
+_MESH_KOK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                          "data", "gazebo", "_assets")
+MESH_KAYIT = {
+    "hatchback": dict(
+        obj=os.path.join(_MESH_KOK, "hatchback", "hatchback.obj"),
+        olcek=0.0254,
+        # (x, y, z, roll, pitch, yaw) - bbox merkezini (0,-0.34355,0.77261)
+        # local origin'e tasiyip 90 derece dondurur (mesh Y ekseni = uzunluk
+        # -> govde/dunya +X, Fuel model.sdf'teki bakili pose ile ayni yon).
+        pose=(-0.34355, 0.0, -0.77261, 0.0, 0.0, 1.5707963267948966),
+    ),
+}
 
 # SceneBroadcaster'in /dynamic_pose/info yayini DUVAR SAATIYLE kisitlanir; sim
 # degisken hizda kostugu icin ornekler arasi SIM-ZAMANI araligi duzensiz olur ve
@@ -323,9 +427,17 @@ def dunya_yaz(sen, kok="data/gazebo"):
     onbellek = os.path.join(kok, "_doku")
     os.makedirs(onbellek, exist_ok=True)
     dpx = int(getattr(sen, "doku_px", DOKU_PX))
-    kaynak_doku = os.path.join(onbellek, f"zemin_{sen.doku_seed}_{dpx}.png")
-    if not os.path.exists(kaynak_doku):
-        cv2.imwrite(kaynak_doku, zemin_dokusu(seed=sen.doku_seed, n=dpx))
+    zemin_tipi = getattr(sen, "zemin_tipi", "prosedurel")
+    if zemin_tipi == "gercek":
+        # A11.1/Y1: sabit (tohumsuz) - GERCEK_ZEMIN_YAMA + merkez tek bir
+        # yerlesim tanimlar, seed'e gore degismez.
+        kaynak_doku = os.path.join(onbellek, f"zemin_gercek_{dpx}.png")
+        if not os.path.exists(kaynak_doku):
+            cv2.imwrite(kaynak_doku, zemin_dokusu_hibrit(seed=sen.doku_seed, n=dpx))
+    else:
+        kaynak_doku = os.path.join(onbellek, f"zemin_{sen.doku_seed}_{dpx}.png")
+        if not os.path.exists(kaynak_doku):
+            cv2.imwrite(kaynak_doku, zemin_dokusu(seed=sen.doku_seed, n=dpx))
     doku_yolu = os.path.join(dizin, "zemin.png")
     if not os.path.exists(doku_yolu):
         try:
@@ -336,9 +448,20 @@ def dunya_yaz(sen, kok="data/gazebo"):
 
     parcalar = []
     for a in sen.araclar:
-        rk, gk, bk = [c * 0.45 for c in a.renk]
         # profil varsa t=0 degeri baslangic hizi olur (govde cercevesi)
         v0 = a.profil(0.0) if a.profil else (a.vx, a.vy, a.wz)
+        hiz_kontrol = _HIZ_KONTROL.format(vx=v0[0], vy=v0[1], vz=0.0,
+                                          wx=0.0, wy=0.0, wz=v0[2])
+        if getattr(a, "mesh", None):
+            m = MESH_KAYIT[a.mesh]
+            parcalar.append(_ARAC_SDF_MESH.format(
+                ad=a.ad, x=a.x0, y=a.y0, z=a.H / 2.0, yaw=a.yaw,
+                s=m["olcek"], obj=m["obj"],
+                mx=m["pose"][0], my=m["pose"][1], mz=m["pose"][2],
+                mroll=m["pose"][3], mpitch=m["pose"][4], myaw=m["pose"][5],
+                hiz_kontrol=hiz_kontrol, poz_yayinci=_POZ_YAYINCI))
+            continue
+        rk, gk, bk = [c * 0.45 for c in a.renk]
         parcalar.append(_ARAC_SDF.format(
             ad=a.ad, x=a.x0, y=a.y0, z=a.H / 2.0, yaw=a.yaw,
             L=a.L, W=a.W, H=a.H,
@@ -346,9 +469,7 @@ def dunya_yaz(sen, kok="data/gazebo"):
             rk=rk, gk=gk, bk=bk,
             tavan_dx=-0.25, tavan_dz=a.H * 0.42,
             tavan_L=a.L * 0.45, tavan_W=a.W * 0.80, tavan_H=a.H * 0.30,
-            hiz_kontrol=_HIZ_KONTROL.format(vx=v0[0], vy=v0[1], vz=0.0,
-                                            wx=0.0, wy=0.0, wz=v0[2]),
-            poz_yayinci=_POZ_YAYINCI))
+            hiz_kontrol=hiz_kontrol, poz_yayinci=_POZ_YAYINCI))
 
     if sen.drone_statik:
         drone_eklenti = ""

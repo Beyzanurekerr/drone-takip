@@ -140,6 +140,10 @@ class Arac:
     W: float = 1.9
     H: float = 1.50
     profil: Optional[Callable[[float], Tuple[float, float, float]]] = None
+    # A11.1/Y1: kutu yerine gercekci dokulu mesh (gazebo/dunya_uret.py:MESH_KAYIT
+    # anahtari). Verilirse L/W/H meshin GERCEK bbox'iyla eslesmelidir (GT kutusu
+    # veri/gazebo.py'de bu alanlardan kurulur, mesh geometrisinden DEGIL).
+    mesh: Optional[str] = None
 
 
 @dataclass
@@ -177,6 +181,10 @@ class GzSenaryo:
     doku_px: int = 2048                 # doku cozunurlugu (zemin_m ile birlikte
                                         # texel/m'yi belirler)
     imu_hz: float = 200.0               # A11/KOL 1: IMU ornekleme
+    # A11.1/Y1: "prosedurel" (mevcut, uretilen) | "gercek" (VisDrone hedefsiz
+    # kirpim, prosedurel tabana merkezden yamanmis - gazebo/dunya_uret.py:
+    # zemin_dokusu_hibrit).
+    zemin_tipi: str = "prosedurel"
     aile: str = ""                      # G1..G7
     siddet: str = ""                    # yumusak | agresif
     beklenen: str = ""                  # tasarimda hedeflenen px/kare yuku
@@ -635,5 +643,99 @@ def A6_celdirici():
 
 
 A11_AILE = [A1_taban, A2_kucul, A3_yaw, A4_irtifa, A5_kucul_yaw, A6_celdirici]
+
+
+# ---------------------------------------------------------------------------
+# A11.1 - YATAK KAPISI  (docs/architecture/A11_1_ONKAYIT.md)
+# ---------------------------------------------------------------------------
+# A1..A6'nin BIREBIR ayni kinematigi (kamera profilleri, arac hizlari, celdirici
+# yerlesimi) - TEK degisken: hedef artik kutu degil gercekci dokulu mesh
+# (OpenRobotics Hatchback, Fuel) ve zemin prosedurel yerine VisDrone hedefsiz
+# kirpimi (gazebo/dunya_uret.py:zemin_dokusu_hibrit). Celdiriciler kutu KALIR
+# (on-kayit yalnizca "Hedef" icin mesh istedi - kapsam genisletilmedi).
+Y1_MESH_L, Y1_MESH_W, Y1_MESH_H = 4.0011, 2.1405, 1.5679   # hatchback.obj GERCEK bbox
+
+
+def _y1_araclar(hedef_profil=None):
+    return [
+        Arac("hedef", x0=HEDEF_X0, y0=HEDEF_Y0, yaw=0.0, vx=BAZ_HIZ,
+             renk=(0.16, 0.16, 0.75), profil=hedef_profil, mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+        Arac("celdirici", **CELDIRICI),
+        Arac("celdirici2", **CELDIRICI2),
+    ]
+
+
+def _y1(ad, aciklama, amac, beklenen, kam_profil, kare=300, kam_z=None,
+        etiketler=()):
+    return GzSenaryo(
+        ad=ad, aciklama=aciklama, amac=amac, araclar=_y1_araclar(),
+        hedef_ad="hedef", kam_x=HEDEF_X0, kam_y=0.0,
+        kam_z=A11_IRTIFA0 if kam_z is None else kam_z,
+        kam_profil=kam_profil, drone_statik=False, kare=kare,
+        doku_seed=A11_SEED, zemin_m=A11_ZEMIN_M, doku_px=A11_DOKU_PX,
+        zemin_tipi="gercek",
+        aile="A11.1", siddet="", beklenen=beklenen, etiketler=list(etiketler))
+
+
+def Y1_A1_taban(kare=300):
+    """A1_taban'in birebir ayni kinematigi, gercek yatakta. kare=500: DCF-kayma raporu icin."""
+    return _y1("Y1_A1_taban" if kare == 300 else f"Y1_A1_taban_{kare}k",
+               "Sabit 38.3 m, bozulmasiz kamera, iki celdirici (GERCEK yatak)",
+               "Y1 kapisi: dedektor recall + renk_dcf doku-kaymasi yeni yatakta kaldi mi?",
+               "hedef 60 px sabit, arka plan 0 px/kare bozulma", _kam(),
+               kare=kare, etiketler=["taban", "celdirici", "gercek_yatak"])
+
+
+def Y1_A2_kucul():
+    vz = (A11_IRTIFA1 - A11_IRTIFA0) / 20.0
+    return _y1("Y1_A2_kucul",
+               f"Irtifa rampasi {A11_IRTIFA0:.1f} -> {A11_IRTIFA1:.1f} m (GERCEK yatak)",
+               "Dedektor recall kapisi: kucuk hedef gercek dokuda da tutuyor mu?",
+               "hedef 60 -> 8 px, 600 kare", _kam(vz=lambda t: vz), kare=600,
+               etiketler=["kucultme", "irtifa", "celdirici", "gercek_yatak"])
+
+
+def Y1_A3_yaw():
+    return _y1("Y1_A3_yaw", "Yaw +-30 derece (f=0.25 Hz), sabit 38.3 m (GERCEK yatak)",
+               "Donme kanali, gercek yatakta tekrar",
+               f"aci genligi 30 derece, tepe {px_kare_acisal(_a11_yaw()(0.0)):.1f} px/kare",
+               _kam(wz=_a11_yaw()),
+               etiketler=["yaw", "donme", "celdirici", "gercek_yatak"])
+
+
+def Y1_A4_irtifa():
+    f = 0.2
+    A = 35.0 * 2.0 * math.pi * f
+    return _y1("Y1_A4_irtifa", "Irtifa salinimi +-35 m (f=0.2 Hz) (GERCEK yatak)",
+               "Olcek kanali, gercek yatakta tekrar",
+               "irtifa 38.3 - 108.3 m -> hedef 60 - 21 px salinim",
+               _kam(vz=kosinus(A, f)), kam_z=A11_IRTIFA0 + 35.0,
+               etiketler=["irtifa", "olcek", "celdirici", "gercek_yatak"])
+
+
+def Y1_A5_kucul_yaw():
+    vz = (A11_IRTIFA1 - A11_IRTIFA0) / 20.0
+    yaw = _a11_yaw()
+
+    def profil(t):
+        return (BAZ_HIZ, 0.0, vz, 0.0, 0.0, yaw(t))
+    return _y1("Y1_A5_kucul_yaw", "Irtifa rampasi VE yaw birlikte (GERCEK yatak)",
+               "En zor kol, gercek yatakta tekrar",
+               "hedef 60 -> 8 px, aci genligi 30 derece", profil, kare=600,
+               etiketler=["kucultme", "yaw", "celdirici", "gercek_yatak"])
+
+
+def Y1_A6_celdirici():
+    return _y1("Y1_A6_celdirici", "Iki celdirici hedefe yakinsiyor (GERCEK yatak)",
+               "Yanlis kilit, gercek yatakta tekrar",
+               "en kucuk hedef-celdirici ayrimi KAYITTAN olculecek", _kam(),
+               etiketler=["celdirici", "yanlis_kilit", "gercek_yatak"])
+
+
+Y1_AILE = [Y1_A1_taban, Y1_A2_kucul, Y1_A3_yaw, Y1_A4_irtifa, Y1_A5_kucul_yaw,
+           Y1_A6_celdirici]
+SENARYOLAR.update({f.__name__: f for f in Y1_AILE})
+SENARYOLAR["Y1_A1_taban_500"] = lambda: Y1_A1_taban(kare=500)
 
 SENARYOLAR.update({f.__name__: f for f in A11_AILE})
