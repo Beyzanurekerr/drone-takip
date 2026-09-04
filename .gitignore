@@ -49,6 +49,7 @@ cikti/*.npz
 !cikti/a11_kol3.json
 !cikti/a11_1_y1_kapi.json
 !cikti/a11_1_dcf_kayma_500k.json
+!cikti/a11_2_t1.json
 
 # sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
 data/sim/*/kareler/
