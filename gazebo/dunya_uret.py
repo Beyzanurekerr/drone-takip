@@ -183,12 +183,13 @@ GERCEK_ZEMIN_YAMA = "data/gazebo/_assets/zemin_gercek_kirpim.png"
 # haric kutu yok, oteki 4 kutu y<175'te, kirpim disinda kaldi).
 GERCEK_ZEMIN_MERKEZ_M = (16.0, -2.0)   # A1..A6/Y1 hedef yolunun (-24..+56) ortasi
 GERCEK_ZEMIN_TUY_PX = 60               # feather kenar genisligi (texel)
-# Yamanin KENDI piksel uzayinda (1920x880), temizlenen arac bolgesi - KOL 2
-# icin: hareket biriktirme burada bir "hayalet" bulursa kaynagi bilinsin.
-# (x-pad, y-pad, x+w+pad, y+h+pad), pad=20 - inpaint cagrisindaki MASKE ile
-# birebir (bkz. A11_1_ONKAYIT.md, data/gazebo/_assets/zemin_gercek_kirpim.png
-# ureten komut).
-INPAINT_PIKSEL_KUTUSU = (1111, 103, 1261, 263)
+# Yamanin KENDI piksel uzayinda (A11.2/Y1.1: 2200x1300, 2x2 dort-sahne
+# bilesik - gazebo/y1_yama_uret.py), temizlenen arac bolgesi - KOL 2 icin:
+# hareket biriktirme burada bir "hayalet" bulursa kaynagi bilinsin. Sol-ust
+# hucredeki (eski tek-yama, pad=20 inpaint) aracin bilesik uzaydaki konumu -
+# `y1_yama_uret.py --  data/gazebo/_assets/inpaint_konum_v2.json` ile
+# URETILDI, elle hesaplanmadi.
+INPAINT_PIKSEL_KUTUSU = (701, 83, 822, 212)
 
 
 def _yama_yerlesimi(n, zemin_m):

@@ -220,3 +220,93 @@ görüntüsünde de, hatta DAHA HIZLI ortaya çıkıyor.**
 3. renk_dcf'in şerit-çizgisi tipi doku-kaymasına karşı sertleştirilmesi
    (A11'in "sıradaki adaylar" listesindeki "DCF-doku-kaymasını önlemek"
    maddesiyle AYNI, artık gerçek görüntüyle de doğrulanmış durumda).
+
+---
+
+## Y1.1 — YAMA GENİŞLETME + KAPI YENİDEN ÖN-KAYDI (2026-09-04, A11.2'nin parçası)
+
+Talimat (birebir): *"3–4 hedefsiz VisDrone karesi, feather birleşim,
+tekrarsız; ≥300×170 m. Kapıyı YENİDEN ÖN-KAYITLA: 'Gazebo recall, A6'nın
+gerçek veri recall'ünün ±0.10 içinde' (40 px tam kare ve ROI; 20 px ROI).
+Eski 0.80 kapısının neden hatalı olduğunu belgede yaz. COCO düşer, A6 tek
+model."*
+
+### Eski 0.80 kapısı neden hatalıydı — ölçülmüş kanıt
+`A6_KUCUK_HEDEF_FINAL_BENCHMARK.md`'nin **gerçek VisDrone verisi** üzerinde
+ölçülmüş recall@IoU≥0.5 tablosu (A6 UAVDT+VisDrone sütunu, iki birincil dizi):
+
+| boyut | 117/23 (gerçek) | 137/12 (gerçek) | ortalama |
+|---|---:|---:|---:|
+| 40×15 px | 0.900 | 0.600 | **0.750** |
+| 20×10 px | 0.050 | 0.375 | **0.2125** |
+
+Yani modelin **kendi gerçek doğrulama verisinde bile** 20px'te recall
+%5–37.5 bandında — "Gazebo'da 20px'te ≥0.80" sabit kapısı, model gerçek
+dünyada bunu hiçbir zaman başaramadığı için **ulaşılamaz bir bardı.** Doğru
+soru "simülasyon gerçek veriyle tutarlı mı" idi, "mutlak sayı ne kadar
+yüksek" değil. Yeni kapı: Gazebo recall'ü, aynı modelin gerçek veri
+recall'ünün ±0.10'u içinde mi (referans: 40px→0.750, 20px→0.2125).
+
+### Yama genişletildi
+`gazebo/y1_yama_uret.py`: **4 farklı, hedefsiz VisDrone karesi** (mevcut
+otoyol yaması + 3 yeni: nadire-yakın yol/çatlak dokusu, ağaç/duvar/tarla,
+ağaç/kaldırım), 2×2 ızgarada feather (60px) ile birleştirildi — hiçbiri
+tekrarlanmıyor/aynalanmıyor (Y1'in ayna/tekrar reddi burada da geçerli).
+Sonuç: **2200×1300 px = 300.8×177.7 m** (talimat ≥300×170 m — geçti).
+İnpaint edilen aracın bileşik uzaydaki konumu otomatik hesaplandı
+(`INPAINT_PIKSEL_KUTUSU=(701,83,822,212)`, `inpaint_konum_v2.json`).
+6 senaryo + 500k varyantı **yeniden kaydedildi** (yeni zemin ile, eski
+kayıtların üzerine). Kapsam iyileşti: **%47 → %58.5 yama-içi**
+(1405/2400 kare) — artık 20px sıklet aralığında da örneklem var (n=122).
+
+### Yeni kapı sonucu (A6 tek model, `gazebo/tani_a11_2_y11_kapi.py`)
+
+| Ölçüt | Gazebo recall (n) | gerçek-veri referans | fark | ±0.10 kapı |
+|---|---:|---:|---:|---|
+| tam-kare @40px | 0.089 (101) | 0.750 | −0.661 | **KALDI** |
+| ROI-4× @40px | 0.970 (101) | 0.750 | +0.220 | **KALDI** |
+| ROI-4× @20px | 0.754 (122) | 0.2125 | +0.542 | **KALDI** |
+
+**HÜKÜM: Y1.1 kapısı da KALDI** — ama önceki turdan ÇOK FARKLI bir
+biçimde: tam-kare @40px **düştü** (0.693→0.089), ROI'ler ise gerçek
+veriden ÇOK DAHA İYİ çıktı (Gazebo'da ROI @20px 0.754, gerçek veride
+0.05–0.375). Kova tablosunun tamamı:
+
+| kova | tam-kare (n) | ROI-4× (n) |
+|---|---:|---:|
+| 60×22 | 0.887 (958) | 0.689 (958) |
+| 40×15 | 0.208 (149) | 0.933 (149) |
+| 30×12 | **0.000** (176) | 0.864 (176) |
+| 20×10 | **0.000** (122) | 0.754 (122) |
+
+### Neden düştü — YENİ bir metodolojik kusur bulundu: "hayalet" dikiş bölgeleri
+Görsel teşhis (30×12 kovasından örnek kare, `Y1_A2_kucul`): küçük hedefin
+etrafında **iki farklı gerçek fotoğrafın feather ile üst üste bindiği bir
+"çifte pozlama" bölgesi** var — yarı saydam yeşil ve sarı hayalet
+dikdörtgenler, iki farklı yol dokusunun birbirine karışması, çim ile kaldırım
+dokusunun aynı anda görünmesi. **2×2 ızgaranın iç dikişleri (4 hücre arası,
+toplamda bir "+" şekli) tam operasyon alanının MERKEZİNDEN geçiyor**
+(`GERCEK_ZEMIN_MERKEZ_M=(16,-2)` ızgaranın kesişim noktasına yakın) — yani
+hedef küçüldükçe (irtifa arttıkça) kamera tam bu dikiş bölgesinden geçme
+olasılığı yüksek, ve küçük hedefler için bu "çifte pozlama" gerçek bir
+görsel bozulmadır, dedektörü gerçekten şaşırtır. Bu, Y1'in tek-yama
+sürümünde YOKTU (tek fotoğraf, iç dikiş yok) — **büyütme kendi yeni
+artefaktını getirdi.** ROI'nin buna rağmen güçlü çıkması (0.75–0.97)
+tutarlı: ROI dar bir pencereyi büyütüp veriyor, dikiş bölgesinin geniş
+"çifte pozlama" alanının çoğu kırpılıp atılıyor.
+
+**Sonuç — iki ayrı, birbirinden bağımsız bulgu:**
+1. **Eski 0.80 sabit kapısı gerçekten hatalıydı** (gerçek veriyle
+   karşılaştırma kanıtladı) — bu düzeltme doğruydu ve kalıcı olmalı.
+2. **Yamayı 2×2 ızgarayla büyütme yöntemi kendi başına bir kusur getirdi**
+   (dikiş "çifte pozlama"sı) — bu, ±0.10 kapısının GEÇMEMESİNİN başlıca
+   nedeni ve yama genişletmenin UYGULANIŞIYLA ilgili, ölçüm metodolojisiyle
+   değil. Sıradaki adım (sınanmadı): ızgara merkezini operasyon alanının
+   ORTASINDAN kaydırmak (dikişler kenarlara düşsün) ya da feather yerine
+   hücreleri KESKİN (dikişsiz, örtüşmesiz) sınırlarla ayırmak — çifte
+   pozlama yerine düz bir kenar, en azından dedektör için daha az kafa
+   karıştırıcı olabilir.
+
+**Y2/Y3 bu turda da KOŞULMADI** — ne T1'in önerisi ne Y1.1'in yeni kapısı
+"uygulanıp kendi A/B'sini geçmiş bir düzeltme" değil; talimatın ön-koşulu
+karşılanmıyor. Ham veri: `cikti/a11_2_y11_kapi.json`.

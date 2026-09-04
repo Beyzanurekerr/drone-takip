@@ -1,0 +1,82 @@
+{
+  "tasma": {
+    "toplam_kare": 2400,
+    "yama_ici": 1405,
+    "tasma": 995,
+    "tasma_orani": 0.4146
+  },
+  "gercek_referans": {
+    "40px": 0.75,
+    "20px": 0.2125,
+    "tolerans": 0.1,
+    "kaynak": "A6_KUCUK_HEDEF_FINAL_BENCHMARK.md, 117/23 + 137/12 ortalamasi"
+  },
+  "tam_kare_tablo": {
+    "60x22": [
+      958,
+      850,
+      0.8873
+    ],
+    "40x15": [
+      149,
+      31,
+      0.2081
+    ],
+    "30x12": [
+      176,
+      0,
+      0.0
+    ],
+    "20x10": [
+      122,
+      0,
+      0.0
+    ]
+  },
+  "roi_4x_tablo": {
+    "60x22": [
+      958,
+      660,
+      0.6889
+    ],
+    "40x15": [
+      149,
+      139,
+      0.9329
+    ],
+    "30x12": [
+      176,
+      152,
+      0.8636
+    ],
+    "20x10": [
+      122,
+      92,
+      0.7541
+    ]
+  },
+  "kapi": {
+    "tam_kare_40px": {
+      "n": 101,
+      "recall": 0.0891,
+      "referans": 0.75,
+      "fark": -0.6609,
+      "gecti": false
+    },
+    "roi_40px": {
+      "n": 101,
+      "recall": 0.9703,
+      "referans": 0.75,
+      "fark": 0.2203,
+      "gecti": false
+    },
+    "roi_20px": {
+      "n": 122,
+      "recall": 0.7541,
+      "referans": 0.2125,
+      "fark": 0.5416,
+      "gecti": false
+    }
+  },
+  "genel_kapi_gecti": false
+}
