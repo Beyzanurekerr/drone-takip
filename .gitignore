@@ -28,8 +28,11 @@ data/gazebo/_doku/
 # sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
 data/sim/*/kareler/
 
-# A5 - YOLO agirliklari (ikili, depoya girmez)
-weights/
+# Model agirliklari (ikili, buyuk) depoya girmez - TEK istisna: demo modunun
+# ZORUNLU bagimliligi a6_kucuk_hedef.pt (klonlayan herkeste hazir olsun diye
+# commit edilir). yolov8n.pt (opsiyonel --yolo yolu) HALA elle indirilir.
+*.pt
+!weights/a6_kucuk_hedef.pt
 
 # A6 - uretilmis egitim havuzlari (kaynaktan yeniden uretilebilir)
 data/a6/
