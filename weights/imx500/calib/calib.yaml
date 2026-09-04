@@ -1,0 +1,10 @@
+# IMX500 kalibrasyon seti - yalniz paketleme/quantizasyon icin.
+# 548 goruntuluk VisDrone DET'ten (data/datasets/visdrone_det/images) 200 kare,
+# np.linspace ile deterministik es araliklarla secildi (bkz. commit).
+# Etiket YOK (kalibrasyon forward-pass icin gerekmiyor) - ultralytics eksik
+# etiketi "0 nesne" olarak yorumlar, hata vermez.
+path: /home/beyza/drone_takip/weights/imx500/calib
+train: images/val
+val: images/val
+nc: 4
+names: [car, van, truck, bus]

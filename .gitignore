@@ -40,3 +40,8 @@ data/a6/
 
 # A6 - egitim ciktilari
 runs/
+
+# IMX500 paketleme: yerel arac kurulumlari (buyuk, PC'ye ozel, yeniden kurulabilir)
+.venv_imx500/
+.jdk/
+weights/imx500/calib/images/
