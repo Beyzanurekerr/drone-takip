@@ -112,10 +112,19 @@ class Ground:
 
 
 class Vehicle:
-    """Basit arac modeli: sabit hiz, sabit/degisken donus orani."""
+    """Basit arac modeli: sabit hiz (ya da t -> hiz profili), donus orani.
+
+    `profil` verilirse o karenin hizi `profil(self.t)` ile belirlenir; verilmezse
+    `self.speed` AYNEN kullanilir. Varsayilan `None` oldugu icin mevcut
+    senaryolarda aritmetik birebir korunur (`hiz is self.speed`).
+    `self.t` zaman damgasi `wobble` ile AYNI konvansiyondadir: artirimdan
+    SONRA okunur, yani k. karede `t = (k + 1) * dt`.
+    (Gazebo tarafindaki `gazebo/senaryolar.py:Arac(profil=...)` kalibinin
+    sim karsiligidir; A3.10'un hizli/duran hedef senaryolari icin eklendi.)
+    """
 
     def __init__(self, x, y, heading, speed, color, length=4.6, width=1.9,
-                 turn_rate=0.0, wobble=0.0, name=""):
+                 turn_rate=0.0, wobble=0.0, name="", profil=None):
         self.x, self.y = float(x), float(y)
         self.h = math.radians(heading)
         self.speed = speed
@@ -124,14 +133,16 @@ class Vehicle:
         self.turn_rate = math.radians(turn_rate)
         self.wobble = wobble
         self.name = name
+        self.profil = profil
         self.t = 0.0
 
     def step(self, dt):
         self.t += dt
         self.h += self.turn_rate * dt
         hh = self.h + self.wobble * math.sin(self.t * 1.3)
-        self.x += math.cos(hh) * self.speed * dt
-        self.y += math.sin(hh) * self.speed * dt
+        hiz = self.speed if self.profil is None else float(self.profil(self.t))
+        self.x += math.cos(hh) * hiz * dt
+        self.y += math.sin(hh) * hiz * dt
 
     def corners(self):
         ca, sa = math.cos(self.h), math.sin(self.h)

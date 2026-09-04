@@ -13,3 +13,13 @@
 
 numpy>=1.24
 opencv-python>=4.8
+
+# --- opsiyonel: A5 YOLO hedef secimi (--yolo) ---
+# Cekirdek takipci bunlar OLMADAN da calisir; yalnizca `--yolo` yolu icin gerekir.
+# Masaustu dogrulamasi icin CPU tekerlegi yeterlidir:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install ultralytics
+# Agirlik SESSIZCE INDIRILMEZ; weights/yolov8n.pt elle indirilir (bkz.
+# veri/yolo_secici.py hata mesaji). weights/ .gitignore'dadir.
+# ultralytics>=8.3
+# torch>=2.2

@@ -88,6 +88,115 @@ def otomatik_hedef_sec(adaylar, kare):
     return en_iyi
 
 
+# --- A4: kullanici hedef secimi (fare ile ROI) -----------------------------
+# `kos()` govdesine DOKUNULMAZ. Secici, `otomatik_hedef_sec` ile AYNI sozlesmeyi
+# uygular: secici(adaylar, kare) -> aday sozlugu | None.
+
+
+def _roi_aday(x0, y0, x1, y1, genislik, yukseklik, min_kenar=4.0):
+    """Iki fare noktasindan aday sozlugu. Saf fonksiyon (GUI'siz test edilir).
+
+    * TERS SURUKLEME desteklenir (min/max ile normalize edilir).
+    * KADRAJ DISI kisim guvenle KIRPILIR.
+    * Kirpma sonrasi kenar `min_kenar`in altindaysa secim GECERSIZ -> None.
+
+    2 PX ON-TELAFI: `kos()` satir 382-384'te hareket lekesi icin
+    `kutu[2:] -= 2` dilate telafisi uygular ve kutuyu `merkez`e gore yeniden
+    konumlandirir. Elle cizilen ROI dilate edilmis DEGILDIR; bu yuzden burada
+    kutu 2 px BUYUK dondurulur ve telafi sadelesir - `kos()` govdesi bit-birebir
+    kalir, kullanici tam cizdigi kutuyu alir.
+    """
+    xa, xb = (float(x0), float(x1)) if x0 <= x1 else (float(x1), float(x0))
+    ya, yb = (float(y0), float(y1)) if y0 <= y1 else (float(y1), float(y0))
+    xa, ya = max(0.0, xa), max(0.0, ya)                       # kadraj disi kirpma
+    xb, yb = min(float(genislik), xb), min(float(yukseklik), yb)
+    w, h = xb - xa, yb - ya
+    if not (np.isfinite(w) and np.isfinite(h)) or w < min_kenar or h < min_kenar:
+        return None                                           # tek tik / sifir alan
+    merkez = np.array([xa + w / 2.0, ya + h / 2.0], np.float32)
+    kutu = np.array([xa - 1.0, ya - 1.0, w + 2.0, h + 2.0], np.float32)  # on-telafi
+    return {"kutu": kutu, "merkez": merkez, "alan": float(w * h)}
+
+
+class _RoiSecim:
+    """Fare olaylarindan ROI kuran durum makinesi (pencereden bagimsiz)."""
+
+    def __init__(self, genislik, yukseklik, min_kenar=4.0):
+        self.genislik, self.yukseklik = int(genislik), int(yukseklik)
+        self.min_kenar = float(min_kenar)
+        self.bas = self.son = None
+        self.surukleniyor = False
+        self._aday = None
+
+    def olay(self, olay, x, y):
+        if olay == cv2.EVENT_LBUTTONDOWN:
+            self.bas, self.son, self.surukleniyor, self._aday = (x, y), (x, y), True, None
+        elif olay == cv2.EVENT_MOUSEMOVE and self.surukleniyor:
+            self.son = (x, y)
+        elif olay == cv2.EVENT_LBUTTONUP and self.surukleniyor:
+            self.son, self.surukleniyor = (x, y), False
+            self._aday = _roi_aday(self.bas[0], self.bas[1], x, y,
+                                   self.genislik, self.yukseklik, self.min_kenar)
+            if self._aday is None:                 # gecersiz -> sifirla, bekle
+                self.bas = self.son = None
+
+    def dikdortgen(self):
+        if self.bas is None or self.son is None:
+            return None
+        return (min(self.bas[0], self.son[0]), min(self.bas[1], self.son[1]),
+                max(self.bas[0], self.son[0]), max(self.bas[1], self.son[1]))
+
+    def aday(self):
+        return self._aday
+
+
+def fare_hedef_sec(min_kenar=4.0):
+    """Fare ile hedef secimi. `kos(..., hedef_secici=fare_hedef_sec())`.
+
+    Sol tus bas -> surukle -> birak = secim. ESC = guvenli iptal (bir daha
+    sorulmaz, kosum kilitsiz devam eder). Gecersiz ROI'de secim sifirlanir ve
+    beklemeye devam edilir; program cokmez.
+
+    MALIYET: yalnizca KILIT ONCESI calisir. Kilit kurulduktan sonra `kos()`
+    seciciyi bir daha CAGIRMAZ (main.py:377 `if not kilitli`), dolayisiyla takip
+    dongusune surekli maliyet EKLEMEZ.
+    """
+    durum = {"secim": None, "iptal": False, "kurulu": False, "sure_ms": 0.0}
+
+    def secici(adaylar, kare):
+        if durum["iptal"]:
+            return None
+        ad = kare.kaynak_adi
+        t0 = time.perf_counter()
+        if not durum["kurulu"]:
+            durum["secim"] = _RoiSecim(kare.genislik, kare.yukseklik, min_kenar)
+            cv2.namedWindow(ad, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
+            cv2.resizeWindow(ad, *pencere_boyutu(kare.genislik, kare.yukseklik))
+            cv2.setMouseCallback(ad, lambda o, x, y, b, p: durum["secim"].olay(o, x, y))
+            durum["kurulu"] = True
+        s = durum["secim"]
+        f = hud_olcek(kare.genislik, kare.yukseklik)
+        while True:
+            gor = kare.goruntu.copy()          # ORIJINALE YAZMA: kos() ayni kareyi kullanir
+            d = s.dikdortgen()
+            if d is not None:
+                cv2.rectangle(gor, (d[0], d[1]), (d[2], d[3]), (0, 255, 255), 2)
+            _yaz(gor, "HEDEFI SEC: surukle  |  ESC: iptal",
+                 (int(10 * f), int(26 * f)), 0.6 * f, (0, 255, 255), max(1, int(2 * f)))
+            cv2.imshow(ad, gor)
+            if (cv2.waitKey(20) & 0xFF) == 27:      # ESC -> guvenli iptal
+                durum["iptal"] = True
+                durum["sure_ms"] += (time.perf_counter() - t0) * 1e3
+                return None
+            a = s.aday()
+            if a is not None:
+                durum["sure_ms"] += (time.perf_counter() - t0) * 1e3
+                return a
+
+    secici.durum = durum          # olcum/teshis icin (kos() bunu okumaz)
+    return secici
+
+
 # --- HUD -------------------------------------------------------------------
 # Iki kural:
 #
@@ -505,7 +614,30 @@ def main():
     ap.add_argument("--kaydet", default=None, help="cikti videosu yolu")
     ap.add_argument("--max-kare", type=int, default=0, dest="max_kare")
     ap.add_argument("--penceresiz", action="store_true", help="ekranda pencere acma")
+    ap.add_argument("--sec", action="store_true",
+                    help="hedefi FARE ile sec (A4); verilmezse otomatik secim")
+    ap.add_argument("--yolo", default=None, metavar="AGIRLIK",
+                    help="hedefi YOLO ile sec (A5), or: weights/yolov8n.pt")
+    ap.add_argument("--yolo-conf", type=float, default=0.25, dest="yolo_conf",
+                    help="YOLO guven esigi (varsayilan 0.25)")
+    ap.add_argument("--yolo-gt-esle", action="store_true", dest="yolo_gt_esle",
+                    help="YOLO tespitleri icinden GT'ye en yakini (adil SOT olcumu)")
     a = ap.parse_args()
+
+    # --- hedef secici: uc yol, oncelik --sec > --yolo > otomatik ---
+    secici = None
+    if a.sec:
+        if a.yolo:
+            print("UYARI: --sec ve --yolo birlikte verildi; --sec onceliklidir.")
+        secici = fare_hedef_sec()
+    elif a.yolo:
+        from veri.yolo_secici import YoloHatasi, yolo_hedef_sec
+        try:
+            secici = yolo_hedef_sec(a.yolo, conf=a.yolo_conf,
+                                    gt_esle=a.yolo_gt_esle)
+        except YoloHatasi as e:
+            print(f"HATA: {e}")
+            sys.exit(1)
 
     try:
         kaynak = kaynak_olustur(a.source, girdi=a.input,
@@ -520,7 +652,8 @@ def main():
     print(kaynak.bilgi())
     try:
         m = kos(kaynak, cekirdek=a.cekirdek, pencere=not a.penceresiz,
-                kaydet=a.kaydet, max_kare=a.max_kare)
+                kaydet=a.kaydet, max_kare=a.max_kare,
+                hedef_secici=secici)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)

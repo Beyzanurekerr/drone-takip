@@ -193,6 +193,108 @@ def test7_kamera():
                    s, 320, kam, 0)
 
 
+# ----------------------------------------------------------------------------
+# A3.10 - hiz profili yardimcisi
+# ----------------------------------------------------------------------------
+def _yamuk_hiz(v0, v1, t0, ramp, sure):
+    """Analitik YAMUK hiz profili: t -> m/s.
+
+        t < t0                 -> v0
+        t0 .. t0+ramp          -> v0'dan v1'e dogrusal
+        t0+ramp .. +sure       -> v1 (duz kisim)
+        sonraki ramp           -> v1'den v0'a dogrusal
+        sonrasi                -> v0
+
+    Gazebo tarafindaki `gazebo/senaryolar.py:yamuk` ile AYNI bicimdedir; fark,
+    orada 0..1 kapisi dondurulmesi, burada dogrudan hizin dondurulmesidir.
+    Kapali formdur: her t icin tek deger, durum tutmaz -> deterministik.
+    """
+    def f(t):
+        if t < t0:
+            return v0
+        u = t - t0
+        if u < ramp:
+            return v0 + (v1 - v0) * (u / ramp)
+        if u < ramp + sure:
+            return v1
+        u2 = u - ramp - sure
+        if u2 < ramp:
+            return v1 + (v0 - v1) * (u2 / ramp)
+        return v0
+    return f
+
+
+# ----------------------------------------------------------------------------
+# A3.10 - A) HIZLI_HEDEF
+# ----------------------------------------------------------------------------
+def hizli_hedef():
+    """Kontrollu hizlanma: 22 -> 55 -> 22 m/s yamuk profil.
+
+    A3.10'un resmi isi senaryo uretimidir; takipcinin bu senaryodaki basarisi
+    kabul olcutu DEGILDIR.
+    """
+    g = zemin()
+    V0, VT, T0, RAMP, SURE = 22.0, 55.0, 2.0, 0.8, 1.5
+    prof = _yamuk_hiz(V0, VT, T0, RAMP, SURE)
+    araclar = [
+        _yol_araci(80, -2.2, V0, (40, 40, 190), name="HEDEF", profil=prof),
+        _yol_araci(140, +2.2, 20.0, (180, 170, 60)),
+    ]
+    s = _kur(Scene(g, Camera(alt=45), araclar, seed=7), 0)
+    sen = Senaryo("hizli_hedef",
+                  f"Kontrollu hizlanma: {V0:.0f} -> {VT:.0f} -> {V0:.0f} m/s "
+                  f"(t0={T0} s, ramp={RAMP} s, sure={SURE} s)",
+                  "Hizli hedef senaryosu tekrarlanabilir bicimde uretilebiliyor mu?",
+                  s, 300, _takip_kamera(0.10, seed=3), 0)
+    sen.meta = {
+        "asama": "A3.10", "tip": "HIZLI_HEDEF", "hiz_profili": "yamuk",
+        "v0_m_s": V0, "v_maks_m_s": VT, "t0_s": T0, "ramp_s": RAMP,
+        "duz_sure_s": SURE, "durus_suresi_s": 0.0,
+        "hizlanma_m_s2": (VT - V0) / RAMP, "yavaslama_m_s2": (V0 - VT) / RAMP,
+        "dt": 1 / 30, "kare": 300, "fps": 30.0,
+        "irtifa_m": 45.0, "arac_L_m": 4.6, "arac_W_m": 1.9,
+        "kamera_kazanc": 0.10,
+        "seed": {"zemin": 1, "sahne": 7, "kamera": 3},
+    }
+    return sen
+
+
+# ----------------------------------------------------------------------------
+# A3.10 - B) DURAN_HEDEF
+# ----------------------------------------------------------------------------
+def duran_hedef():
+    """Kontrollu durus: 22 -> 0 m/s, 3.0 s bekleme, sonra 22 m/s.
+
+    Durus suresi 3.0 s = 90 kare; takipcinin BELGELENMIS `zemin_sabir = 20`
+    kare sinirindan bilerek uzundur (`izleyici.py:338` docstring). Senaryonun
+    amaci o siniri OLCEBILIR kilmaktir, gecmek degil.
+    """
+    g = zemin()
+    V0, VD, T0, RAMP, DURUS = 22.0, 0.0, 2.0, 1.0, 3.0
+    prof = _yamuk_hiz(V0, VD, T0, RAMP, DURUS)
+    araclar = [
+        _yol_araci(80, -2.2, V0, (40, 40, 190), name="HEDEF", profil=prof),
+        _yol_araci(140, +2.2, 20.0, (180, 170, 60)),
+    ]
+    s = _kur(Scene(g, Camera(alt=45), araclar, seed=7), 0)
+    sen = Senaryo("duran_hedef",
+                  f"Kontrollu durus: {V0:.0f} -> {VD:.0f} m/s, {DURUS:.0f} s bekleme "
+                  f"(t0={T0} s, ramp={RAMP} s)",
+                  "Duran hedef senaryosu tekrarlanabilir bicimde uretilebiliyor mu?",
+                  s, 300, _takip_kamera(0.10, seed=3), 0)
+    sen.meta = {
+        "asama": "A3.10", "tip": "DURAN_HEDEF", "hiz_profili": "yamuk",
+        "v0_m_s": V0, "v_maks_m_s": V0, "t0_s": T0, "ramp_s": RAMP,
+        "duz_sure_s": DURUS, "durus_suresi_s": DURUS,
+        "hizlanma_m_s2": (V0 - VD) / RAMP, "yavaslama_m_s2": (VD - V0) / RAMP,
+        "dt": 1 / 30, "kare": 300, "fps": 30.0,
+        "irtifa_m": 45.0, "arac_L_m": 4.6, "arac_W_m": 1.9,
+        "kamera_kazanc": 0.10,
+        "seed": {"zemin": 1, "sahne": 7, "kamera": 3},
+    }
+    return sen
+
+
 TUM_TESTLER = {
     "test1": test1_yakin,
     "test2": test2_uzaklasan,
@@ -201,4 +303,7 @@ TUM_TESTLER = {
     "test5": test5_benzer,
     "test6": test6_okluzyon,
     "test7": test7_kamera,
+    # --- A3.10: kontrollu simulasyonun genisletilmesi ---
+    "hizli_hedef": hizli_hedef,
+    "duran_hedef": duran_hedef,
 }

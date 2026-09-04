@@ -1,0 +1,1311 @@
+{
+  "asama": "A5.2 - kucuk hedef benchmark'i (COCO pretrained YOLOv8n taban)",
+  "sabitler": {
+    "agirlik": "weights/yolov8n.pt",
+    "conf": 0.25,
+    "imgsz": 640,
+    "siniflar_coco": [
+      2,
+      3,
+      5,
+      7
+    ],
+    "tuval": [
+      640,
+      360
+    ],
+    "cihaz": "cpu",
+    "thread": 8,
+    "degisken": "YALNIZCA hedef yamasinin uzun kenari"
+  },
+  "letterbox": {
+    "tuval": [
+      640,
+      360
+    ],
+    "ag_girdisi": [
+      640,
+      384
+    ],
+    "letterbox_olcegi": 1.0
+  },
+  "diziler": {
+    "uav0000117_02622_v/23": {
+      "rol": "birincil",
+      "kare_boyutu": [
+        2720,
+        1530
+      ],
+      "native_gt": [
+        147.0,
+        156.0
+      ],
+      "native_uzun_kenar": 156.0,
+      "arkaplan_hucre": [
+        320,
+        180
+      ],
+      "hedeften_uzaklik_px": 447.5,
+      "arkaplan_taban_tespit_kare_basina": 3.05,
+      "tespit": {
+        "native": {
+          "nominal_uzun_kenar": null,
+          "ulasilan_w": 146.9,
+          "ulasilan_h": 155.2,
+          "ag_girdisi_w": 146.9,
+          "kare": 40,
+          "recall_iou50": 0.825,
+          "recall_iou0": 0.875,
+          "fn": 5,
+          "ort_iou": 0.7823,
+          "ort_guven": 0.481,
+          "ekstra_tespit": 106,
+          "gecikme_ort_ms": 35.12,
+          "gecikme_p50_ms": 34.12,
+          "gecikme_p95_ms": 39.49,
+          "esdeger_fps": 28.5
+        },
+        "57x21": {
+          "nominal_uzun_kenar": 57,
+          "ulasilan_w": 54.1,
+          "ulasilan_h": 57.0,
+          "ag_girdisi_w": 54.1,
+          "kare": 40,
+          "recall_iou50": 0.975,
+          "recall_iou0": 0.975,
+          "fn": 1,
+          "ort_iou": 0.9536,
+          "ort_guven": 0.4427,
+          "ekstra_tespit": 126,
+          "gecikme_ort_ms": 34.09,
+          "gecikme_p50_ms": 33.28,
+          "gecikme_p95_ms": 39.5,
+          "esdeger_fps": 29.3
+        },
+        "40x15": {
+          "nominal_uzun_kenar": 40,
+          "ulasilan_w": 38.0,
+          "ulasilan_h": 40.0,
+          "ag_girdisi_w": 38.0,
+          "kare": 40,
+          "recall_iou50": 0.35,
+          "recall_iou0": 0.35,
+          "fn": 26,
+          "ort_iou": 0.9037,
+          "ort_guven": 0.2929,
+          "ekstra_tespit": 120,
+          "gecikme_ort_ms": 32.2,
+          "gecikme_p50_ms": 31.83,
+          "gecikme_p95_ms": 36.37,
+          "esdeger_fps": 31.1
+        },
+        "30x12": {
+          "nominal_uzun_kenar": 30,
+          "ulasilan_w": 28.2,
+          "ulasilan_h": 30.0,
+          "ag_girdisi_w": 28.2,
+          "kare": 40,
+          "recall_iou50": 0.05,
+          "recall_iou0": 0.05,
+          "fn": 38,
+          "ort_iou": 0.9244,
+          "ort_guven": 0.2952,
+          "ekstra_tespit": 117,
+          "gecikme_ort_ms": 33.16,
+          "gecikme_p50_ms": 32.79,
+          "gecikme_p95_ms": 36.27,
+          "esdeger_fps": 30.2
+        },
+        "20x10": {
+          "nominal_uzun_kenar": 20,
+          "ulasilan_w": 19.0,
+          "ulasilan_h": 20.0,
+          "ag_girdisi_w": 19.0,
+          "kare": 40,
+          "recall_iou50": 0.05,
+          "recall_iou0": 0.05,
+          "fn": 38,
+          "ort_iou": 0.7493,
+          "ort_guven": 0.3797,
+          "ekstra_tespit": 119,
+          "gecikme_ort_ms": 33.55,
+          "gecikme_p50_ms": 32.4,
+          "gecikme_p95_ms": 37.07,
+          "esdeger_fps": 29.8
+        },
+        "15x7": {
+          "nominal_uzun_kenar": 15,
+          "ulasilan_w": 14.0,
+          "ulasilan_h": 15.0,
+          "ag_girdisi_w": 14.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 120,
+          "gecikme_ort_ms": 32.46,
+          "gecikme_p50_ms": 32.43,
+          "gecikme_p95_ms": 34.68,
+          "esdeger_fps": 30.8
+        },
+        "10x5": {
+          "nominal_uzun_kenar": 10,
+          "ulasilan_w": 9.2,
+          "ulasilan_h": 10.0,
+          "ag_girdisi_w": 9.2,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 122,
+          "gecikme_ort_ms": 32.29,
+          "gecikme_p50_ms": 32.06,
+          "gecikme_p95_ms": 34.95,
+          "esdeger_fps": 31.0
+        },
+        "8x5": {
+          "nominal_uzun_kenar": 8,
+          "ulasilan_w": 8.0,
+          "ulasilan_h": 8.0,
+          "ag_girdisi_w": 8.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 122,
+          "gecikme_ort_ms": 32.33,
+          "gecikme_p50_ms": 32.06,
+          "gecikme_p95_ms": 35.02,
+          "esdeger_fps": 30.9
+        },
+        "5x5": {
+          "nominal_uzun_kenar": 5,
+          "ulasilan_w": 5.0,
+          "ulasilan_h": 5.0,
+          "ag_girdisi_w": 5.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 123,
+          "gecikme_ort_ms": 32.29,
+          "gecikme_p50_ms": 32.12,
+          "gecikme_p95_ms": 35.1,
+          "esdeger_fps": 31.0
+        }
+      },
+      "kompozit_kontrolu": {
+        "kare": 20,
+        "dokunulmamis_karede_bulundu": 20,
+        "native_yamada_bulundu": 17
+      },
+      "takip": {
+        "native": {
+          "olcek_s": 1.0,
+          "sentetik_kare": 42,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 41,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.1759,
+            "ort_merkez_hata_px": 16.47,
+            "ort_psr": 20.5,
+            "drift_karesi": 1,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 1,
+            "takip_karesi": 40,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.228,
+            "ort_merkez_hata_px": 20.69,
+            "ort_psr": 28.6,
+            "drift_karesi": 2,
+            "yolo_cagrisi": 2
+          }
+        },
+        "57x21": {
+          "olcek_s": 0.3654,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7515,
+            "ort_merkez_hata_px": 3.47,
+            "ort_psr": 29.02,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.9831,
+            "ort_iou": 0.5231,
+            "ort_merkez_hata_px": 18.06,
+            "ort_psr": 28.5,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "40x15": {
+          "olcek_s": 0.2564,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7781,
+            "ort_merkez_hata_px": 3.35,
+            "ort_psr": 25.72,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 1,
+            "takip_karesi": 58,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.4019,
+            "ort_merkez_hata_px": 9.81,
+            "ort_psr": 34.67,
+            "drift_karesi": null,
+            "yolo_cagrisi": 2
+          }
+        },
+        "30x12": {
+          "olcek_s": 0.1923,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.3898,
+            "ort_iou": 0.3392,
+            "ort_merkez_hata_px": 125.07,
+            "ort_psr": 11.26,
+            "drift_karesi": 25,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 45,
+            "takip_karesi": 14,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.8322,
+            "ort_merkez_hata_px": 1.97,
+            "ort_psr": 25.2,
+            "drift_karesi": null,
+            "yolo_cagrisi": 46
+          }
+        },
+        "20x10": {
+          "olcek_s": 0.1282,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.339,
+            "ort_iou": 0.2839,
+            "ort_merkez_hata_px": 121.2,
+            "ort_psr": 10.26,
+            "drift_karesi": 24,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 49,
+            "takip_karesi": 10,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0419,
+            "ort_merkez_hata_px": 35.25,
+            "ort_psr": 12.12,
+            "drift_karesi": 50,
+            "yolo_cagrisi": 50
+          }
+        },
+        "15x7": {
+          "olcek_s": 0.0962,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.4237,
+            "ort_iou": 0.2808,
+            "ort_merkez_hata_px": 21.83,
+            "ort_psr": 15.66,
+            "drift_karesi": 14,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 53,
+            "takip_karesi": 6,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0,
+            "ort_merkez_hata_px": 44.92,
+            "ort_psr": 16.04,
+            "drift_karesi": 54,
+            "yolo_cagrisi": 54
+          }
+        },
+        "10x5": {
+          "olcek_s": 0.0641,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.2373,
+            "ort_iou": 0.1613,
+            "ort_merkez_hata_px": 44.45,
+            "ort_psr": 13.34,
+            "drift_karesi": 13,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 60
+          }
+        },
+        "8x5": {
+          "olcek_s": 0.0513,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.2034,
+            "ort_iou": 0.1446,
+            "ort_merkez_hata_px": 96.1,
+            "ort_psr": 16.16,
+            "drift_karesi": 13,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 60
+          }
+        },
+        "5x5": {
+          "olcek_s": 0.0321,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.1695,
+            "ort_iou": 0.1035,
+            "ort_merkez_hata_px": 120.44,
+            "ort_psr": 14.33,
+            "drift_karesi": 11,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 60
+          }
+        }
+      }
+    },
+    "uav0000137_00458_v/12": {
+      "rol": "birincil",
+      "kare_boyutu": [
+        2688,
+        1512
+      ],
+      "native_gt": [
+        126.0,
+        130.0
+      ],
+      "native_uzun_kenar": 130.0,
+      "arkaplan_hucre": [
+        320,
+        180
+      ],
+      "hedeften_uzaklik_px": 344.0,
+      "arkaplan_taban_tespit_kare_basina": 7.15,
+      "tespit": {
+        "native": {
+          "nominal_uzun_kenar": null,
+          "ulasilan_w": 146.1,
+          "ulasilan_h": 138.4,
+          "ag_girdisi_w": 146.1,
+          "kare": 40,
+          "recall_iou50": 1.0,
+          "recall_iou0": 1.0,
+          "fn": 0,
+          "ort_iou": 0.9184,
+          "ort_guven": 0.6945,
+          "ekstra_tespit": 191,
+          "gecikme_ort_ms": 32.72,
+          "gecikme_p50_ms": 32.73,
+          "gecikme_p95_ms": 34.85,
+          "esdeger_fps": 30.6
+        },
+        "57x21": {
+          "nominal_uzun_kenar": 57,
+          "ulasilan_w": 56.9,
+          "ulasilan_h": 54.0,
+          "ag_girdisi_w": 56.9,
+          "kare": 40,
+          "recall_iou50": 1.0,
+          "recall_iou0": 1.0,
+          "fn": 0,
+          "ort_iou": 0.7906,
+          "ort_guven": 0.5737,
+          "ekstra_tespit": 227,
+          "gecikme_ort_ms": 32.43,
+          "gecikme_p50_ms": 32.26,
+          "gecikme_p95_ms": 34.68,
+          "esdeger_fps": 30.8
+        },
+        "40x15": {
+          "nominal_uzun_kenar": 40,
+          "ulasilan_w": 39.9,
+          "ulasilan_h": 37.8,
+          "ag_girdisi_w": 39.9,
+          "kare": 40,
+          "recall_iou50": 0.4,
+          "recall_iou0": 1.0,
+          "fn": 0,
+          "ort_iou": 0.5483,
+          "ort_guven": 0.5511,
+          "ekstra_tespit": 233,
+          "gecikme_ort_ms": 34.12,
+          "gecikme_p50_ms": 32.67,
+          "gecikme_p95_ms": 37.53,
+          "esdeger_fps": 29.3
+        },
+        "30x12": {
+          "nominal_uzun_kenar": 30,
+          "ulasilan_w": 29.9,
+          "ulasilan_h": 28.5,
+          "ag_girdisi_w": 29.9,
+          "kare": 40,
+          "recall_iou50": 0.375,
+          "recall_iou0": 1.0,
+          "fn": 0,
+          "ort_iou": 0.4553,
+          "ort_guven": 0.5808,
+          "ekstra_tespit": 253,
+          "gecikme_ort_ms": 33.05,
+          "gecikme_p50_ms": 33.0,
+          "gecikme_p95_ms": 37.24,
+          "esdeger_fps": 30.3
+        },
+        "20x10": {
+          "nominal_uzun_kenar": 20,
+          "ulasilan_w": 20.0,
+          "ulasilan_h": 19.0,
+          "ag_girdisi_w": 20.0,
+          "kare": 40,
+          "recall_iou50": 0.375,
+          "recall_iou0": 1.0,
+          "fn": 0,
+          "ort_iou": 0.3822,
+          "ort_guven": 0.573,
+          "ekstra_tespit": 257,
+          "gecikme_ort_ms": 32.3,
+          "gecikme_p50_ms": 32.18,
+          "gecikme_p95_ms": 35.76,
+          "esdeger_fps": 31.0
+        },
+        "15x7": {
+          "nominal_uzun_kenar": 15,
+          "ulasilan_w": 15.0,
+          "ulasilan_h": 14.2,
+          "ag_girdisi_w": 15.0,
+          "kare": 40,
+          "recall_iou50": 0.275,
+          "recall_iou0": 0.975,
+          "fn": 1,
+          "ort_iou": 0.2819,
+          "ort_guven": 0.5592,
+          "ekstra_tespit": 257,
+          "gecikme_ort_ms": 32.5,
+          "gecikme_p50_ms": 32.19,
+          "gecikme_p95_ms": 36.71,
+          "esdeger_fps": 30.8
+        },
+        "10x5": {
+          "nominal_uzun_kenar": 10,
+          "ulasilan_w": 10.0,
+          "ulasilan_h": 9.3,
+          "ag_girdisi_w": 10.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.675,
+          "fn": 13,
+          "ort_iou": 0.0198,
+          "ort_guven": 0.6568,
+          "ekstra_tespit": 259,
+          "gecikme_ort_ms": 32.21,
+          "gecikme_p50_ms": 32.11,
+          "gecikme_p95_ms": 35.01,
+          "esdeger_fps": 31.0
+        },
+        "8x5": {
+          "nominal_uzun_kenar": 8,
+          "ulasilan_w": 8.0,
+          "ulasilan_h": 7.4,
+          "ag_girdisi_w": 8.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.675,
+          "fn": 13,
+          "ort_iou": 0.0121,
+          "ort_guven": 0.6562,
+          "ekstra_tespit": 259,
+          "gecikme_ort_ms": 36.8,
+          "gecikme_p50_ms": 35.03,
+          "gecikme_p95_ms": 43.62,
+          "esdeger_fps": 27.2
+        },
+        "5x5": {
+          "nominal_uzun_kenar": 5,
+          "ulasilan_w": 5.0,
+          "ulasilan_h": 5.0,
+          "ag_girdisi_w": 5.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.625,
+          "fn": 15,
+          "ort_iou": 0.0056,
+          "ort_guven": 0.6644,
+          "ekstra_tespit": 261,
+          "gecikme_ort_ms": 32.81,
+          "gecikme_p50_ms": 32.4,
+          "gecikme_p95_ms": 37.12,
+          "esdeger_fps": 30.5
+        }
+      },
+      "kompozit_kontrolu": {
+        "kare": 20,
+        "dokunulmamis_karede_bulundu": 20,
+        "native_yamada_bulundu": 20
+      },
+      "takip": {
+        "native": {
+          "olcek_s": 1.0,
+          "sentetik_kare": 38,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 37,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7195,
+            "ort_merkez_hata_px": 21.18,
+            "ort_psr": 37.3,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 37,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.1141,
+            "ort_merkez_hata_px": 153.36,
+            "ort_psr": 44.72,
+            "drift_karesi": 1,
+            "yolo_cagrisi": 1
+          }
+        },
+        "57x21": {
+          "olcek_s": 0.4385,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.8077,
+            "ort_merkez_hata_px": 3.42,
+            "ort_psr": 45.05,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7396,
+            "ort_merkez_hata_px": 4.12,
+            "ort_psr": 42.39,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "40x15": {
+          "olcek_s": 0.3077,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7653,
+            "ort_merkez_hata_px": 3.91,
+            "ort_psr": 39.67,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7744,
+            "ort_merkez_hata_px": 3.8,
+            "ort_psr": 38.77,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "30x12": {
+          "olcek_s": 0.2308,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.8066,
+            "ort_merkez_hata_px": 1.57,
+            "ort_psr": 39.98,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.7984,
+            "ort_merkez_hata_px": 2.02,
+            "ort_psr": 37.47,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "20x10": {
+          "olcek_s": 0.1538,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.8354,
+            "ort_merkez_hata_px": 1.08,
+            "ort_psr": 37.6,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.8034,
+            "ort_merkez_hata_px": 1.25,
+            "ort_psr": 37.23,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "15x7": {
+          "olcek_s": 0.1154,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.9661,
+            "ort_iou": 0.5571,
+            "ort_merkez_hata_px": 2.2,
+            "ort_psr": 28.77,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.9661,
+            "ort_iou": 0.7028,
+            "ort_merkez_hata_px": 2.19,
+            "ort_psr": 32.74,
+            "drift_karesi": null,
+            "yolo_cagrisi": 1
+          }
+        },
+        "10x5": {
+          "olcek_s": 0.0769,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.4068,
+            "ort_iou": 0.3007,
+            "ort_merkez_hata_px": 16.28,
+            "ort_psr": 36.02,
+            "drift_karesi": 21,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 12,
+            "takip_karesi": 47,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0214,
+            "ort_merkez_hata_px": 32.98,
+            "ort_psr": 47.07,
+            "drift_karesi": 13,
+            "yolo_cagrisi": 13
+          }
+        },
+        "8x5": {
+          "olcek_s": 0.0615,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.7288,
+            "ort_iou": 0.6143,
+            "ort_merkez_hata_px": 2.0,
+            "ort_psr": 23.58,
+            "drift_karesi": 47,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 12,
+            "takip_karesi": 47,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0169,
+            "ort_merkez_hata_px": 32.13,
+            "ort_psr": 47.27,
+            "drift_karesi": 13,
+            "yolo_cagrisi": 13
+          }
+        },
+        "5x5": {
+          "olcek_s": 0.0385,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.9492,
+            "ort_iou": 0.7335,
+            "ort_merkez_hata_px": 0.66,
+            "ort_psr": 21.54,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 14,
+            "takip_karesi": 45,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0092,
+            "ort_merkez_hata_px": 30.5,
+            "ort_psr": 51.28,
+            "drift_karesi": 15,
+            "yolo_cagrisi": 15
+          }
+        }
+      }
+    },
+    "uav0000305_00000_v/5": {
+      "rol": "destek",
+      "kare_boyutu": [
+        1904,
+        1071
+      ],
+      "native_gt": [
+        46.0,
+        93.0
+      ],
+      "native_uzun_kenar": 93.0,
+      "arkaplan_hucre": [
+        960,
+        180
+      ],
+      "hedeften_uzaklik_px": 411.9,
+      "arkaplan_taban_tespit_kare_basina": 1.98,
+      "tespit": {
+        "native": {
+          "nominal_uzun_kenar": null,
+          "ulasilan_w": 50.7,
+          "ulasilan_h": 96.6,
+          "ag_girdisi_w": 50.7,
+          "kare": 40,
+          "recall_iou50": 0.025,
+          "recall_iou0": 0.125,
+          "fn": 35,
+          "ort_iou": 0.1649,
+          "ort_guven": 0.3156,
+          "ekstra_tespit": 42,
+          "gecikme_ort_ms": 32.82,
+          "gecikme_p50_ms": 32.6,
+          "gecikme_p95_ms": 36.29,
+          "esdeger_fps": 30.5
+        },
+        "57x21": {
+          "nominal_uzun_kenar": 57,
+          "ulasilan_w": 29.9,
+          "ulasilan_h": 57.0,
+          "ag_girdisi_w": 29.9,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.025,
+          "fn": 39,
+          "ort_iou": 0.0,
+          "ort_guven": 0.2517,
+          "ekstra_tespit": 41,
+          "gecikme_ort_ms": 32.75,
+          "gecikme_p50_ms": 32.85,
+          "gecikme_p95_ms": 35.36,
+          "esdeger_fps": 30.5
+        },
+        "40x15": {
+          "nominal_uzun_kenar": 40,
+          "ulasilan_w": 20.9,
+          "ulasilan_h": 40.0,
+          "ag_girdisi_w": 20.9,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 45,
+          "gecikme_ort_ms": 34.31,
+          "gecikme_p50_ms": 34.05,
+          "gecikme_p95_ms": 36.86,
+          "esdeger_fps": 29.1
+        },
+        "30x12": {
+          "nominal_uzun_kenar": 30,
+          "ulasilan_w": 15.8,
+          "ulasilan_h": 30.0,
+          "ag_girdisi_w": 15.8,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 65,
+          "gecikme_ort_ms": 34.29,
+          "gecikme_p50_ms": 33.97,
+          "gecikme_p95_ms": 38.11,
+          "esdeger_fps": 29.2
+        },
+        "20x10": {
+          "nominal_uzun_kenar": 20,
+          "ulasilan_w": 10.6,
+          "ulasilan_h": 20.0,
+          "ag_girdisi_w": 10.6,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 71,
+          "gecikme_ort_ms": 33.38,
+          "gecikme_p50_ms": 32.79,
+          "gecikme_p95_ms": 39.84,
+          "esdeger_fps": 30.0
+        },
+        "15x7": {
+          "nominal_uzun_kenar": 15,
+          "ulasilan_w": 8.0,
+          "ulasilan_h": 15.0,
+          "ag_girdisi_w": 8.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 81,
+          "gecikme_ort_ms": 34.87,
+          "gecikme_p50_ms": 33.12,
+          "gecikme_p95_ms": 36.99,
+          "esdeger_fps": 28.7
+        },
+        "10x5": {
+          "nominal_uzun_kenar": 10,
+          "ulasilan_w": 5.0,
+          "ulasilan_h": 10.0,
+          "ag_girdisi_w": 5.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 79,
+          "gecikme_ort_ms": 32.95,
+          "gecikme_p50_ms": 32.39,
+          "gecikme_p95_ms": 36.89,
+          "esdeger_fps": 30.4
+        },
+        "8x5": {
+          "nominal_uzun_kenar": 8,
+          "ulasilan_w": 4.0,
+          "ulasilan_h": 8.0,
+          "ag_girdisi_w": 4.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 80,
+          "gecikme_ort_ms": 32.53,
+          "gecikme_p50_ms": 32.26,
+          "gecikme_p95_ms": 35.42,
+          "esdeger_fps": 30.7
+        },
+        "5x5": {
+          "nominal_uzun_kenar": 5,
+          "ulasilan_w": 3.0,
+          "ulasilan_h": 5.0,
+          "ag_girdisi_w": 3.0,
+          "kare": 40,
+          "recall_iou50": 0.0,
+          "recall_iou0": 0.0,
+          "fn": 40,
+          "ort_iou": null,
+          "ort_guven": null,
+          "ekstra_tespit": 82,
+          "gecikme_ort_ms": 32.59,
+          "gecikme_p50_ms": 32.32,
+          "gecikme_p95_ms": 35.5,
+          "esdeger_fps": 30.7
+        }
+      },
+      "kompozit_kontrolu": {
+        "kare": 20,
+        "dokunulmamis_karede_bulundu": 0,
+        "native_yamada_bulundu": 0
+      },
+      "takip": {
+        "native": {
+          "olcek_s": 1.0,
+          "sentetik_kare": 18,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 17,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.623,
+            "ort_merkez_hata_px": 14.05,
+            "ort_psr": 35.34,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 18
+          }
+        },
+        "57x21": {
+          "olcek_s": 0.6129,
+          "sentetik_kare": 32,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 31,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.5326,
+            "ort_merkez_hata_px": 6.71,
+            "ort_psr": 39.82,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 32
+          }
+        },
+        "40x15": {
+          "olcek_s": 0.4301,
+          "sentetik_kare": 48,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 47,
+            "kilit_orani": 1.0,
+            "ort_iou": 0.5103,
+            "ort_merkez_hata_px": 4.93,
+            "ort_psr": 42.38,
+            "drift_karesi": null,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 48
+          }
+        },
+        "30x12": {
+          "olcek_s": 0.3226,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0678,
+            "ort_iou": 0.0333,
+            "ort_merkez_hata_px": 105.12,
+            "ort_psr": 88.88,
+            "drift_karesi": 4,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 27,
+            "takip_karesi": 32,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0137,
+            "ort_merkez_hata_px": 81.73,
+            "ort_psr": 38.87,
+            "drift_karesi": 28,
+            "yolo_cagrisi": 28
+          }
+        },
+        "20x10": {
+          "olcek_s": 0.2151,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0678,
+            "ort_iou": 0.0291,
+            "ort_merkez_hata_px": 77.73,
+            "ort_psr": 84.07,
+            "drift_karesi": 3,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 34,
+            "takip_karesi": 25,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0,
+            "ort_merkez_hata_px": 80.47,
+            "ort_psr": 47.09,
+            "drift_karesi": 35,
+            "yolo_cagrisi": 35
+          }
+        },
+        "15x7": {
+          "olcek_s": 0.1613,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0678,
+            "ort_iou": 0.0277,
+            "ort_merkez_hata_px": 66.19,
+            "ort_psr": 65.29,
+            "drift_karesi": 4,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 34,
+            "takip_karesi": 25,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0,
+            "ort_merkez_hata_px": 76.82,
+            "ort_psr": 50.2,
+            "drift_karesi": 35,
+            "yolo_cagrisi": 35
+          }
+        },
+        "10x5": {
+          "olcek_s": 0.1075,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0508,
+            "ort_iou": 0.0163,
+            "ort_merkez_hata_px": 54.33,
+            "ort_psr": 72.71,
+            "drift_karesi": 1,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 35,
+            "takip_karesi": 24,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0,
+            "ort_merkez_hata_px": 78.48,
+            "ort_psr": 49.04,
+            "drift_karesi": 36,
+            "yolo_cagrisi": 36
+          }
+        },
+        "8x5": {
+          "olcek_s": 0.086,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0339,
+            "ort_iou": 0.0113,
+            "ort_merkez_hata_px": 61.64,
+            "ort_psr": 74.5,
+            "drift_karesi": 1,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 39,
+            "takip_karesi": 20,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0013,
+            "ort_merkez_hata_px": 64.89,
+            "ort_psr": 48.51,
+            "drift_karesi": 40,
+            "yolo_cagrisi": 40
+          }
+        },
+        "5x5": {
+          "olcek_s": 0.0538,
+          "sentetik_kare": 60,
+          "gt_tohumlu": {
+            "kilit": true,
+            "kilit_karesi": 0,
+            "takip_karesi": 59,
+            "kilit_orani": 0.0,
+            "ort_iou": 0.0102,
+            "ort_merkez_hata_px": 53.77,
+            "ort_psr": 68.44,
+            "drift_karesi": 1,
+            "yolo_cagrisi": 0
+          },
+          "yolo_tohumlu": {
+            "kilit": false,
+            "kilit_karesi": null,
+            "takip_karesi": 0,
+            "kilit_orani": null,
+            "ort_iou": null,
+            "ort_merkez_hata_px": null,
+            "ort_psr": null,
+            "drift_karesi": null,
+            "yolo_cagrisi": 60
+          }
+        }
+      }
+    }
+  },
+  "metodoloji": {
+    "M0_reddedildi": "tum kareyi kucultmek: letterbox uzun kenari 640'a normalize ettigi icin ag girdisinde geri buyutulur; olculdu (117/23 kare1, olcek 1.0/0.5/0.25/0.125 -> tespit 8/7/6/5, guven 0.539/0.572/0.611/0.612)",
+    "M1_reddedildi": "gercek arkaplanli FOV kirpma: 5 px seviyesi 19193x10796 px pencere ister, kaynak 2720x1530; en buyuk seviye bile tasiyor",
+    "M2_uygulanan": "gercek arkaplan uzerine gercek hedef yamasi; tuval 640x360 sabit; izotropik olcekleme, kontrol edilen degisken UZUN KENAR; arkaplan = hedefe en yakin, hedefi hic icermeyen hucre",
+    "arkaplan_olcutu_geri_alindi": "once 'dedektorun hic tespit uretmedigi hucre' secildi; bu olcut yola en az benzeyen bolgeyi seciyor ve native yama 20 karede yalnizca 3 kez bulundu (dokunulmamis karede 20/20) - terk edildi",
+    "hareket_konfaundu": "hedefin tuvaldeki hareketi s ile olceklendi; 'kendi eni/kare' 117/23'te 0.0593-0.0737, 137/12'de 0.0189-0.0295 -> seviyeler arasi fark hareketten degil boyuttan",
+    "hit_sutunu": "recall_iou0 YOGUN ARKAPLANDA GUVENILMEZ (arkaplandaki aracin kutusu yamayi kapsayabilir); karar olcutu recall_iou50"
+  },
+  "kabul": {
+    "Y8_A": "GECTI - iki birincil dizide 8/8 seviye, TESPIT ve TAKIP bloklarinda eksiksiz",
+    "Y8_B": "GECTI - TESPIT metrik alanlari 0 fark, TAKIP 54/54 kol birebir (en buyuk fark 0.0); duvar-saati (gecikme/fps) alanlari haric, 107 alan",
+    "Y8_C": "GECTI - 57 seviyesi r@.5 0.975/1.000; kompozit kontrolu 117/23 20->17, 137/12 20->20",
+    "Y8_D": "GECTI - minimum guvenilir boyut = uzun kenar 57 px"
+  },
+  "yorumlanamaz_satirlar": {
+    "native_takip": "tuval geometrisi: DCF yamasi boyut*2.0 ~310 px, hedef 9.6 px/kare ile 42 karede tuvali terk ediyor. native bir TESPIT kontrolu, takip seviyesi degil.",
+    "10px_ve_alti_gt_tohumlu_takip": "takipcinin MUTLAK piksel tabanlari baskin (min_kenar=4.0, maks_sicrama=max(6.0,0.9*boyut), 32x32 DCF izgarasi). Hareket konfaundu elendigi halde monoton degil; kanit olarak KULLANILMADI. Yorumlanabilir bolge: >=15 px."
+  },
+  "hukum": {
+    "minimum_guvenilir_boyut_uzun_kenar_px": 57,
+    "yolo_takipci_sinirini_asagi_cekiyor_mu": "HAYIR - kullanilabilir tabani YUKARI tasiyor",
+    "kanit": "137/12 20x10 seviyesinde GT-tohumlu takipci IoU 0.835 / kilit 1.00 / drift yok iken ayni seviyede YOLO recall@0.5 = 0.375; 10x5 ve altinda her iki birincil dizide recall@0.5 = 0.000",
+    "cikarim_maliyeti": "hedef boyutundan BAGIMSIZ; 3 dizi x 9 seviye ort 33.22 ms (aralik 4.60 ms), masaustu i7-11800H CPU",
+    "raspberry_pi_zero_2w": "HENUZ OLCULMEDI",
+    "imx500": "HENUZ OLCULMEDI"
+  },
+  "kullanilmayanlar": [
+    "visdrone_det (A6'ya ayrildi)",
+    "fine-tuning",
+    "ONNX/NCNN/IMX500",
+    "Optuna",
+    "ROI kirpma",
+    "model/conf/imgsz degisikligi",
+    "sim kayitlari (COCO YOLOv8n proseduralsim dikdortgenlerini tanimiyor)"
+  ]
+}
