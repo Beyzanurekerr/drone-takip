@@ -13,7 +13,6 @@ import time
 import cv2
 import numpy as np
 
-from sim.senaryolar import TUM_TESTLER
 from takip.izleyici import ARAMA, KAYIP, KILITLI, SUPHELI, HedefTakip
 
 RENK = {KILITLI: (0, 255, 255), SUPHELI: (0, 165, 255), ARAMA: (0, 80, 255), KAYIP: (0, 0, 255)}
@@ -236,6 +235,12 @@ def _ciz(img, sahne, hedef, gt, sonuc, k, adaylar=None, o=None, tarama=False):
 
 
 def main():
+    # DEMO dalinda sim/ SILINDI (Adim 1) - bu CLI (`python3 calistir.py test1`)
+    # artik calismaz, ama `iou`/`_kutu_ciz`/`kos` (main.py, deney.py'nin
+    # kullandigi) modul IMPORT edildiginde bu satira hic gelinmedigi icin
+    # calismaya devam eder. Import BILEREK burada, fonksiyon icinde.
+    from sim.senaryolar import TUM_TESTLER
+
     ap = argparse.ArgumentParser()
     ap.add_argument("test", nargs="?", default="test1")
     ap.add_argument("--video", default=None)

@@ -1,25 +1,28 @@
 # Drone Hedef Takip - calisma bagimliliklari
-# Derin ogrenme bagimliligi YOKTUR; hat tumuyle klasik CV'dir.
 #
 #   pip install -r requirements.txt
 #
-# Olculdugu ortam (docs/architecture/BENCHMARK_BASELINE.md):
-#   Python 3.10.12 - opencv-python 4.11.0 - numpy 1.26.4
+# Cekirdek takipci (takip/) klasik CV'dir (DCF+Kalman+ego-motion), derin
+# ogrenme GEREKTIRMEZ. Ama DEMO modu (main.py --mod demo) dedektor-oncullu
+# calisir (A6, ROI dogrulama) - ultralytics/torch bu yuzden artik OPSIYONEL
+# DEGIL, demo icin ZORUNLU (yalniz cekirdek takipciyi baska bir hatta
+# GOMMEK isteyenler icin opsiyonel kalir).
 #
+# Olculen ortam: Python 3.10.12 - opencv-python 4.11.0 - numpy 1.26.4
 # Alt sinirlar test edilmis surumlerdir; ust sinir yoktur.
 # Ekransiz sunucuda opencv-python yerine opencv-python-headless de kullanilabilir
-# (canli pencere -yani calistir.py --canli / main.py'nin pencereli modu- calismaz,
-#  --penceresiz kosum ve tum olcumler calisir).
+# (canli pencere calismaz, --penceresiz kosum ve tum olcumler calisir).
 
 numpy>=1.24
 opencv-python>=4.8
 
-# --- opsiyonel: A5 YOLO hedef secimi (--yolo) ---
-# Cekirdek takipci bunlar OLMADAN da calisir; yalnizca `--yolo` yolu icin gerekir.
+# --- demo modu + YOLO hedef secimi icin ZORUNLU ---
 # Masaustu dogrulamasi icin CPU tekerlegi yeterlidir:
 #   pip install torch --index-url https://download.pytorch.org/whl/cpu
 #   pip install ultralytics
-# Agirlik SESSIZCE INDIRILMEZ; weights/yolov8n.pt elle indirilir (bkz.
-# veri/yolo_secici.py hata mesaji). weights/ .gitignore'dadir.
-# ultralytics>=8.3
-# torch>=2.2
+# Agirliklar SESSIZCE INDIRILMEZ, elle yerlestirilir (bkz. README "Kurulum"):
+#   weights/yolov8n.pt      (COCO taban, --yolo icin)
+#   weights/a6_kucuk_hedef.pt (A6 UAVDT->VisDrone, demo modu icin)
+# weights/ .gitignore'dadir.
+ultralytics>=8.3
+torch>=2.2

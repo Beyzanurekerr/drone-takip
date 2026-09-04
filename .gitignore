@@ -20,44 +20,10 @@ data/gazebo/*/gz.log
 # Zemin dokusu onbellegi: seed'li ve gazebo/dunya_uret.py ile yeniden uretilir
 data/gazebo/_doku/
 
-# Kare kare teshis dokumleri: ham iz kayitlari, buyuk ve gazebo/tani_*.py ile
-# yeniden uretilebilir. Karar/ozet tablolari ASAGIDA acikca haric tutuldu.
-cikti/*.json
-cikti/*.npz
-# --- kalici: raporlarin dogrudan dayandigi karar ve ozet tablolari ---
-!cikti/fazb_tani.json
-!cikti/visdrone_envanter.json
-!cikti/yanliskilit.json
-!cikti/yk_envanter.json
-!cikti/yk_epizot.json
-!cikti/konjonksiyon_4q.json
-!cikti/konjonksiyon_4q_drift.json
-!cikti/a5_yolo_integration.json
-!cikti/a5_kucuk_hedef.json
-!cikti/capa_4s.json
-!cikti/ayirtedici_4t.json
-!cikti/yeni_olcum_envanteri.json
-!cikti/boyut_kapisi_4u.json
-!cikti/4u_A.json
-!cikti/a10_taban_secim.json
-!cikti/a10_hakem.json
-!cikti/a10_1_temiz_yatak.json
-!cikti/a10_1_hakem.json
-!cikti/a11_kol0.json
-!cikti/a11_kol1.json
-!cikti/a11_kol2.json
-!cikti/a11_kol3.json
-!cikti/a11_1_y1_kapi.json
-!cikti/a11_1_dcf_kayma_500k.json
-!cikti/a11_2_t1.json
-!cikti/a11_2_y11_kapi.json
-!cikti/a11_3_t2.json
-!cikti/a11_3_y12_kapi.json
-!cikti/kmod_k1.json
-
-# K-MOD gorsel ciktilari (video/png) - buyuk, reproducible
-# (python3 -m gazebo.kmod_k1_gorseller), kareler/zemin.png ile AYNI ilke.
-cikti/gorsel/
+# DEMO dali temizligi (chore: demo dali temizligi): arastirma cikti/
+# klasoru (fazb_tani.json .. kmod_k1.json, hepsi arastirma-v1'de) SILINDI.
+# cikti/demo/{kucul,celdirici,kopus}.mp4 BILEREK ignore edilmiyor - Adim 6a
+# geregi git'e girer (kabul senaryolarinin kaniti).
 
 # sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
 data/sim/*/kareler/

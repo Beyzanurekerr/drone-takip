@@ -1,0 +1,57 @@
+{
+  "olusturma_zamani_utc": "2026-09-04T14:08:28.911266+00:00",
+  "mod": "PC_KURU_KOSUM",
+  "host_platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.10.12",
+  "git_commit": "bcf2454",
+  "takip_cekirdek": {
+    "girdi_dizini": "data/gazebo/G0/kareler",
+    "cozunurluk": "640x480",
+    "isinma_kare": 8,
+    "kilit_kare_indeksi": 8,
+    "olculen_kare": 100,
+    "not": "Kilit dogrulukla degil sureyle ilgilidir; hedef tak.tarama()'nin en buyuk hareket adayiyla secildi. 'tespit' bileseni yeniden-tespit VE periyodik kutu-rafine'yi (_boyut_tazele) birlikte icerir.",
+    "bilesen_ms": {
+      "ego_motion": {
+        "n": 100,
+        "p50_ms": 0.9971,
+        "p95_ms": 2.6568,
+        "ort_ms": 1.2178,
+        "min_ms": 0.6498,
+        "maks_ms": 4.0162
+      },
+      "dcf_korelasyon": {
+        "n": 100,
+        "p50_ms": 1.1267,
+        "p95_ms": 1.8316,
+        "ort_ms": 1.222,
+        "min_ms": 0.7894,
+        "maks_ms": 2.2019
+      },
+      "tespit_ve_rafine": {
+        "n": 100,
+        "p50_ms": 0.2053,
+        "p95_ms": 1.7051,
+        "ort_ms": 0.5132,
+        "min_ms": 0.0095,
+        "maks_ms": 3.0883
+      },
+      "toplam": {
+        "n": 100,
+        "p50_ms": 3.1121,
+        "p95_ms": 6.2846,
+        "ort_ms": 3.3715,
+        "min_ms": 1.7463,
+        "maks_ms": 8.6493
+      }
+    }
+  },
+  "imx500": {
+    "durum": "ATLANDI",
+    "neden": "--pc: gercek IMX500 donanimi/surucusu yok"
+  },
+  "termal": {
+    "durum": "ATLANDI",
+    "neden": "--pc: vcgencmd Raspberry Pi OS'e ozgu"
+  }
+}
