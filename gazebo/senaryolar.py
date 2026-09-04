@@ -738,4 +738,68 @@ Y1_AILE = [Y1_A1_taban, Y1_A2_kucul, Y1_A3_yaw, Y1_A4_irtifa, Y1_A5_kucul_yaw,
 SENARYOLAR.update({f.__name__: f for f in Y1_AILE})
 SENARYOLAR["Y1_A1_taban_500"] = lambda: Y1_A1_taban(kare=500)
 
+
+# ---------------------------------------------------------------------------
+# K-MOD - KUCUK HEDEF MODU yataklari (docs/architecture/K_MOD_ONKAYIT.md)
+# ---------------------------------------------------------------------------
+# Irtifa formulu A11_IRTIFA0/1 ile AYNI konvansiyon (ODAK_PX*4.6/irtifa=px -
+# 4.6 eski kutu-arac L'si, mesh'in gercek 4.0011 m'sinden degil; A11 ailesiyle
+# SABIT/karsilastirilabilir kalsin diye bu konvansiyon KORUNDU, yeniden
+# turetilmedi). Sabit irtifa (A1_taban gibi kucultme rampasi YOK) - K1'in
+# ihtiyaci px bandinda COK kare, bir anlik gecis degil.
+A7_IRTIFA = ODAK_PX * 4.6 / 20.0     # 115.0 m -> hedef ~20 px
+A8_IRTIFA = ODAK_PX * 4.6 / 9.0      # 255.6 m -> hedef ~9 px (8-10 px bandi)
+
+# A7/A8 YUKSEK irtifada (115/255.6 m) - gorus alani yaricapi A1-A6'nin
+# kullandigi HEDEF_X0 civarinda artik gercek yamaya SIGMIYOR (yama merkezi
+# Y1.2'de operasyon alanindan bilerek uzaklastirildi). K-MOD arac takimi bu
+# yuzden yamanin KENDI merkezine tasinir - GORECELI kinematik (araclar
+# arasi mesafe/hiz) A1-A6 ile BIREBIR AYNI kalir, yalniz butun takim
+# OTELENIR (bkz. A11_1_ONKAYIT.md GERCEK_ZEMIN_MERKEZ_M).
+_K_MOD_OFSET_X = 90.35 - HEDEF_X0
+_K_MOD_OFSET_Y = -41.25 - HEDEF_Y0
+
+
+def _k_mod_araclar():
+    return [
+        Arac("hedef", x0=HEDEF_X0 + _K_MOD_OFSET_X, y0=HEDEF_Y0 + _K_MOD_OFSET_Y,
+             yaw=0.0, vx=BAZ_HIZ, renk=(0.16, 0.16, 0.75), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+        Arac("celdirici", x0=CELDIRICI["x0"] + _K_MOD_OFSET_X,
+             y0=CELDIRICI["y0"] + _K_MOD_OFSET_Y, yaw=CELDIRICI["yaw"],
+             vx=CELDIRICI["vx"], renk=CELDIRICI["renk"]),
+        Arac("celdirici2", x0=CELDIRICI2["x0"] + _K_MOD_OFSET_X,
+             y0=CELDIRICI2["y0"] + _K_MOD_OFSET_Y, yaw=CELDIRICI2["yaw"],
+             vx=CELDIRICI2["vx"], renk=CELDIRICI2["renk"]),
+    ]
+
+
+def _k_mod(ad, aciklama, amac, beklenen, kam_z, kare, etiketler):
+    kam_x = HEDEF_X0 + _K_MOD_OFSET_X
+    return GzSenaryo(
+        ad=ad, aciklama=aciklama, amac=amac, araclar=_k_mod_araclar(),
+        hedef_ad="hedef", kam_x=kam_x, kam_y=0.0, kam_z=kam_z,
+        kam_profil=_kam(), drone_statik=False, kare=kare,
+        doku_seed=A11_SEED, zemin_m=A11_ZEMIN_M, doku_px=A11_DOKU_PX,
+        zemin_tipi="gercek", aile="K-MOD", siddet="", beklenen=beklenen,
+        etiketler=list(etiketler))
+
+
+def Y1_A7_kucuk(kare=300):
+    return _k_mod("Y1_A7_kucuk", f"Sabit {A7_IRTIFA:.1f} m, bozulmasiz kamera (GERCEK yatak)",
+                  "K-MOD K1: 20 px bandinda KOL 2 aday secim yatagi",
+                  "hedef ~20 px sabit", A7_IRTIFA, kare,
+                  ["kucuk_hedef", "celdirici", "gercek_yatak", "k_mod"])
+
+
+def Y1_A8_cok_kucuk(kare=300):
+    return _k_mod("Y1_A8_cok_kucuk", f"Sabit {A8_IRTIFA:.1f} m, bozulmasiz kamera (GERCEK yatak)",
+                  "K-MOD K1: 8-10 px bandinda KOL 2 aday secim yatagi, 2 hareketli celdirici",
+                  "hedef ~9 px sabit, celdirici+celdirici2 HAREKETLI", A8_IRTIFA, kare,
+                  ["cok_kucuk_hedef", "celdirici", "gercek_yatak", "k_mod"])
+
+
+K_MOD_AILE = [Y1_A7_kucuk, Y1_A8_cok_kucuk]
+SENARYOLAR.update({f.__name__: f for f in K_MOD_AILE})
+
 SENARYOLAR.update({f.__name__: f for f in A11_AILE})

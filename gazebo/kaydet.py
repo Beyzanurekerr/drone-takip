@@ -455,7 +455,7 @@ class Kayitci:
             "fx": self.kam_bilgi["fx"], "fy": self.kam_bilgi["fy"],
             "cx": self.kam_bilgi["cx"], "cy": self.kam_bilgi["cy"],
             "fov": fov_hesapla(sen.genislik, sen.odak_px),
-            "zemin_m": ZEMIN_M,
+            "zemin_m": getattr(sen, "zemin_m", ZEMIN_M),
             "hedef": sen.hedef_ad,
             "araclar": [{"ad": a.ad, "L": a.L, "W": a.W, "H": a.H,
                          "hedef": a.ad == sen.hedef_ad} for a in sen.araclar],
@@ -488,7 +488,12 @@ class Kayitci:
             raise RuntimeError("hicbir kare yazilamadi - poz akisi bos ya da senkron disi")
         i = {b: n for n, b in enumerate(basliklar)}
         ilk = satirlar[0].split(",")
-        yari = ZEMIN_M / 2.0
+        # A11.4/K-MOD ile bulundu: bu sabit modul-seviyesi ZEMIN_M'e (160)
+        # kenetliydi, A11 ailesi SDF kutusu 560 kullaniyor - K-MOD'un merkezi
+        # (~90 m) yanlislikla "zemin disi" sayiliyordu (gercekte 560/2=280
+        # icinde). getattr, A1-A11'in zaten var olan davranisini KORUR
+        # (sen.zemin_m yoksa/varsayilansa ayni 160 kullanilir).
+        yari = getattr(self.sen, "zemin_m", ZEMIN_M) / 2.0
         for a in self.sen.araclar:
             x, y, z = (float(ilk[i[f"{a.ad}_{s}"]]) for s in ("x", "y", "z"))
             bek_z = a.H / 2.0

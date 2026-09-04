@@ -1,0 +1,64 @@
+{
+  "senaryo": "Y1_A8_cok_kucuk",
+  "aile": "K-MOD",
+  "siddet": "",
+  "beklenen": "hedef ~9 px sabit, celdirici+celdirici2 HAREKETLI",
+  "etiketler": [
+    "cok_kucuk_hedef",
+    "celdirici",
+    "gercek_yatak",
+    "k_mod"
+  ],
+  "aciklama": "Sabit 255.6 m, bozulmasiz kamera (GERCEK yatak)",
+  "amac": "K-MOD K1: 8-10 px bandinda KOL 2 aday secim yatagi, 2 hareketli celdirici",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 300,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 640,
+  "yukseklik": 480,
+  "fx": 499.99996185302734,
+  "fy": 499.9999809265137,
+  "cx": 320.0,
+  "cy": 240.0,
+  "fov": 1.1386263822013238,
+  "zemin_m": 560.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.6,
+      "W": 1.9,
+      "H": 1.5,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 11.2,
+    "rtf": 0.9735498913634973,
+    "poz_ornegi": {
+      "hedef": 828,
+      "celdirici": 828,
+      "celdirici2": 828,
+      "drone": 828
+    },
+    "cmd_vel_mesaj": 1,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}

@@ -74,13 +74,16 @@ def tam_kare_tespit(model, img, siniflar):
     return yolo_calistir(model, img, siniflar)
 
 
-def roi_dortx_tespit(model, img, merkez, siniflar):
-    """A7/A8 ROI geometrisiyle AYNI (kirp->AG->YOLO->geri donustur), R=160
-    (640px Gazebo karesinde 4x). `merkez`: GT merkezi (izleyici DEGIL - Y1
-    dedektor+ROI'nin KENDI yetenegini olcuyor, izleyici zincirini degil)."""
+def roi_dortx_tespit(model, img, merkez, siniflar, R=None):
+    """A7/A8 ROI geometrisiyle AYNI (kirp->AG->YOLO->geri donustur).
+    Varsayilan R=ROI_R=160 (640px Gazebo karesinde 4x, Y1.1/Y1.2 kapisi).
+    `R` acikca verilirse (orn. K-MOD/K1'in R=80'i) onu kullanir. `merkez`:
+    GT merkezi ya da (K1) secilen aday merkezi - cagiran belirler."""
+    R = ROI_R if R is None else R
+
     def _calistir(_model, im):
         return yolo_calistir(model, im, siniflar)
-    return roi_tespit_g(model, img, merkez, ROI_R, _calistir)
+    return roi_tespit_g(model, img, merkez, R, _calistir)
 
 
 # --------------------------------------------------------------------------

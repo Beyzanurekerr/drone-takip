@@ -53,6 +53,11 @@ cikti/*.npz
 !cikti/a11_2_y11_kapi.json
 !cikti/a11_3_t2.json
 !cikti/a11_3_y12_kapi.json
+!cikti/kmod_k1.json
+
+# K-MOD gorsel ciktilari (video/png) - buyuk, reproducible
+# (python3 -m gazebo.kmod_k1_gorseller), kareler/zemin.png ile AYNI ilke.
+cikti/gorsel/
 
 # sim kayitlari: kareler yeniden uretilebilir (veri/sim_kayit.py)
 data/sim/*/kareler/
