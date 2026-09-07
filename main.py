@@ -449,14 +449,16 @@ def goster(pencere, img, bekleme_ms, duraklat):
 
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
-        hedef_secici=None):
+        hedef_secici=None, kayip_dedektor=None):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
     geldiginde buraya baska bir fonksiyon verilecek; dongu degismeyecek.
+    `kayip_dedektor`: None ise KAYIP davranisi degismez (bkz.
+    `takip/izleyici.py:HedefTakip`); DEMO modu `demo_ayar.KaroArayici` verir.
     """
     secici = hedef_secici or otomatik_hedef_sec
-    tak = HedefTakip(cekirdek=cekirdek)
+    tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor)
     kilitli = False
     yaz = None
     duraklat = False
@@ -622,7 +624,18 @@ def main():
                     help="YOLO guven esigi (varsayilan 0.25)")
     ap.add_argument("--yolo-gt-esle", action="store_true", dest="yolo_gt_esle",
                     help="YOLO tespitleri icinden GT'ye en yakini (adil SOT olcumu)")
+    ap.add_argument("--mod", default="klasik", choices=["klasik", "demo"],
+                    help="demo: A6 + adaptif ROI edinme + karo taramali KAYIP "
+                         "(Adim 3a/3b, bkz. demo_ayar.py)")
     a = ap.parse_args()
+
+    if a.mod == "demo":
+        import demo_ayar
+        from ultralytics import YOLO
+        _demo_model = YOLO(demo_ayar.A6_AGIRLIK)
+        # kaynak boyutu bilinmeden karayici kurulamaz -> kaynak_olustur'dan
+        # SONRA (asagida) baglanir; burada yalniz modeli yukle.
+        a.yolo = None  # demo kendi edinme yolunu kurar, --yolo'yla CAKISMASIN
 
     # --- hedef secici: uc yol, oncelik --sec > --yolo > otomatik ---
     secici = None
@@ -649,11 +662,18 @@ def main():
         print(f"HATA: {e}")
         sys.exit(1)
 
+    kayip_dedektor = None
+    if a.mod == "demo":
+        karayici = demo_ayar.KaroArayici(kaynak.genislik, kaynak.yukseklik, _demo_model)
+        karayici.sifirla((kaynak.genislik / 2.0, kaynak.yukseklik / 2.0))
+        secici = demo_ayar.demo_hedef_sec(karayici)
+        kayip_dedektor = karayici
+
     print(kaynak.bilgi())
     try:
         m = kos(kaynak, cekirdek=a.cekirdek, pencere=not a.penceresiz,
                 kaydet=a.kaydet, max_kare=a.max_kare,
-                hedef_secici=secici)
+                hedef_secici=secici, kayip_dedektor=kayip_dedektor)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)

@@ -122,11 +122,16 @@ class HedefTakip:
                  kimlik_hareket_kapisi=0.003, kimlik_min_kenar=10.0,
                  zemin_orani=0.0008, zemin_pencere=20, zemin_sabir=20,
                  zemin_dogrulama=True,
-                 yasak_kare=30, hakem=None):
+                 yasak_kare=30, hakem=None, kayip_dedektor=None):
         # A10 HAKEM ARAYUZU (tek eklenti). hakem=None iken davranis BIREBIR
         # eskisi gibidir; esdegerlik testiyle sinanir. Hakem, guncelle()
         # sonunda cagrilir ve durumu/boyutu degistirebilir - kapali cevrim.
         self.hakem = hakem
+        # DEMO KAYIP ARAYUZU (ayni ilke): kayip_dedektor=None iken davranis
+        # BIREBIR eskisi gibidir (tum kare gorunum taramasi). Verilirse KAYIP
+        # durumunda onun yerine gecer - bkz. `_karo_arama_adimi`.
+        self.kayip_dedektor = kayip_dedektor
+        self._karo_kurulu = False
         self.ego = EgoMotion()
         self.tespit = HareketTespit()
         self.cekirdek = CEKIRDEKLER[cekirdek]() if isinstance(cekirdek, str) else cekirdek
@@ -228,6 +233,7 @@ class HedefTakip:
         self._onceki_merkez = None
         self._yasak_merkez = None
         self._yasak_sayac = 0
+        self._karo_kurulu = False
 
     # ------------------------------------------------------------------
     @property
@@ -481,6 +487,9 @@ class HedefTakip:
             self.durum = KAYIP
             if self.kare % self.kayip_periyot:
                 return
+            if self.kayip_dedektor is not None:
+                self._karo_arama_adimi(bgr, gri)
+                return
         adaylar, _ = self.tespit.adaylar(gri, M)
         self.son_adaylar = adaylar
         if not adaylar:
@@ -545,6 +554,34 @@ class HedefTakip:
             self._onceki_merkez = None
         elif self.durum != KAYIP:
             self.durum = ARAMA
+
+    def _karo_arama_adimi(self, bgr, gri):
+        """KAYIP + `kayip_dedektor`: tum kareyi gorunumle degil, son
+        guvenilir merkezden disa dogru siralanmis karolarla tarar.
+
+        `_arama_adimi`'nin geri kalanindan (ARAMA, kayip_dedektor=None
+        durumundaki KAYIP) BAGIMSIZDIR - o yollar bu fonksiyona hic girmez.
+        """
+        if not self._karo_kurulu:
+            self.kayip_dedektor.sifirla(self.kf.konum)
+            self._karo_kurulu = True
+        sonuc = self.kayip_dedektor.adim(bgr)
+        self.son_adaylar = []
+        if sonuc is None:
+            return
+        merkez, kutu, d_norm = sonuc
+        if d_norm < self.aday_esik_kayip:
+            return
+        r2 = rafine_kutu(bgr, merkez, self.boyut, hedef_renk=self.imza.renk)
+        if r2 is not None:
+            self.boyut = np.maximum(0.5 * self.boyut + 0.5 * r2[2:], self.min_kenar)
+            self.boyut_olculen = self.boyut.copy()
+            kutu = np.r_[r2[:2] + r2[2:] / 2 - self.boyut / 2, self.boyut]
+        self.kf.ata(kutu[:2] + kutu[2:] / 2)
+        self.cekirdek.baslat(bgr, gri, kutu)
+        self.durum, self.kayip = KILITLI, 0
+        self.psr = 99.0
+        self._dogrulama_sifirla()
 
     def _boyut_sinirla(self):
         """Kutuyu son OLCULEN boyutun etrafinda bir banda hapset.

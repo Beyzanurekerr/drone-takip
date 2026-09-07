@@ -178,7 +178,7 @@ class Kayitci:
         os.makedirs(self.kare_dizin, exist_ok=True)
 
         self.kilit = threading.Lock()
-        self.goruntuler = []      # (t, BGR)
+        self.goruntuler = []      # (t, ham_dosya_yolu)
         # Her modelin poz akisi AYRI tutulur: yayinlar bagimsiz konulardan
         # geliyor ve damgalari birebir ortusmuyor. Tek bir ortak izgaraya
         # zorlamak yerine her model kendi ornekleri arasinda interpole edilir.
@@ -193,6 +193,12 @@ class Kayitci:
 
     # -- gz.transport geri cagirmalari (kendi is parcaciklarinda kosar) ------
     def _goruntu_cb(self, msg):
+        """DEMO/IMX500 bulgusu (2026-09-07): 2028x1520 karede tumunu bellekte
+        biriktirmek 900 karede ~6.3 GB'a cikip OOM-kill oluyordu (eski
+        640x480 arastirma kamerasinda ayni yaklasim ~800 MB'ti, sorun
+        cozunurlukle BIRLIKTE geldi). Artik her kare DISKE HEMEN yazilir;
+        bellekte yalniz damga + yol tutulur - `kaydet()` sonunda kullanilan
+        alt kume nihai adina TASINIR (ATLA + dusen kareler SILINIR)."""
         with self.kilit:
             if len(self.goruntuler) >= self.kare_hedef + ATLA:
                 return
@@ -203,7 +209,12 @@ class Kayitci:
             return                                   # eksik/bozuk kare: atla
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         with self.kilit:
-            self.goruntuler.append((_stamp(msg.header), bgr))
+            n = len(self.goruntuler)
+            if n >= self.kare_hedef + ATLA:
+                return
+            yol = os.path.join(self.kare_dizin, f"_ham_{n:06d}.png")
+            cv2.imwrite(yol, bgr)
+            self.goruntuler.append((_stamp(msg.header), yol))
 
     def _poz_cb_yap(self, ad):
         """`ad` modelinin poz konusu icin geri cagirma uretir."""
@@ -379,10 +390,16 @@ class Kayitci:
     def _diske_yaz(self, rtf):
         sen = self.sen
         with self.kilit:
+            atlanan = self.goruntuler[:ATLA]
             kareler = self.goruntuler[ATLA:ATLA + self.kare_hedef]
             n_poz = {ad: len(v) for ad, v in self.poz_akis.items()}
             self._akis_zamanlari = {ad: [p[0] for p in v]
                                     for ad, v in self.poz_akis.items()}
+        for _, yol in atlanan:
+            try:
+                os.remove(yol)          # ATLA: sahne henuz otururken kaydedilen ham kareler
+            except OSError:
+                pass
 
         if self.kam_bilgi is None:
             raise RuntimeError("/camera_info hic gelmedi - intrinsics bilinmiyor")
@@ -406,13 +423,14 @@ class Kayitci:
         satirlar, dusen, bosluklar = [], 0, []
         t_ilk = kareler[0][0] if kareler else 0.0
         yazilan = 0
-        for (t, bgr) in kareler:
+        for (t, yol) in kareler:
             pozlar, bosluk = self._poz_ara(t)
             if pozlar is None or any(ad not in pozlar for ad in adlar):
                 dusen += 1
+                os.remove(yol)          # kullanilmayan ham kare
                 continue
             bosluklar.append(bosluk)
-            cv2.imwrite(os.path.join(self.kare_dizin, f"{yazilan:06d}.png"), bgr)
+            os.replace(yol, os.path.join(self.kare_dizin, f"{yazilan:06d}.png"))
             s = [yazilan, f"{t - t_ilk:.6f}"]
             for ad in adlar:
                 s += [f"{v:.6f}" for v in pozlar[ad]]
