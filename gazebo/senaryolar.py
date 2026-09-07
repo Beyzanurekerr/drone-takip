@@ -881,11 +881,18 @@ def _demo_araclar(hedef_profil, celdirici_var=True):
 
 
 def _demo(ad, aciklama, amac, beklenen, kam_profil, kam_z, kare,
-          hedef_profil=None, celdirici_var=True, etiketler=()):
+          hedef_profil=None, celdirici_var=True, etiketler=(),
+          araclar=None, kam_x=None, kam_y=None):
+    """`araclar`/`kam_x`/`kam_y` verilirse (Demo_celdirici/Demo_kopus'un
+    DEMO_MERKEZ'e baglanmayan ozel guzergahlari) varsayilan yerlesim
+    ATLANIR - Demo_kucul'un davranisi (hicbiri gecirilmez) BIREBIR
+    KORUNUR."""
     return GzSenaryo(
         ad=ad, aciklama=aciklama, amac=amac,
-        araclar=_demo_araclar(hedef_profil, celdirici_var),
-        hedef_ad="hedef", kam_x=DEMO_MERKEZ_X - 30.0, kam_y=DEMO_MERKEZ_Y,
+        araclar=araclar if araclar is not None else _demo_araclar(hedef_profil, celdirici_var),
+        hedef_ad="hedef",
+        kam_x=DEMO_MERKEZ_X - 30.0 if kam_x is None else kam_x,
+        kam_y=DEMO_MERKEZ_Y if kam_y is None else kam_y,
         kam_z=kam_z, kam_profil=kam_profil, drone_statik=False, kare=kare,
         zemin_tipi="baylands", genislik=IMX500_GEN, yukseklik=IMX500_YUK,
         odak_px=IMX500_ODAK_PX, kam_hz=IMX500_HZ, gurultu=IMX500_GURULTU,
@@ -925,27 +932,107 @@ def Demo_kucul(kare=None):
 
 def Demo_celdirici(kare=None):
     """Adim 5 kabul senaryosu 'celdirici': sabit 80 m, 2 arac hedefin
-    <=10 m yanindan TERS yonde gecer."""
-    sure_s = 20.0
+    <=10 m yanindan TERS yonde gecer, 60 s.
+
+    NEDEN 4.8 m/s (DEMO_HIZ DEGIL) VE BATI YONU, DONUSSUZ DUZ HAT. Ilk
+    denemede 60 s x 10 m/s = 600 m'lik rota U-donusuyle sikistirilmisti
+    (kamera hedefin donen govde-hizini SAYISAL entegrasyonla izliyordu);
+    GERCEK kayitta olculdu ki Gazebo'nun VelocityControl/poz-orneklem
+    zinciri 180 derecelik donusu ~20 derece FAZLA ve fark edilir gecikmeyle
+    calistiriyor - kamera onceden hesaplanmis izgarayla senkron kalamadi ve
+    hedef donustan sonra kadraj disina kaydi (GT px boyutu 60 s'nin sonunda
+    80'den 122'ye surundu, bkz. commit oturumu). Donus GUVENILIR degil, o
+    yuzden TERK EDILDI. Bunun yerine: gercek baylands parki (Fuel
+    OpenRobotics/baylands) HAVADAN KESIF edildi (351 m'den nadir cekim +
+    gokyuzu/arazi piksel-renk esigiyle tarama) ve DEMO_MERKEZ'den BATIYA
+    (-X) acik alan ~322 m (tampon dahil) cikti - 60 s x 4.8 m/s = 288 m bu
+    alana SIGAR. Sabit hizli duz hat + sabit-hizli kamera (donme YOK) =
+    Demo_kucul/orijinal Demo_celdirici'nin zaten KANITLANMIS deseni; guzergah
+    ucunda (x=-113 m) kamera cercevesinin gokyuzune dusen payi HAVADAN
+    KESIFLE dogrulandi: SIFIR. Celdiricilerin GORECE yerlesimi (yanal pay,
+    kapanma hizi) ESKI TASARIMLA AYNI ilkeyle korundu, yalniz yon (X) ve
+    hedef hizina gore kapanma mesafesi aynalandi/yeniden olceklendi.
+    """
+    sure_s = 60.0
     kare = kare if kare is not None else int(sure_s * IMX500_HZ)
-    return _demo("Demo_celdirici", "Sabit 80 m, 2 celdirici hedefin <=10 m yanindan gecer",
+    v_hedef = 4.8
+    hedef_x0, hedef_y0 = DEMO_MERKEZ_X - 30.0, DEMO_MERKEZ_Y
+    araclar = [
+        Arac("hedef", x0=hedef_x0, y0=hedef_y0, yaw=math.pi, vx=v_hedef,
+             renk=(0.16, 0.16, 0.75), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+        # celdiriciler hedefin TERS yonunde (+X, doguya), kapanma hizi
+        # ~15-16 m/s -> ilk gecis t~4 s civarinda, +-6 m yanal pay (ESKI
+        # tasarimla ayni ilke).
+        Arac("celdirici", x0=hedef_x0 - 59.0, y0=hedef_y0 + 6.0, yaw=0.0,
+             vx=10.0, renk=(0.75, 0.65, 0.15), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+        Arac("celdirici2", x0=hedef_x0 - 71.0, y0=hedef_y0 - 6.0, yaw=0.0,
+             vx=11.0, renk=(0.65, 0.15, 0.55), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+    ]
+    kam_profil = lambda t: (-v_hedef, 0.0, 0.0, 0.0, 0.0, 0.0)  # noqa: E731
+    return _demo("Demo_celdirici",
+                 "Sabit 80 m, 2 celdirici hedefin <=10 m yanindan gecer "
+                 f"(hedef {v_hedef:.1f} m/s ile batiya, duz hat, 60 s)",
                  "Adim 5 kabul: yanlis hedefe gecis SIFIR",
-                 "celdiriciler ~t=4-6 s civarinda hedefi gecer", _demo_kam_profil(),
-                 kam_z=80.0, kare=kare, celdirici_var=True,
+                 "celdiriciler ~t=4-4.5 s civarinda hedefin +-6 m yanindan gecer",
+                 kam_profil, kam_z=80.0, kare=kare,
+                 araclar=araclar, kam_x=hedef_x0, kam_y=hedef_y0,
                  etiketler=["demo", "celdirici", "yanlis_kilit"])
 
 
+# DEMO_AGAC: Adim 5 - gercek baylands agac/canopy konumu. Demo_celdirici'deki
+# AYNI havadan-kesif yontemiyle bulundu: 351 m nadir cekim + canopy
+# siluetinin (neredeyse siyah piksel esigi) connected-components analizi,
+# DEMO_MERKEZ civarindaki agac-sirasindan IZOLE (komsu agactan >=15 m) tek
+# bir agac secildi - artik ESKI KOD'daki gibi VARSAYIM DEGIL.
+DEMO_AGAC_X, DEMO_AGAC_Y, DEMO_AGAC_CAP = 257.9, 137.6, 10.6
+
+
 def Demo_kopus(kare=None):
-    """Adim 5 kabul senaryosu 'kopus': sabit 80 m, hedef ~1 s agac/yapi
-    altindan gecer. YER: DEMO_MERKEZ civari VARSAYIM - Adim 5'te gorsel
-    dogrulamayla (agac/bina gercekten hedefi kapatiyor mu) KESINLESTIRILECEK,
-    burada yalniz KAPASITE (rota + sure) kuruluyor."""
-    sure_s = 15.0
+    """Adim 5 kabul senaryosu 'kopus': sabit 80 m, hedef ~1 s GERCEK bir
+    agacin altindan gecer (DEMO_AGAC_*, havadan kesifle secildi), 60 s.
+
+    NEDEN DONUSSUZ DUZ HAT VE ASIMETRIK GUZERGAH: Demo_celdirici ile AYNI
+    gerekce (U-donusu GERCEK kayitta kamera-hedef senkronunu bozdu, bkz. o
+    fonksiyonun basligi) - DONUSSUZ, SABIT hizla DOGUYA. Agacin GERCEK capi
+    (10.6 m) TAM MERKEZINDEN gecilirse (temiz/tam ortulme - ilk denemede
+    GORULDU: hedef karede TAMAMEN kayboluyor) sure = cap/hiz olur; "~1 s"
+    icin hiz ~10.6 m/s gerekir ama DEMO_MERKEZ'den DOGUYA acik alan tek
+    basina bunu 60 s boyunca tasimaz. Cozum: guzergah AGACA GORE ASIMETRIK
+    kuruldu - havadan kesifle olculen acik alan BATIDA (agactan once) ~373 m,
+    DOGUDA (agactan sonra) ~97 m; agac gecisi bu yuzden rotanin SONUNA yakin
+    (t=47.5 s) yerlestirilip hiz bu iki siniri ESIT ORANDA kullanacak
+    sekilde (v = bati_payi / t_gecis = dogu_payi / (60 - t_gecis)) 7.8 m/s
+    secildi - guzergahin HER IKI UCUNDA da (x=-112.6 ve x=355.4) kamera
+    cercevesinin gokyuzune dusen payi HAVADAN KESIFLE dogrulandi: SIFIR.
+    Cap/hiz = 10.6/7.8 = ~1.36 s: TAM MERKEZ gecisiyle ulasilabilen, "~1 s"e
+    en yakin, TEMIZ (yanal kaydirma OLMAYAN, agacin tam ortasindan gecen)
+    deger budur.
+    """
+    sure_s = 60.0
     kare = kare if kare is not None else int(sure_s * IMX500_HZ)
-    return _demo("Demo_kopus", "Sabit 80 m, hedef ~1 s ortuluyor (yer Adim 5'te dogrulanacak)",
+    v_hedef = 7.8
+    t_gecis = 47.5
+    hedef_x0 = DEMO_AGAC_X - t_gecis * v_hedef
+    hedef_y0 = DEMO_AGAC_Y
+    araclar = [
+        Arac("hedef", x0=hedef_x0, y0=hedef_y0, yaw=0.0, vx=v_hedef,
+             renk=(0.16, 0.16, 0.75), mesh="hatchback",
+             L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H),
+    ]
+    kam_profil = lambda t: (v_hedef, 0.0, 0.0, 0.0, 0.0, 0.0)  # noqa: E731
+    yaricap_s = (DEMO_AGAC_CAP / v_hedef) / 2.0
+    return _demo("Demo_kopus",
+                 f"Sabit 80 m, hedef ~1 s gercek agac altinda ortuluyor "
+                 f"(agac dunya=({DEMO_AGAC_X:.1f},{DEMO_AGAC_Y:.1f}), "
+                 f"cap ~{DEMO_AGAC_CAP:.1f} m), 60 s",
                  "Adim 5 kabul: <=2 s icinde DOGRU hedefe donus, yanlis kilit 0",
-                 "kopus ~t=7-8 s civarinda, konum Adim 5'te gorsel dogrulanacak",
-                 _demo_kam_profil(), kam_z=80.0, kare=kare, celdirici_var=False,
+                 f"ortulme ~t={t_gecis - yaricap_s:.2f}-{t_gecis + yaricap_s:.2f} s "
+                 f"(~{2 * yaricap_s:.2f} s), yer HAVADAN KESIFLE dogrulandi (VARSAYIM DEGIL)",
+                 kam_profil, kam_z=80.0, kare=kare,
+                 araclar=araclar, kam_x=hedef_x0, kam_y=hedef_y0,
                  etiketler=["demo", "kopus", "oklüzyon"])
 
 

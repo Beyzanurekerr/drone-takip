@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!-- URETILMISTIR - elle duzenlemeyin. Kaynak: gazebo/dunya_uret.py -->
 <sdf version="1.9">
-  <world name="Demo_celdirici">
+  <world name="Demo_kopus">
     <physics name="varsayilan" type="ignored">
       <max_step_size>0.004166666666666667</max_step_size>
       <real_time_factor>1.0</real_time_factor>
@@ -45,7 +45,7 @@
 
     <model name="hedef">
       <static>false</static>
-      <pose>175.0 155.0 0.78395 0 0 3.141592653589793</pose>
+      <pose>-112.60000000000002 137.6 0.78395 0 0 0.0</pose>
       <link name="govde">
         <gravity>false</gravity>
         <inertial>
@@ -60,75 +60,7 @@
       </link>
       <plugin filename="gz-sim-velocity-control-system"
               name="gz::sim::systems::VelocityControl">
-        <initial_linear>4.8 0.0 0.0</initial_linear>
-        <initial_angular>0.0 0.0 0.0</initial_angular>
-      </plugin>
-      <plugin filename="gz-sim-pose-publisher-system"
-              name="gz::sim::systems::PosePublisher">
-        <publish_link_pose>false</publish_link_pose>
-        <publish_visual_pose>false</publish_visual_pose>
-        <publish_collision_pose>false</publish_collision_pose>
-        <publish_sensor_pose>false</publish_sensor_pose>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>false</publish_nested_model_pose>
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <static_publisher>false</static_publisher>
-        <update_frequency>120</update_frequency>
-      </plugin>
-    </model>
-
-    <model name="celdirici">
-      <static>false</static>
-      <pose>116.0 161.0 0.78395 0 0 0.0</pose>
-      <link name="govde">
-        <gravity>false</gravity>
-        <inertial>
-          <mass>1200</mass>
-          <inertia><ixx>500</ixx><iyy>2000</iyy><izz>2200</izz>
-                   <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
-        </inertial>
-        <visual name="mesh">
-          <pose>-0.34355 0.0 -0.77261 0.0 0.0 1.5707963267948966</pose>
-          <geometry><mesh><scale>0.0254 0.0254 0.0254</scale><uri>/home/beyza/dt_senaryo/data/gazebo/_assets/hatchback/hatchback.obj</uri></mesh></geometry>
-        </visual>
-      </link>
-      <plugin filename="gz-sim-velocity-control-system"
-              name="gz::sim::systems::VelocityControl">
-        <initial_linear>10.0 0.0 0.0</initial_linear>
-        <initial_angular>0.0 0.0 0.0</initial_angular>
-      </plugin>
-      <plugin filename="gz-sim-pose-publisher-system"
-              name="gz::sim::systems::PosePublisher">
-        <publish_link_pose>false</publish_link_pose>
-        <publish_visual_pose>false</publish_visual_pose>
-        <publish_collision_pose>false</publish_collision_pose>
-        <publish_sensor_pose>false</publish_sensor_pose>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>false</publish_nested_model_pose>
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <static_publisher>false</static_publisher>
-        <update_frequency>120</update_frequency>
-      </plugin>
-    </model>
-
-    <model name="celdirici2">
-      <static>false</static>
-      <pose>104.0 149.0 0.78395 0 0 0.0</pose>
-      <link name="govde">
-        <gravity>false</gravity>
-        <inertial>
-          <mass>1200</mass>
-          <inertia><ixx>500</ixx><iyy>2000</iyy><izz>2200</izz>
-                   <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
-        </inertial>
-        <visual name="mesh">
-          <pose>-0.34355 0.0 -0.77261 0.0 0.0 1.5707963267948966</pose>
-          <geometry><mesh><scale>0.0254 0.0254 0.0254</scale><uri>/home/beyza/dt_senaryo/data/gazebo/_assets/hatchback/hatchback.obj</uri></mesh></geometry>
-        </visual>
-      </link>
-      <plugin filename="gz-sim-velocity-control-system"
-              name="gz::sim::systems::VelocityControl">
-        <initial_linear>11.0 0.0 0.0</initial_linear>
+        <initial_linear>7.8 0.0 0.0</initial_linear>
         <initial_angular>0.0 0.0 0.0</initial_angular>
       </plugin>
       <plugin filename="gz-sim-pose-publisher-system"
@@ -156,7 +88,7 @@
          gazebo/kaydet.py icinde alinip pozlar.csv'ye kam_* olarak yazilir. -->
     <model name="drone">
       <static>false</static>
-      <pose>175.0 155.0 80.0 0 0 0</pose>
+      <pose>-112.60000000000002 137.6 80.0 0 0 0</pose>
       <link name="govde">
         <gravity>false</gravity>
         <inertial>
@@ -195,7 +127,7 @@
       </link>
       <plugin filename="gz-sim-velocity-control-system"
               name="gz::sim::systems::VelocityControl">
-        <initial_linear>-4.8 0.0 0.0</initial_linear>
+        <initial_linear>7.8 0.0 0.0</initial_linear>
         <initial_angular>0.0 0.0 0.0</initial_angular>
       </plugin>
       <plugin filename="gz-sim-pose-publisher-system"
