@@ -67,7 +67,7 @@ neredeyse yarı-kare) daha önce hiç sınanmamış bir üst uç.
 ## Talimatın kendi kuralı gereği: Adım 3'e geçilmedi, hiçbir kod
 değiştirilmedi, hiçbir model fine-tune edilmedi, mesh değiştirilmedi.
 
-## Sıradaki adaylar (SINANMADI)
+## Sıradaki adaylar (SINANMADI) — bkz. EK aşağıda, ilk aday sınandı ve GEÇTİ
 
 - ROI-4x'i SABİT 4x yerine hedefin native boyutuna göre ADAPTİF ölçekleyip
   girdiyi hep ~150–160 px bandına oturtmak (A7/A8'in "adaptif ROI" fikrinin
@@ -75,3 +75,62 @@ değiştirilmedi, hiçbir model fine-tune edilmedi, mesh değiştirilmedi.
   ya da
 - Demo irtifa aralığını (80→160 m yerine) bu doğrulanmış native ~35–45 m
   bandına daraltmak/ölçeklemek.
+
+---
+
+## EK: A8 merdiveniyle (adaptif ROI) yeniden ölçüm — 2026-09-07
+
+**Betik:** `gazebo/teshis_2e_merdiven.py` (hiçbir mevcut dosya değişmedi,
+yeni kayıt gerekmedi — mevcut 3 veri seti tekrar kullanıldı). Yukarıdaki
+ölçüm SABİT ROI-4x (R=160 her irtifada) kullanmıştı ve 80/120 m'de girdi
+211–319 px'e şişip çökmüştü. Bu tur, A8'in orijinal tasarımının (silinmiş
+`gazebo/tani_a8_adaptif_roi.py`, git geçmişi `03c15f5~1`) `R_sec`
+mantığını AYNEN taşıyor: merdivenden ({640,320,160,80} sensör-px ROI
+genişliği) hedefi ağ girdisinde bant ortasına (log uzayında) en yakın
+getiren basamak seçilir. **Bant burada [55,110] px** (eski A8'in [60,90]'ı
+DEĞİL — bu tur için verilen yeni bant), `NET_HEDEF=82.5`.
+
+| İrtifa | Model | Yol | Seçilen R | girdi L p50 | recall |
+|---|---|---|---|---|---|
+| 80 m | A5 | tam kadraj | — | 25.1 px | 0.000 |
+| 80 m | A5 | merdiven-ROI | **640** | 79.6 px | **1.000** |
+| 80 m | A6 | tam kadraj | — | 25.1 px | 0.000 |
+| 80 m | A6 | merdiven-ROI | **640** | 79.6 px | **1.000** |
+| 120 m | A5 | tam kadraj | — | 16.6 px | 0.000 |
+| 120 m | A5 | merdiven-ROI | **320** | 105.5 px | **1.000** |
+| 120 m | A6 | tam kadraj | — | 16.6 px | 0.000 |
+| 120 m | A6 | merdiven-ROI | **320** | 105.5 px | **1.000** |
+| 160 m | A5 | tam kadraj | — | 12.4 px | 0.000 |
+| 160 m | A5 | merdiven-ROI | **320** | 78.8 px | **1.000** |
+| 160 m | A6 | tam kadraj | — | 12.4 px | 0.000 |
+| 160 m | A6 | merdiven-ROI | **320** | 78.8 px | **1.000** |
+
+### Kapı: **GEÇTİ** (her irtifada merdiven-ROI recall ≥ 0.65)
+
+Her üç irtifada da recall tam **1.000** — kapının 0.65 eşiğini büyük
+farkla geçiyor. **A5 ve A6 BİREBİR AYNI** (12/12 hücrede özdeş recall) —
+kullanıcının önceki turdaki "A5=A6 aynı davranıyor" gözlemi burada da
+doğrulandı. **Sonuç: A6 tek model olarak yeterli, A5'i demoya eklemeye
+gerek yok.**
+
+### `R_MERDIVEN` kalibrasyonu (Adım 3a için)
+
+```
+MERDIVEN = [640, 320, 160, 80]   # sensor-px ROI genisligi (A8 ile AYNI)
+BANT = (55.0, 110.0)
+NET_HEDEF = 82.5                 # bant ortasi (log-simetrik secim icin)
+R_sec(L_native) = min(MERDIVEN, key=R -> |log((L_native*640/R)/NET_HEDEF)|)
+```
+
+**Dürüstlük notu:** bu 3 irtifada (80/120/160 m, native 39–80 px) merdiven
+YALNIZCA R=640 ve R=320 basamaklarını seçti; **R=160 ve R=80 basamakları
+bu turda HİÇ tetiklenmedi** (daha küçük/yakın hedefler gerekirdi — ör.
+~200 m'nin üstü). O basamaklar kalibre edilmiş SAYILMAZ, yalnızca A8'in
+orijinal tasarımından miras alındı. "1×/tam kadraj kaçışı" (merdivenin en
+yakın basamağı da banda girmiyorsa tam kadraja düş) da bu 3 irtifada HİÇ
+tetiklenmedi (`tam_kacis=0` her hücrede) — kod yolu var ama sınanmadı.
+
+**Adım 3'e geçiş:** kapı geçti, önerilen üretim modeli A6 tek başına.
+Adaptif ROI'nin gerçek demo boru hattına (Demo_kucul/Demo_celdirici/
+Demo_kopus) entegrasyonu (Adım 3) henüz YAPILMADI — bu ek yalnızca ölçüm
+ve kalibrasyondur.
