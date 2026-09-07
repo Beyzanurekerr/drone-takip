@@ -1,9 +1,16 @@
-"""DEMO offline HUD uretimi (Adim 4 duzeltmesi - THREAD KALKTI).
+"""DEMO offline HUD uretimi (Adim 6): kutu + ROI + 4x inset + sag panel +
+alt serit.
 
-`main.py --mod demo --kaydet X.mp4` artik HAM kare + `X.jsonl` (kare basina
-durum) yazar. Bu script ikisini birlestirip HUD'lu videoyu OFFLINE uretir -
-kendi cizim kodu YOK, `gazebo/gorsel_uret.py:video_uret()` cagirir (talimat:
-"her deney BUNU cagirir, kendi cizim kodu yazmaz").
+`main.py --mod demo --kaydet X.mp4` HAM kare + `X.jsonl` (kare basina durum)
+yazar (bkz. `main.py:kos()` demo_kayit bloğu - gerçek şema: kare/durum/kutu/
+roi/px/irtifa/mod/komut/iou/gt). Bu script ikisini birleştirip HUD'lu videoyu
+OFFLINE üretir - kendi çizim kodu YOK, tüm çizim `gazebo/gorsel_uret.py`nin
+"DEMO HUD" bölümündeki fonksiyonlardadır (talimat: "her deney BUNU çağırır,
+kendi çizim kodu yazmaz").
+
+DEMO ilkesi (bkz. `gorsel_uret.py` DEMO HUD başlığı): izleyici GT görmez,
+hiçbir teşhis metriği (IoU/PSR/hassasiyet) ekrana yazılmaz - `rec["gt"]` ve
+`rec["iou"]` jsonl'de varsa bile burada hiç OKUNMAZ.
 
 Kosum: python3 -m gazebo.demo_hud_uret cikti/demo/kucul.mp4
 """
@@ -20,12 +27,32 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from gazebo import gorsel_uret  # noqa: E402
-from gazebo.gorsel_uret import _dosya_govdesi, _kare_ciz  # noqa: E402
+from gazebo.gorsel_uret import _dosya_govdesi  # noqa: E402
 
-# 2026-09-07 DUZELTME: `video_uret()` tum kareleri bellekte biriktirir
-# (kaydet.py'nin OOM'una AYNI sinif hata, 900 karede ~8GB). Burada onun
-# YERINE gecilmez - `_kare_ciz`'i (AYNI cizim, tek kare) STREAMING
-# cagirip diske hemen yaziyoruz, boylece bellek O(1) kalir.
+# 2026-09-07 (Adim 4 DUZELTME, burada da GECERLI): `video_uret()` tum
+# kareleri bellekte biriktirir (kaydet.py'nin OOM'una AYNI sinif hata, 900
+# karede ~8GB). Bunun YERINE gecilmez - kare goruntuleri STREAMING okunup
+# hemen yazilir, bellek kare-goruntusu icin O(1) kalir. JSONL kayitlari
+# (kare basina birkac float/str, goruntu DEGIL) tek seferde belleğe
+# alinir - bu "biriktirme yok" kuralinin kapsami DISINDA (900 kayit
+# ihmal edilebilir bellek, alt seridin TUM klip egrisini/bandini cizmesi
+# icin ZATEN gerekli, bkz. gorsel_uret.demo_klip_serit_hazirla).
+
+
+def _demo_olaylar_cikar(kayitlar, fps):
+    """Durum degisikliklerini (kare_no, "t=..s ONCEKI -> YENI") olarak
+    cikarir - `gorsel_uret._demo_serit_ciz`'in alt seritteki "son olay"
+    notu icin. Yalniz JSONL kayitlarindan (goruntusuz) turetilir."""
+    olaylar = []
+    onceki = None
+    for i, r in enumerate(kayitlar):
+        d = r.get("durum")
+        if d != onceki:
+            t = i / fps if fps else 0.0
+            onceki_ad = onceki or "-"
+            olaylar.append((i, f"t={t:.1f}s  {onceki_ad}->{d}"))
+            onceki = d
+    return olaylar
 
 
 def main():
@@ -46,36 +73,31 @@ def main():
     W = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     H = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+    durum_dizisi = [r.get("durum") for r in kayitlar]
+    irtifa_dizisi = [r.get("irtifa") for r in kayitlar]
+    olaylar = _demo_olaylar_cikar(kayitlar, fps)
+    serit = gorsel_uret.demo_klip_serit_hazirla(durum_dizisi, irtifa_dizisi, W)
+    odak_px = gorsel_uret.demo_odak_px(W)
+
     senaryo = os.path.splitext(os.path.basename(a.ham_video))[0]
     dizin = os.path.join(gorsel_uret.KOK, a.deney)
     os.makedirs(dizin, exist_ok=True)
     cikti_yol = os.path.join(dizin, _dosya_govdesi(a.deney, senaryo, a.kol, False) + ".mp4")
     vw = cv2.VideoWriter(cikti_yol, cv2.VideoWriter_fourcc(*"mp4v"), fps, (W, H))
 
-    n = 0
-    hafif_kayit = []      # img YOK - zaman_serisi_uret icin (bellek ucuz)
+    n, tespit_sayisi = 0, 0
     for rec in kayitlar:
         ok, img = cap.read()
         if not ok:
             break
-        kare_rec = {
-            "sistem_kutu": rec.get("kutu"),
-            "roi_kutu": rec.get("roi"),
-            "gt": rec.get("gt"),
-            "durum": rec.get("durum"),
-            "mod": rec.get("komut"),      # KORUMA'da "YAKLAS" - HUD'da gorunur
-            "iou": rec.get("iou"),
-        }
-        vw.write(_kare_ciz({**kare_rec, "img": img}, n, oracle=False))
-        hafif_kayit.append(kare_rec)
+        if rec.get("kutu") is not None:
+            tespit_sayisi += 1
+        vw.write(gorsel_uret.demo_hud_kare_ciz(
+            img, rec, n, tespit_sayisi, fps, serit, olaylar, odak_px))
         n += 1
     cap.release()
     vw.release()
     print(f"HUD'lu video: {cikti_yol}  ({n} kare)")
-
-    seri = gorsel_uret.zaman_serisi_uret(a.deney, senaryo, a.kol, hafif_kayit)
-    if seri:
-        print(f"zaman serisi: {seri}")
 
 
 if __name__ == "__main__":
