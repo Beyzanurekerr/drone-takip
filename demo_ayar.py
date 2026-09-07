@@ -9,11 +9,18 @@ DUZELTME: (1) tam kadraj kacisi YOK - `gazebo/teshis_2e_merdiven.py`'deki
 kullanir - bkz. `takip/izleyici.py:_karo_arama_adimi` (kayip_dedektor
 eklentisi, hakem=None ornegiyle AYNI ilke: verilmezse davranis degismez).
 
-3b - KaroArayici: kare basina <=KARO_KARE_BASI adet R=640(sensor-px) karo,
-son guvenilir merkezden DISA dogru siralanmis sirayla taranir (maliyeti
-kare basina SABIT tutar). Adaylar D_NORM (son guvenilir merkeze log-degil
-DUZ normalize uzaklik - buyutme degil KONUM sorusu oldugu icin log
-gerekmez) ile puanlanir; en yuksek d_norm kazanir.
+3b - KaroArayici: kare basina <=KARO_KARE_BASI adet karo, son guvenilir
+merkezden DISA dogru siralanmis sirayla taranir (maliyeti kare basina
+SABIT tutar). Adaylar D_NORM (son guvenilir merkeze log-degil DUZ
+normalize uzaklik - buyutme degil KONUM sorusu oldugu icin log gerekmez)
+ile puanlanir; en yuksek d_norm kazanir.
+
+DUZELTME (2026-09-07, kullanicidan): karo genisligi artik SABIT 640 DEGIL -
+`sifirla(merkez, L_native=...)` son guvenilir hedef boyutundan `r_sec` ile
+R_MERDIVEN'den secilir (hedef ~20px'e kucculunce R=160/80'e iner, ag
+girdisi tekrar [55,110]px bandina oturur). Boyut bilinmiyorsa (soguk
+edinme) R=640 varsayilan kalir (`r_sec(None)`). R kucculdukce karo sayisi
+ARTAR - `tam_tur_kare()` bunu raporlar.
 
 KABUL OLCUTLERI ADIM 5'TE tanimlanacak - burada yalnizca CALISAN bir
 iskelet var, esikler (`aday_esik_kayip` uzerinden) henuz ayarlanmadi.
@@ -26,7 +33,6 @@ R_MERDIVEN = (640, 320, 160, 80)     # sensor-px ROI genisligi merdiveni (3a)
 BANT = (55.0, 110.0)                  # ag girdisinde hedeflenen px bandi
 NET_HEDEF = sum(BANT) / 2.0           # 82.5 - log-simetrik secim referansi
 
-KARO_R = 640                          # KAYIP/edinme taramasinda karo genisligi (native px)
 KARO_KARE_BASI = 2                    # kare basina en fazla taranan karo sayisi
 A6_AGIRLIK = "weights/a6_kucuk_hedef.pt"
 A6_SINIFLAR = [0, 1, 2, 3]            # car,van,truck,bus (asamaB egitimiyle AYNI)
@@ -52,7 +58,7 @@ def _karo_wh(R):
     return int(R), int(round(R * 9.0 / 16.0))
 
 
-def _karo_izgara(W, H, R=KARO_R, bindirme=0.25):
+def _karo_izgara(W, H, R, bindirme=0.25):
     rw, rh = _karo_wh(R)
     adim_x = max(1, int(rw * (1.0 - bindirme)))
     adim_y = max(1, int(rh * (1.0 - bindirme)))
@@ -61,15 +67,23 @@ def _karo_izgara(W, H, R=KARO_R, bindirme=0.25):
     return [(x, y, rw, rh) for y in ys for x in xs]
 
 
+def tam_tur_kare(W, H, kare_basi=KARO_KARE_BASI):
+    """R_MERDIVEN'in her basamaginda bir TAM turun kac kare surdugunu
+    dondurur ({R: kare_sayisi}) - R kucculdukce karo sayisi artar."""
+    import math
+    return {R: math.ceil(len(_karo_izgara(W, H, R)) / kare_basi) for R in R_MERDIVEN}
+
+
 class KaroArayici:
-    """Kare basina <=KARO_KARE_BASI adet R=640 karoyla kadraj taramasi.
+    """Kare basina <=KARO_KARE_BASI karoyla kadraj taramasi.
 
     Neden: her karede tum kareyi (ya da tum kareyi tek YOLO cagrisiyla)
     taramak pahali; karolama maliyeti kare basina SABIT tutar, tarama
     coklu kareye yayilir. Sira, son bilinen/varsayilan merkezden DISA
     dogru (en yakin karo once) - "ASLA kalici pes etmez" ilkesiyle tutarli
     (bkz. `takip/izleyici.py:_arama_adimi` docstring): kuyruk biterse
-    bastan baslar.
+    bastan baslar. Karo genisligi (R) `sifirla()`'da hedefin son bilinen
+    boyutundan `r_sec` ile secilir - SABIT DEGIL (bkz. modul basligi).
     """
 
     def __init__(self, native_w, native_h, model, siniflar=A6_SINIFLAR,
@@ -79,19 +93,29 @@ class KaroArayici:
         self.siniflar = siniflar
         self.conf = conf
         self.kare_basi = kare_basi
-        self._karolar = _karo_izgara(native_w, native_h)
-        self._sira = list(self._karolar)
+        self._izgara_onbellek = {}     # R -> karo listesi (tekrar tekrar kurulmasin)
+        self.R = R_MERDIVEN[0]
+        self._sira = self._izgara(self.R)
         self._imlec = 0
         self._merkez = np.array([native_w / 2.0, native_h / 2.0], np.float32)
         self.taranan_karo_sayisi = 0
 
-    def sifirla(self, merkez):
-        """Verilen merkezden disa dogru siralanmis karo kuyrugu kurar."""
+    def _izgara(self, R):
+        if R not in self._izgara_onbellek:
+            self._izgara_onbellek[R] = _karo_izgara(self.W, self.H, R)
+        return self._izgara_onbellek[R]
+
+    def sifirla(self, merkez, L_native=None):
+        """Verilen merkezden disa dogru siralanmis karo kuyrugu kurar.
+
+        `L_native`: son guvenilir hedef boyutu (px) - verilirse R, `r_sec`
+        ile o boyuta gore secilir; verilmezse (soguk edinme) R=640."""
+        self.R = r_sec(L_native)
         self._merkez = np.asarray(merkez, np.float32)
         def _uzaklik2(k):
             cx, cy = k[0] + k[2] / 2.0, k[1] + k[3] / 2.0
             return (cx - self._merkez[0]) ** 2 + (cy - self._merkez[1]) ** 2
-        self._sira = sorted(self._karolar, key=_uzaklik2)
+        self._sira = sorted(self._izgara(self.R), key=_uzaklik2)
         self._imlec = 0
 
     def adim(self, bgr):

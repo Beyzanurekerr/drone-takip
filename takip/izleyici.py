@@ -6,6 +6,9 @@ Durum makinesi
     SUPHELI  : PSR dustu -> ogrenmeyi DURDUR, Kalman ile devam et (coast)
     ARAMA    : hedef kayip -> tespit modulu aday uretiyor, imza ile eslestir
     KAYIP    : uzun sure bulunamadi
+    KORUMA   : hedef KORUMA_ESIK altina kucculdu - dedektor bu boyutta
+               guvenilmez (bkz. A11 KOL3), arama YOK, yalniz DCF/Kalman;
+               KAYIP'tan ONCE kontrol edilir (2026-09-07, DEMO Adim 3 duzeltmesi)
 
 Ogrenmeyi supheli durumda durdurmak kritik: MOSSE kaybettigi anda ogrenmeye
 devam ederse asfalti/baska araci ogrenir ve bir daha donemez.
@@ -51,7 +54,8 @@ from .egomotion import EgoMotion
 from .cekirdekler import CEKIRDEKLER
 from .tespit import HareketTespit, Imza, rafine_kutu
 
-KILITLI, SUPHELI, ARAMA, KAYIP = "KILITLI", "SUPHELI", "ARAMA", "KAYIP"
+KILITLI, SUPHELI, ARAMA, KAYIP, KORUMA = "KILITLI", "SUPHELI", "ARAMA", "KAYIP", "KORUMA"
+KORUMA_ESIK = 25.0   # A11 KOL3 tasarim esigi (L_est < 25px): dedektor bu boyutta guvenilmez
 
 
 class Kalman:
@@ -170,6 +174,7 @@ class HedefTakip:
         self.psr = 0.0
         self.son_adaylar = []
         self.sure = {}
+        self.komut = None           # KORUMA: "YAKLAS" onerisi (demo/HUD icin, ucus kontrolu YOK)
         self.benzerlik = 1.0        # son imza kontrolunun sonucu (rapor icin)
         self.yanlis_kilit = 0       # kac kez yanlis kilit kirildi
         self._kimlik_hata = 0
@@ -224,6 +229,7 @@ class HedefTakip:
 
     def _dogrulama_sifirla(self):
         """Yeni guvenilir kilit: denetleyici sayaclari temizlenir."""
+        self.komut = None
         self.benzerlik = 1.0
         self._kimlik_hata = 0
         self._zemin_gecmis = []
@@ -283,6 +289,8 @@ class HedefTakip:
         t0 = time.perf_counter()
         if self.durum in (ARAMA, KAYIP):
             self._arama_adimi(bgr, gri, M)
+        elif self.durum == KORUMA:
+            self._koruma_adimi(bgr)
         else:
             if self.durum == KILITLI:
                 self._bagimsiz_dogrula(bgr, gri, ongoru)
@@ -297,7 +305,7 @@ class HedefTakip:
         # kapisi onu eler ve sistem bir daha asla kilitlenemez.
         c = self.kf.konum
         if not (-20 < c[0] < W + 20 and -20 < c[1] < H + 20):
-            self.durum = KAYIP
+            self.durum = KORUMA if self.boyut.max() < KORUMA_ESIK else KAYIP
             self.kf.x[0] = float(np.clip(c[0], 0, W - 1))
             self.kf.x[1] = float(np.clip(c[1], 0, H - 1))
             self.kf.x[2:] = 0.0
@@ -484,6 +492,9 @@ class HedefTakip:
         self.kayip += 1
         gecen = self.kayip - self.coast_kare
         if gecen > self.max_arama_kare:
+            if self.boyut.max() < KORUMA_ESIK:
+                self.durum = KORUMA
+                return
             self.durum = KAYIP
             if self.kare % self.kayip_periyot:
                 return
@@ -563,7 +574,9 @@ class HedefTakip:
         durumundaki KAYIP) BAGIMSIZDIR - o yollar bu fonksiyona hic girmez.
         """
         if not self._karo_kurulu:
-            self.kayip_dedektor.sifirla(self.kf.konum)
+            H, W = gri.shape
+            merkez0 = np.clip(self.kf.konum, [0.0, 0.0], [W - 1.0, H - 1.0])
+            self.kayip_dedektor.sifirla(merkez0, L_native=float(self.boyut.max()))
             self._karo_kurulu = True
         sonuc = self.kayip_dedektor.adim(bgr)
         self.son_adaylar = []
@@ -582,6 +595,28 @@ class HedefTakip:
         self.durum, self.kayip = KILITLI, 0
         self.psr = 99.0
         self._dogrulama_sifirla()
+
+    def _koruma_adimi(self, bgr):
+        """KORUMA: hedef KORUMA_ESIK altina kucculdu, dedektor GUVENILMEZ
+        (bkz. sinif basligindaki A11 KOL3 referansi). Detektor tabanli
+        arama YOK - yalniz DCF/Kalman ile devam, `rafine_kutu` firsat
+        buldukca capayi tazeler. `self.komut = "YAKLAS"`: ucus kontrolune
+        BAGLI DEGIL (entegrasyon yok), yalniz demo/HUD icin bir oneri
+        alani. Boyut esigi tekrar gecerse ARAMA'ya (normal dedektorlu
+        kurtarma) devredilir.
+        """
+        self.komut = "YAKLAS"
+        r = rafine_kutu(bgr, self.kf.konum, self.boyut, hedef_renk=self.imza.renk)
+        if r is not None:
+            self.boyut = np.maximum(0.75 * self.boyut + 0.25 * r[2:], self.min_kenar)
+            self.boyut_olculen = 0.85 * self.boyut_olculen + 0.15 * np.maximum(r[2:], self.min_kenar)
+            yeni_c = r[:2] + r[2:] / 2
+            if float(np.linalg.norm(yeni_c - self.kf.konum)) < 0.6 * float(self.boyut.max()):
+                self.kf.duzelt(yeni_c, r_carpan=1.0)
+        if self.boyut.max() >= KORUMA_ESIK:
+            self.durum = ARAMA
+            self.kayip = self.coast_kare
+            self.komut = None
 
     def _boyut_sinirla(self):
         """Kutuyu son OLCULEN boyutun etrafinda bir banda hapset.
