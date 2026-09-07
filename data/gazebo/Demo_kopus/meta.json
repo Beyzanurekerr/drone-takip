@@ -33,41 +33,15 @@
     }
   ],
   "kayit": {
-    "sure_s": 506.9,
-    "rtf": 0.0004997359062424646,
+    "sure_s": 413.2,
+    "rtf": 0.013917797876231664,
     "poz_ornegi": {
-      "hedef": 4781,
-      "drone": 4781
+      "hedef": 4877,
+      "drone": 4877
     },
     "cmd_vel_mesaj": 1,
     "senkron_bosluk_ms_ort": 2.667,
     "senkron_bosluk_ms_max": 4.167,
     "tolerans_ms": 20.0
-  },
-  "saglik": {
-    "hedef_px_dagilim": {
-      "n": 1800,
-      "min": 79.6,
-      "p10": 79.6,
-      "p50": 79.6,
-      "p90": 79.6,
-      "max": 79.6
-    },
-    "ortulme": {
-      "toplam_s": 1.321,
-      "en_uzun_pencere_s": 1.321,
-      "pencere_sayisi": 1,
-      "pencereler": [
-        [
-          46.66,
-          47.98
-        ]
-      ],
-      "agac_dunya": [
-        257.9,
-        137.6
-      ],
-      "agac_cap_m": 10.6
-    }
   }
 }

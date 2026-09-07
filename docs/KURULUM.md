@@ -154,7 +154,7 @@ python3 -m gazebo.demo_hud_uret cikti/demo/kucul.mp4
 | `pip install -r requirements.txt` (+ torch CPU + ultralytics) | ~3–5 dk | tahmin — bu makinede paketler zaten kuruluydu (torch 2.13, ultralytics 8.4), sıfırdan zamanlanmadı |
 | Baylands Fuel indirme (~408 MB, tek seferlik) | bağlantıya bağlı | **boyut bu oturumda ölçüldü** (`~/.gz/fuel`), indirme süresi zamanlanmadı — önbellek bu makinede zaten doluydu |
 | `python3 -m gazebo.kaydet Demo_kucul` (1200 kare, 2028×1520) | **460.7 s (~7.7 dk)** | **gerçekten koşuldu ve ölçüldü bu oturumda** (`kaydedildi: 1200 kare, dusen 0, sure 460.7 s`) — ayrı bir `--kok` altında, bu depronun izlenen `data/gazebo/Demo_kucul/` kaydına dokunmadan |
-| `main.py --mod demo --source gazebo --sequence Demo_kucul` (30 kare, `--penceresiz`) | **31.0 s** (ilk karede YOLO model yükleme gecikmesi ~10 s dahil) | **gerçekten koşuldu ve ölçüldü bu oturumda** — çıktı: `hedef KILITLENDI`, IoU 0.940, kilit oranı %100 |
+| `main.py --mod demo --source gazebo --sequence Demo_kucul` (30 kare, `--penceresiz`) | **31.0 s** (ilk karede YOLO model yükleme gecikmesi ~10 s dahil) | **gerçekten koşuldu ve ölçüldü bu oturumda** — çıktı: `hedef KILITLENDI`, IoU 0.940, kilit oranı %100 (2026-09-07: `docs: demo v1` sonrası tekrar doğrulandı, N_TESPIT=2 ile IoU 0.912, kilit oranı hâlâ %100 — küçük fark mimari değişikliğinden, komut ve davranış AYNI) |
 
 > **Not (dürüstlük):** bu makine zaten Gazebo Harmonic kurulu ve Fuel
 > önbelleği dolu bir geliştirme kutusu olduğu için apt/Fuel-indirme adımları

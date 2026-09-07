@@ -55,7 +55,7 @@
         </inertial>
         <visual name="mesh">
           <pose>-0.34355 0.0 -0.77261 0.0 0.0 1.5707963267948966</pose>
-          <geometry><mesh><scale>0.0254 0.0254 0.0254</scale><uri>/home/beyza/dt_senaryo/data/gazebo/_assets/hatchback/hatchback.obj</uri></mesh></geometry>
+          <geometry><mesh><scale>0.0254 0.0254 0.0254</scale><uri>/home/beyza/drone_takip/data/gazebo/_assets/hatchback/hatchback.obj</uri></mesh></geometry>
         </visual>
       </link>
       <plugin filename="gz-sim-velocity-control-system"

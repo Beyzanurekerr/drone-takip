@@ -61,6 +61,7 @@ irtifa, `gazebo/teshis_2e_px_bandi.py`) — tahmin/enterpolasyon değildir:
 | 80 m | 79.6 px |
 | 120 m | 52.7 px |
 | 160 m | 39.4 px |
+| 200–210 m | **32.9 px** — `Demo_kucul` 1200 kare koşumundan ÖLÇÜLDÜ (2026-09-07); "20 px (210 m)" varsayımı da eski araştırma kamerasına (odak ~500 px) dayanıyordu ve **doğru değil** — gerçek IMX500 odağıyla (1561 px) 210 m'de native boyut ~29.7 px hesaplanır, ölçülen 32.9 px bununla uyumlu. Bu bantta kilit oranı **%100** (68/68 kare) — `docs/DEMO_SONUC.md`. |
 
 Tam kadrajda (640 px girdi) bu üç irtifada da YOLO recall **0.000**'dır —
 demo bu yüzden ham kareyi değil, **adaptif ROI'yi** (aşağıdaki merdiven)
@@ -118,11 +119,19 @@ Kaynak: `gazebo/senaryolar.py:DEMO_AILE`. Üçü de sabit `--mod demo`
 (`main.py --mod demo --source gazebo --sequence <ad>`) ile koşulur; kayıttan
 HUD'lu video üretimi → `gazebo/demo_hud_uret.py`.
 
+Tam sonuç dökümü (ölçüt · sonuç · GEÇTİ/KALDI, 3 tablo) →
+**[docs/DEMO_SONUC.md](docs/DEMO_SONUC.md)**.
+
 | Senaryo | Açıklama | Kabul beklentisi | Sonuç | mp4 |
 |---|---|---|---|---|
-| `Demo_kucul` | İrtifa rampası 50→200 m, hedef 2 viraj alır | Kilit kesintisiz, KORUMA'ya (20 px) geçiş görünür, hassasiyet ≥%95 | *(doldurulacak)* | *(doldurulacak)* |
-| `Demo_celdirici` | Sabit 80 m, 2 çeldirici hedefin ≤10 m yanından ters yönde geçer | Yanlış hedefe geçiş **sıfır** | *(doldurulacak)* | *(doldurulacak)* |
-| `Demo_kopus` | Sabit 80 m, hedef ~1 s ağaç/yapı altında kalır | ≤2 s içinde doğru hedefe dönüş, yanlış kilit 0 | *(doldurulacak)* | *(doldurulacak)* |
+| `Demo_kucul` | İrtifa rampası 50→210 m (200 m **değil** — bkz. §3 düzeltmesi), hedef 2 viraj alır | Kilit kesintisiz, hassasiyet ≥%95 | **GEÇTİ** — hassasiyet %100.0 (1194/1194 kare); 1 kısa ARAMA epizotu (60–70 m'de, ~24 kare, kendiliğinden toparlandı) dışında kesintisiz, kilit oranı %96.4. KORUMA bu irtifa aralığında hiç tetiklenmedi. | [cikti/gorsel/demo/demo_kucul_mod_demo.mp4](cikti/gorsel/demo/demo_kucul_mod_demo.mp4) · [örnek kare](docs/gorseller/kucul_ornek.png) |
+| `Demo_celdirici` | Sabit 80 m, 2 çeldirici hedefin ≤10 m yanından ters yönde geçer, 60 s | Yanlış hedefe geçiş **sıfır** | **KISMEN GEÇTİ** — asıl ölçüt (yanlış hedefe geçiş) **GEÇTİ**: 0/1791 kare, çeldiriciler en yakın geçtiği anda (kare ~120–135) durum kesintisiz KİLİTLİ kaldı. Ayrı ve test edilmeyen bir sorun: kare ~686'dan (geçişle ilgisiz) itibaren genel kararlılık düşüyor, kilit oranı %59.3 — düzeltilmedi. | [cikti/gorsel/demo/demo_celdirici_mod_demo.mp4](cikti/gorsel/demo/demo_celdirici_mod_demo.mp4) · [örnek kare](docs/gorseller/celdirici_ornek.png) |
+| `Demo_kopus` | Sabit 80 m, hedef ~1 s (t=46.82–48.18 s) gerçek bir ağacın altında kalır, 60 s | ≤2 s içinde doğru hedefe dönüş, yanlış kilit 0 | **KALDI** — sistem klip boyunca **hiçbir karede** doğru hedefe kilitlenmedi (IoU sürekli 0.000, 1786/1786 kare); soğuk edinme büyük ihtimalle bir ağaç/gölge lekesini araç sandı (bkz. örnek kare). Örtülme-sonrası-dönüş bu yüzden ölçülemedi. Düzeltilmedi. | [cikti/gorsel/demo/demo_kopus_mod_demo.mp4](cikti/gorsel/demo/demo_kopus_mod_demo.mp4) · [örnek kare](docs/gorseller/kopus_ornek.png) |
+
+**FPS** (N_TESPIT=2, `demo_ayar.py`): Demo_kucul 23.8, Demo_celdirici 29.5,
+Demo_kopus 82.1 (çoğu kare KORUMA'da YOLO hiç çağrılmıyor — yanıltıcı
+yüksek, gerçek performans değil). **Raspberry Pi'de: ölçülmedi** (bkz. §2,
+§7 madde 6).
 
 ## 6. Kurulum
 
@@ -140,11 +149,15 @@ kadar adım adım → **[docs/KURULUM.md](docs/KURULUM.md)**.
    docstring'i) — bu durum bu üç irtifada hiç tetiklenmedi.
 3. **KAYIP/edinme eşikleri gevşek** (`esik=0.0`) — Adım 5'te sıkılaştırılması
    planlanıyor, henüz kabul ölçütü yok.
-4. **`DEDEKTOR_BOYUT_OTORITESI`** (2026-09-07 eklendi) henüz kendi kabul
-   testinden geçmedi — yalnızca kare ~698 sıçramasını (commit `2ab78a7`)
-   kapattığı doğrulandı.
-5. **`Demo_kopus`'un örtülme konumu görsel doğrulanmadı** — rota/süre kuruldu,
-   ağaç/binanın hedefi gerçekten kapattığı henüz teyit edilmedi.
+4. **`DEDEKTOR_BOYUT_OTORITESI` + `DEDEKTOR_KARAR_OTORITESI`** artık üç demo
+   senaryosunda test edildi (§5, `docs/DEMO_SONUC.md`) — kare ~698 sınıfı
+   sıçrama (commit `2ab78a7`) tekrar görülmedi, ama `Demo_celdirici`'de
+   (kare ~686+) ve `Demo_kopus`'ta (soğuk edinme) AYRI, düzeltilmemiş
+   kararlılık sorunları bulundu.
+5. **`Demo_kopus`'un örtülme konumu artık gerçek** (`DEMO_AGAC_*`, havadan
+   keşifle bulundu) ama **senaryonun kendisi hiç çalışmıyor** — soğuk
+   edinme klip boyunca doğru hedefe hiç kilitlenmedi (§5, `docs/
+   DEMO_SONUC.md`), örtülmeden bağımsız bir sorun.
 6. **Raspberry Pi'de hiçbir ölçüm yapılmadı** — §2'deki tüm Pi sayıları
    ekstrapolasyondur (bkz. `docs/PI_OLCUM.md`). IMX500 model paketleme bu
    makinede OOM nedeniyle tamamlanamadı (bkz. `weights/imx500/DURUM.md`).

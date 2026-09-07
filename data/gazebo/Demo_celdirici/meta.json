@@ -11,8 +11,8 @@
   "aciklama": "Sabit 80 m, 2 celdirici hedefin <=10 m yanindan gecer (hedef 4.8 m/s ile batiya, duz hat, 60 s)",
   "amac": "Adim 5 kabul: yanlis hedefe gecis SIFIR",
   "t_ofset_s": 0.166667,
-  "kare_sayisi": 1800,
-  "dusen_kare": 0,
+  "kare_sayisi": 1791,
+  "dusen_kare": 9,
   "fps": 30.0,
   "genislik": 2028,
   "yukseklik": 1520,
@@ -47,37 +47,17 @@
     }
   ],
   "kayit": {
-    "sure_s": 676.9,
-    "rtf": 8.652613507653315e-05,
+    "sure_s": 542.4,
+    "rtf": 0.00016830033833162302,
     "poz_ornegi": {
-      "hedef": 4768,
-      "celdirici": 4768,
-      "celdirici2": 4768,
-      "drone": 4768
+      "hedef": 4749,
+      "celdirici": 4750,
+      "celdirici2": 4750,
+      "drone": 4748
     },
     "cmd_vel_mesaj": 1,
-    "senkron_bosluk_ms_ort": 2.667,
-    "senkron_bosluk_ms_max": 4.167,
+    "senkron_bosluk_ms_ort": 2.706,
+    "senkron_bosluk_ms_max": 12.5,
     "tolerans_ms": 20.0
-  },
-  "saglik": {
-    "hedef_px_dagilim": {
-      "n": 1800,
-      "min": 79.6,
-      "p10": 79.6,
-      "p50": 79.6,
-      "p90": 79.6,
-      "max": 79.6
-    },
-    "en_yakin_gecis": {
-      "celdirici": {
-        "en_yakin_m": 6.0,
-        "t_s": 3.83
-      },
-      "celdirici2": {
-        "en_yakin_m": 6.0,
-        "t_s": 4.32
-      }
-    }
   }
 }
