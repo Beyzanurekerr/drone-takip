@@ -894,9 +894,15 @@ def _demo(ad, aciklama, amac, beklenen, kam_profil, kam_z, kare,
 
 
 def Demo_kucul(kare=None):
-    """Adim 5 kabul senaryosu 'kucul': irtifa 50->200 m (60->20 px), hedef
-    2 viraj alir (parcali_hiz_profili: duz - sola viraj - duz - saga viraj -
-    duz)."""
+    """Adim 5 kabul senaryosu 'kucul': irtifa 50->210 m, hedef 2 viraj alir
+    (parcali_hiz_profili: duz - sola viraj - duz - saga viraj - duz).
+
+    2026-09-07: uc 200->210'a cekildi (yol/virajlar - sure_s, dt,
+    hedef_profil - AYNI KALDI, yalniz vz orantili arttiriliyor). "60->20 px"
+    tasarim hedefi GERCEK IMX500 odagiyla (1561px, TEXHIS_2E'de olculdu)
+    dogrulanmadi - eski arastirma kamerasi (odak~500px) varsayimiyla
+    yazilmis olabilir, KORUMA_ESIK=25px'e denk gelen gercek irtifa ~312m
+    civaridir (6244/25). Bu docstring SILINMEDI, yalniz not dusuldu."""
     sure_s = 40.0
     kare = kare if kare is not None else int(sure_s * IMX500_HZ)
     dt = sure_s / 6.0
@@ -908,11 +914,11 @@ def Demo_kucul(kare=None):
         (dt, DEMO_HIZ, 0.0),
         (dt, DEMO_HIZ, 0.0),
     ])
-    vz = (200.0 - 50.0) / sure_s
+    vz = (210.0 - 50.0) / sure_s
     kam_profil = _demo_kam_profil(vz=vz)
-    return _demo("Demo_kucul", "Irtifa rampasi 50->200 m, hedef 2 viraj alir",
-                 "Adim 5 kabul: kilit kesintisiz, KORUMA'ya (20 px) gecis gorunur",
-                 "hedef 60 -> 20 px, hassasiyet >=%95", kam_profil,
+    return _demo("Demo_kucul", "Irtifa rampasi 50->210 m, hedef 2 viraj alir",
+                 "Adim 5 kabul: kilit kesintisiz, KORUMA'ya gecis gorunur",
+                 "hedef px kucculmesi, hassasiyet >=%95", kam_profil,
                  kam_z=50.0, kare=kare, hedef_profil=hedef_profil,
                  celdirici_var=False, etiketler=["demo", "kucul", "kucultme", "viraj"])
 

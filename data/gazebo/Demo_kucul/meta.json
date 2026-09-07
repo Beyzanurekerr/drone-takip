@@ -2,17 +2,17 @@
   "senaryo": "Demo_kucul",
   "aile": "DEMO",
   "siddet": "",
-  "beklenen": "hedef 60 -> 20 px, hassasiyet >=%95",
+  "beklenen": "hedef px kucculmesi, hassasiyet >=%95",
   "etiketler": [
     "demo",
     "kucul",
     "kucultme",
     "viraj"
   ],
-  "aciklama": "Irtifa rampasi 50->200 m, hedef 2 viraj alir",
-  "amac": "Adim 5 kabul: kilit kesintisiz, KORUMA'ya (20 px) gecis gorunur",
+  "aciklama": "Irtifa rampasi 50->210 m, hedef 2 viraj alir",
+  "amac": "Adim 5 kabul: kilit kesintisiz, KORUMA'ya gecis gorunur",
   "t_ofset_s": 0.166667,
-  "kare_sayisi": 900,
+  "kare_sayisi": 1200,
   "dusen_kare": 0,
   "fps": 30.0,
   "genislik": 2028,
@@ -34,11 +34,11 @@
     }
   ],
   "kayit": {
-    "sure_s": 233.4,
-    "rtf": 0.0006427526845399573,
+    "sure_s": 400.2,
+    "rtf": 0.00015829688225028784,
     "poz_ornegi": {
-      "hedef": 2394,
-      "drone": 2394
+      "hedef": 3184,
+      "drone": 3184
     },
     "cmd_vel_mesaj": 166,
     "senkron_bosluk_ms_ort": 2.667,
