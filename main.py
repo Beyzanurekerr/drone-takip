@@ -462,7 +462,7 @@ def _hafif_ciz(img, sonuc):
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
         hedef_secici=None, kayip_dedektor=None, dedektor_boyut=False,
-        dedektor_karar=False, demo_kayit=False, mod_etiketi=None):
+        dedektor_karar=False, n_tespit=1, demo_kayit=False, mod_etiketi=None):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
@@ -478,7 +478,8 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     """
     secici = hedef_secici or otomatik_hedef_sec
     tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor,
-                     dedektor_boyut=dedektor_boyut, dedektor_karar=dedektor_karar)
+                     dedektor_boyut=dedektor_boyut, dedektor_karar=dedektor_karar,
+                     n_tespit=n_tespit)
     kilitli = False
     yaz = None
     duraklat = False
@@ -693,6 +694,9 @@ def main():
     ap.add_argument("--mod", default="klasik", choices=["klasik", "demo"],
                     help="demo: A6 + adaptif ROI edinme + karo taramali KAYIP "
                          "(Adim 3a/3b, bkz. demo_ayar.py)")
+    ap.add_argument("--n-tespit", type=int, default=None, dest="n_tespit",
+                    help="demo modu dedektor kadansi (1=her kare, 2/3=... "
+                         "araya DCF koprusu girer) - verilmezse demo_ayar.N_TESPIT")
     a = ap.parse_args()
 
     if a.mod == "demo":
@@ -742,6 +746,8 @@ def main():
                 hedef_secici=secici, kayip_dedektor=kayip_dedektor,
                 dedektor_boyut=(a.mod == "demo" and demo_ayar.DEDEKTOR_BOYUT_OTORITESI),
                 dedektor_karar=(a.mod == "demo" and demo_ayar.DEDEKTOR_KARAR_OTORITESI),
+                n_tespit=(a.n_tespit if a.n_tespit is not None else
+                         (demo_ayar.N_TESPIT if a.mod == "demo" else 1)),
                 demo_kayit=(a.mod == "demo"), mod_etiketi=a.mod)
     except KaynakHatasi as e:
         print(f"HATA: {e}")

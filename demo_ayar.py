@@ -53,6 +53,30 @@ DEDEKTOR_KARAR_OTORITESI = True
 K_SUPHELI = 3    # ust uste bu kadar "tespit yok" ya da "celiski" -> SUPHELI
 K_KAYIP = 15     # ust uste bu kadar "tespit yok" -> ARAMA/karo
 
+# DEDEKTOR KADANSI (2026-09-07, FPS teshisi): N_TESPIT>1 -> ara karelerde
+# YOLO ATLANIR, DCF koprusu tek basina pozisyonu tasir (takip/izleyici.py:
+# _dedektor_karar_adimi).
+#
+# Profil (100 kare, oksuz `gz sim` sureci - 5 saattir CPU yiyordu -
+# TEMIZLENDIKTEN sonra, ama baska bir oturumun Gazebo/kaydet.py isiyle
+# PAYLASIMLI CPU'da olculdu, mutlak sayilar bu yuzden gurultulu):
+#   YOLO cikarim     ~%84 (p50 284ms - PAYLASIMLI CPU'da inflated)
+#   diger (ego/boyut) ~%7
+#   Kalman ~2.4ms, DCF ~1.3ms, ROI kirpma+resize ~0.35ms, sonuc isleme
+#   ~0.26ms, jsonl yazma ~0.04ms - hepsi ihmal edilebilir, DUZELTILECEK
+#   YOLO-disi buyuk kalem YOK.
+#
+# N=1/2/3 kiyasi (Demo_kucul 210m, 1200 kare, AYNI paylasimli CPU):
+#   N=1: FPS  8.77  kilit %96.4  IoU 0.789  yanlis 0  ARAMA 1
+#   N=2: FPS 23.84  kilit %96.4  IoU 0.793  yanlis 0  ARAMA 1
+#   N=3: FPS 12.66  kilit %97.5  IoU 0.788  yanlis 0  ARAMA 0
+# N=3'un FPS'i N=2'den DUSUK cikti - bu N=3'un daha yavas olmasindan degil
+# (daha az YOLO cagrisi yapar), olcumler ARDISIK kosuldugu ve paylasimli
+# CPU yuku zamanla degistigi icin GURULTULU bir karsilastirma. N=2 hedefin
+# UCUNU DE (FPS>=20, kilit>=%95, yanlis=0) rahat farkla saglayan TEK N -
+# ONNX/int8 (Task 3) BU YUZDEN GEREKMEDI, hic denenmedi.
+N_TESPIT = 2
+
 
 def r_sec(L_native):
     """R_MERDIVEN'den, ag girdisinde NET_HEDEF'e (log uzayinda) en yakin

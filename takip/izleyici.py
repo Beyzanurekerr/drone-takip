@@ -128,7 +128,7 @@ class HedefTakip:
                  zemin_dogrulama=True,
                  yasak_kare=30, hakem=None, kayip_dedektor=None,
                  dedektor_boyut=False, dedektor_karar=False,
-                 k_supheli=3, k_kayip=15):
+                 k_supheli=3, k_kayip=15, n_tespit=1):
         # A10 HAKEM ARAYUZU (tek eklenti). hakem=None iken davranis BIREBIR
         # eskisi gibidir; esdegerlik testiyle sinanir. Hakem, guncelle()
         # sonunda cagrilir ve durumu/boyutu degistirebilir - kapali cevrim.
@@ -156,6 +156,8 @@ class HedefTakip:
             assert kayip_dedektor is not None, "dedektor_karar=True icin kayip_dedektor sart"
         self.k_supheli = k_supheli
         self.k_kayip = k_kayip
+        self.n_tespit = max(1, int(n_tespit))   # 1=her kare, 2/3=kadans (DCF koprusu araya girer)
+        self._demo_kare_sayaci = 0
         self._tespit_yok_sayac = 0
         self._celiski_sayac = 0
         self._demo_R = None
@@ -739,6 +741,13 @@ class HedefTakip:
             self.kf.sondur()
 
         self._bagimsiz_dogrula(bgr, gri, ongoru)   # loglar, KIRMAZ (yukarida)
+
+        # DEDEKTOR KADANSI (n_tespit>1): ara karelerde YOLO ATLANIR, DCF
+        # koprusu (yukarida) TEK BASINA pozisyonu tasir; sayaclar/durum bu
+        # karelerde DOKUNULMAZ (kanit yok - ne lehte ne aleyhte).
+        self._demo_kare_sayaci += 1
+        if self._demo_kare_sayaci % self.n_tespit:
+            return
 
         if self._demo_R is None:
             self._demo_R = self.kayip_dedektor.roi_sec(float(self.boyut.max()))
