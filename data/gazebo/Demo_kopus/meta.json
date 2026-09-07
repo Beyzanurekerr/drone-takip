@@ -1,0 +1,73 @@
+{
+  "senaryo": "Demo_kopus",
+  "aile": "DEMO",
+  "siddet": "",
+  "beklenen": "ortulme ~t=46.82-48.18 s (~1.36 s), yer HAVADAN KESIFLE dogrulandi (VARSAYIM DEGIL)",
+  "etiketler": [
+    "demo",
+    "kopus",
+    "oklüzyon"
+  ],
+  "aciklama": "Sabit 80 m, hedef ~1 s gercek agac altinda ortuluyor (agac dunya=(257.9,137.6), cap ~10.6 m), 60 s",
+  "amac": "Adim 5 kabul: <=2 s icinde DOGRU hedefe donus, yanlis kilit 0",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 1800,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 2028,
+  "yukseklik": 1520,
+  "fx": 1561.0000534057617,
+  "fy": 1561.0000610351562,
+  "cx": 1014.0,
+  "cy": 760.0,
+  "fov": 1.152164881990054,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    }
+  ],
+  "kayit": {
+    "sure_s": 506.9,
+    "rtf": 0.0004997359062424646,
+    "poz_ornegi": {
+      "hedef": 4781,
+      "drone": 4781
+    },
+    "cmd_vel_mesaj": 1,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  },
+  "saglik": {
+    "hedef_px_dagilim": {
+      "n": 1800,
+      "min": 79.6,
+      "p10": 79.6,
+      "p50": 79.6,
+      "p90": 79.6,
+      "max": 79.6
+    },
+    "ortulme": {
+      "toplam_s": 1.321,
+      "en_uzun_pencere_s": 1.321,
+      "pencere_sayisi": 1,
+      "pencereler": [
+        [
+          46.66,
+          47.98
+        ]
+      ],
+      "agac_dunya": [
+        257.9,
+        137.6
+      ],
+      "agac_cap_m": 10.6
+    }
+  }
+}
