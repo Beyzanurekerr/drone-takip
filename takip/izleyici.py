@@ -127,7 +127,8 @@ class HedefTakip:
                  zemin_orani=0.0008, zemin_pencere=20, zemin_sabir=20,
                  zemin_dogrulama=True,
                  yasak_kare=30, hakem=None, kayip_dedektor=None,
-                 dedektor_boyut=False):
+                 dedektor_boyut=False, dedektor_karar=False,
+                 k_supheli=3, k_kayip=15):
         # A10 HAKEM ARAYUZU (tek eklenti). hakem=None iken davranis BIREBIR
         # eskisi gibidir; esdegerlik testiyle sinanir. Hakem, guncelle()
         # sonunda cagrilir ve durumu/boyutu degistirebilir - kapali cevrim.
@@ -145,6 +146,23 @@ class HedefTakip:
         # kaynagini kapatir. Guvenlik: boyut <= 1.5 x son tespit boyutu.
         self.dedektor_boyut = dedektor_boyut
         self._son_tespit_boyut = None
+        # DEMO DETEKTOR-KARAR (ayni ilke, ayni gun eklendi): dedektor_karar=
+        # False iken davranis BIREBIR eskisi gibidir. True'da durum gecisleri
+        # YALNIZ dedektor sayaciyla verilir (_dedektor_karar_adimi); PSR ve
+        # imza/zemin (_bagimsiz_dogrula) ARTIK KARAR VERMEZ, yalniz loglanir
+        # (asagidaki _*_ihlal_* sayaclari). kayip_dedektor GEREKIR (assert).
+        self.dedektor_karar = dedektor_karar
+        if dedektor_karar:
+            assert kayip_dedektor is not None, "dedektor_karar=True icin kayip_dedektor sart"
+        self.k_supheli = k_supheli
+        self.k_kayip = k_kayip
+        self._tespit_yok_sayac = 0
+        self._celiski_sayac = 0
+        self._demo_R = None
+        self._zemin_ihlal_sayisi = 0
+        self._zemin_ihlal_son_kare = None
+        self._imza_ihlal_sayisi = 0
+        self._imza_ihlal_son_kare = None
         self.ego = EgoMotion()
         self.tespit = HareketTespit()
         self.cekirdek = CEKIRDEKLER[cekirdek]() if isinstance(cekirdek, str) else cekirdek
@@ -315,12 +333,16 @@ class HedefTakip:
                 self.boyut = self.boyut * (tavan / float(self.boyut.max()))
 
         t0 = time.perf_counter()
-        if self.durum in (KILITLI, SUPHELI):
+        if self.dedektor_karar:
+            pass   # asagida TEK cagriyla hallediliyor (DCF+dedektor birlikte)
+        elif self.durum in (KILITLI, SUPHELI):
             self._takip_adimi(bgr, gri)
         s["mosse"] = (time.perf_counter() - t0) * 1e3
 
         t0 = time.perf_counter()
-        if self.durum in (ARAMA, KAYIP):
+        if self.dedektor_karar:
+            self._dedektor_karar_adimi(bgr, gri, ongoru)
+        elif self.durum in (ARAMA, KAYIP):
             self._arama_adimi(bgr, gri, M)
         elif self.durum == KORUMA:
             self._koruma_adimi(bgr)
@@ -450,8 +472,14 @@ class HedefTakip:
                 self._hareketli_guclu = oran >= self.kimlik_hareket_kapisi
                 self._zemin_alt = 0 if self._hareketli else self._zemin_alt + 1
                 if self._zemin_alt >= self.zemin_sabir:
-                    self._kilidi_reddet()
-                    return
+                    if self.dedektor_karar:
+                        # DEMO detektor-karar: kilidi KIRMAZ, yalniz loglar
+                        # (durum gecisi yalniz dedektor sayaciyla verilir)
+                        self._zemin_ihlal_sayisi += 1
+                        self._zemin_ihlal_son_kare = self.kare
+                    else:
+                        self._kilidi_reddet()
+                        return
 
         # Kutu zeminden belirgin bicimde bagimsiz hareket ediyorsa gercek ve
         # hareketli bir cismi takip ediyordur; imza uyusmazligi o zaman kimlik
@@ -477,7 +505,11 @@ class HedefTakip:
             if s_gor < self.kimlik_esik:
                 self._kimlik_hata += 1
                 if self._kimlik_hata >= self.kimlik_sabir:
-                    self._kilidi_reddet()
+                    if self.dedektor_karar:
+                        self._imza_ihlal_sayisi += 1
+                        self._imza_ihlal_son_kare = self.kare
+                    else:
+                        self._kilidi_reddet()
             else:
                 self._kimlik_hata = 0
 
@@ -655,6 +687,94 @@ class HedefTakip:
             self.durum = ARAMA
             self.kayip = self.coast_kare
             self.komut = None
+
+    def _dedektor_karar_adimi(self, bgr, gri, ongoru):
+        """DEMO detektor-karar modu (dedektor_karar=True) - `guncelle()`nin
+        TUM durum dispatch'inin YERINE gecer (KILITLI/SUPHELI/ARAMA/KAYIP/
+        KORUMA hepsi burada). DCF, KONUM koprusu olarak calismaya devam
+        eder (`cekirdek.ara`); PSR ve `_bagimsiz_dogrula` (imza/zemin)
+        ARTIK KARAR VERMEZ - ikincisi yine cagrilir ama sonucu SADECE
+        loglanir (bkz. o fonksiyondaki `dedektor_karar` dallari).
+
+        Durum yalniz iki sayacla degisir: `_tespit_yok_sayac` (dedektor
+        HIC kutu dondurmedi) ve `_celiski_sayac` (kutu dondurdu ama D_NORM
+        reddetti - yanlis hedefe kilitlenme koruması). Ikisi de
+        >=k_supheli'de SUPHELI'ye, tespit_yok ayrica >=k_kayip'te ARAMA'ya
+        (karo taramasi) gecirir. SUPHELI'ye tespit-yok yoluyla girilirse
+        ROI bir basamak BUYUR (`kayip_dedektor.roi_buyut`).
+        """
+        if self.durum == KORUMA:
+            self._koruma_adimi(bgr)
+            return
+
+        if self.durum in (ARAMA, KAYIP):
+            if not self._karo_kurulu:
+                H, W = gri.shape
+                merkez0 = np.clip(self.kf.konum, [0.0, 0.0], [W - 1.0, H - 1.0])
+                self.kayip_dedektor.sifirla(merkez0, L_native=float(self.boyut.max()))
+                self._karo_kurulu = True
+            sonuc = self.kayip_dedektor.adim(bgr)
+            if sonuc is not None:
+                merkez, kutu, d_norm = sonuc
+                if d_norm >= self.aday_esik_kayip:
+                    self._dedektor_boyut_uygula(kutu[2:])
+                    self.kf.ata(kutu[:2] + kutu[2:] / 2)
+                    self.cekirdek.baslat(bgr, gri, kutu)
+                    self.durum = KILITLI
+                    self._tespit_yok_sayac = 0
+                    self._celiski_sayac = 0
+                    self._demo_R = self.kayip_dedektor.roi_sec(float(self.boyut.max()))
+                    self._dogrulama_sifirla()
+            return
+
+        # KILITLI / SUPHELI: DCF koprusu (konum) + HER KAREDE tek-ROI dedektor
+        tahmin = self.kf.konum
+        yeni, psr = self.cekirdek.ara(bgr, gri, tahmin, self.boyut)
+        self.psr = psr        # rapor icin tutulur, KARAR VERMEZ
+        sicrama = float(np.linalg.norm(np.asarray(yeni) - tahmin))
+        maks_sicrama = max(6.0, 0.9 * float(self.boyut.max()))
+        if sicrama <= maks_sicrama:
+            self.kf.duzelt(yeni, r_carpan=(1.0 if self.durum == KILITLI else 6.0))
+        else:
+            self.kf.sondur()
+
+        self._bagimsiz_dogrula(bgr, gri, ongoru)   # loglar, KIRMAZ (yukarida)
+
+        if self._demo_R is None:
+            self._demo_R = self.kayip_dedektor.roi_sec(float(self.boyut.max()))
+        sonuc = self.kayip_dedektor.tek_roi(bgr, self.kf.konum, self._demo_R)
+
+        if sonuc is not None:
+            _, kutu, d_norm = sonuc
+            if d_norm >= self.aday_esik_kayip:
+                # DOGRULANMIS TESPIT -> KILITLI, sayac SIFIR
+                self._dedektor_boyut_uygula(kutu[2:])
+                self.kf.duzelt(kutu[:2] + kutu[2:] / 2, r_carpan=1.0)
+                self.cekirdek.baslat(bgr, gri, kutu)
+                onceki_durum = self.durum
+                self.durum = KILITLI
+                self._tespit_yok_sayac = 0
+                self._celiski_sayac = 0
+                self._demo_R = self.kayip_dedektor.roi_sec(float(self.boyut.max()))
+                if onceki_durum != KILITLI:
+                    self._dogrulama_sifirla()
+                lr = 0.125 if self.boyut.max() > 18 else 0.04
+                self.cekirdek.ogren(bgr, gri, self.kf.konum, self.boyut, lr)
+            else:
+                # tespit VAR ama D_NORM reddetti -> celiski (K5 korumasi)
+                self._tespit_yok_sayac = 0
+                self._celiski_sayac += 1
+                if self._celiski_sayac >= self.k_supheli:
+                    self.durum = SUPHELI
+        else:
+            self._celiski_sayac = 0
+            self._tespit_yok_sayac += 1
+            if self._tespit_yok_sayac >= self.k_kayip:
+                self.durum = KORUMA if self.boyut.max() < KORUMA_ESIK else ARAMA
+                self._karo_kurulu = False
+            elif self._tespit_yok_sayac >= self.k_supheli:
+                self.durum = SUPHELI
+                self._demo_R = self.kayip_dedektor.roi_buyut(self._demo_R)
 
     def _boyut_sinirla(self):
         """Kutuyu son OLCULEN boyutun etrafinda bir banda hapset.

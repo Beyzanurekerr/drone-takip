@@ -45,20 +45,31 @@ YOLO_CONF = 0.25
 # olarak gecer - takip/izleyici.py'de False iken davranis degismez.
 DEDEKTOR_BOYUT_OTORITESI = True
 
+# DEMO DETEKTOR-KARAR (2026-09-07, teshis sonrasi): 10/10 ARAMA epizodunda
+# sebep PSR/coast DEGIL, `_bagimsiz_dogrula` (imza/zemin) reddiydi - ROI
+# 10/10 GT'yi kapsiyordu. Bu yuzden durum gecisini PSR/imzadan alip
+# DOGRUDAN dedektore veriyoruz - bkz. takip/izleyici.py:_dedektor_karar_adimi.
+DEDEKTOR_KARAR_OTORITESI = True
+K_SUPHELI = 3    # ust uste bu kadar "tespit yok" ya da "celiski" -> SUPHELI
+K_KAYIP = 15     # ust uste bu kadar "tespit yok" -> ARAMA/karo
+
 
 def r_sec(L_native):
     """R_MERDIVEN'den, ag girdisinde NET_HEDEF'e (log uzayinda) en yakin
     basamagi secer. Tam kadraj kacisi YOK - MERDIVEN disina hic cikilmaz.
-
-    `docs/TESHIS_2E_PX_BANDI.md` EK'indeki formulun AYNISI. Bu turda
-    dinamik olarak CAGRILMAZ (KAYIP/edinme sabit R=640 karo kullanir, cunku
-    o asamada hedef boyutu icin guvenilir bir onsel yok) - kalibrasyon
-    kaydi + gelecekteki boyut-bilgili yollar icin burada tutulur.
-    """
+    `docs/TESHIS_2E_PX_BANDI.md` EK'indeki formulun AYNISI. Boyut
+    bilinmiyorsa (soguk edinme) R_MERDIVEN[0]=640 varsayilan doner."""
     if L_native is None or not np.isfinite(L_native) or L_native <= 0:
         return R_MERDIVEN[0]
     return min(R_MERDIVEN,
                key=lambda R: abs(np.log((L_native * AG[0] / float(R)) / NET_HEDEF)))
+
+
+def r_basamak_buyu(R):
+    """R_MERDIVEN'de bir basamak BUYUR (daha az zoom, daha genis ROI) -
+    KaroArayici.roi_buyut / demo detektor-karar SUPHELI girisinde kullanilir."""
+    idx = R_MERDIVEN.index(R) if R in R_MERDIVEN else 0
+    return R_MERDIVEN[max(0, idx - 1)]
 
 
 def _karo_wh(R):
@@ -161,6 +172,47 @@ class KaroArayici:
                 d_norm = 1.0 - min(1.0, d / tam)
                 if en_iyi is None or d_norm > en_iyi[2]:
                     en_iyi = (merkez, kutu, d_norm)
+        return en_iyi
+
+    # --- demo detektor-karar (2026-09-07): tek-ROI arayuzu -----------------
+    def roi_sec(self, L_native):
+        return r_sec(L_native)
+
+    def roi_buyut(self, R):
+        return r_basamak_buyu(R)
+
+    def tek_roi(self, bgr, merkez, R):
+        """TEK sabit ROI'de TEK YOLO cagrisi (kadraj taramasi DEGIL -
+        `adim()`'in kuyruk-donen mantigindan BAGIMSIZ). Demo detektor-karar
+        modunun KILITLI/SUPHELI'de HER KAREDE yaptigi kontrol icindir.
+        Donen: (merkez, kutu, d_norm) | None - `adim()` ile AYNI skor
+        formulu (son merkeze duz oklid uzaklik, kadraj kosegenine normalize)."""
+        tam = float(np.hypot(self.W, self.H))
+        merkez = np.asarray(merkez, np.float32)
+        rw, rh = _karo_wh(R)
+        x0 = int(round(merkez[0] - rw / 2.0))
+        y0 = int(round(merkez[1] - rh / 2.0))
+        x0 = max(0, min(self.W - rw, x0))
+        y0 = max(0, min(self.H - rh, y0))
+        parca = bgr[y0:y0 + rh, x0:x0 + rw]
+        if parca.shape[:2] != (rh, rw):
+            return None
+        girdi = cv2.resize(parca, AG, interpolation=cv2.INTER_AREA)
+        r = self.model.predict(girdi, conf=self.conf, imgsz=640,
+                                classes=self.siniflar, verbose=False,
+                                device="cpu")[0]
+        if r.boxes is None or not len(r.boxes):
+            return None
+        kx, ky = rw / float(AG[0]), rh / float(AG[1])
+        en_iyi = None
+        for (x1, y1, x2, y2) in r.boxes.xyxy.cpu().numpy():
+            kutu = np.array([x1 * kx + x0, y1 * ky + y0,
+                             (x2 - x1) * kx, (y2 - y1) * ky], np.float32)
+            m = kutu[:2] + kutu[2:] / 2.0
+            d = float(np.linalg.norm(m - merkez))
+            d_norm = 1.0 - min(1.0, d / tam)
+            if en_iyi is None or d_norm > en_iyi[2]:
+                en_iyi = (m, kutu, d_norm)
         return en_iyi
 
 

@@ -462,14 +462,14 @@ def _hafif_ciz(img, sonuc):
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
         hedef_secici=None, kayip_dedektor=None, dedektor_boyut=False,
-        demo_kayit=False, mod_etiketi=None):
+        dedektor_karar=False, demo_kayit=False, mod_etiketi=None):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
     geldiginde buraya baska bir fonksiyon verilecek; dongu degismeyecek.
-    `kayip_dedektor`/`dedektor_boyut`: varsayilanlarinda (None/False) davranis
-    BIREBIR eskisi gibidir (bkz. `takip/izleyici.py:HedefTakip`); DEMO modu
-    ikisini de verir.
+    `kayip_dedektor`/`dedektor_boyut`/`dedektor_karar`: varsayilanlarinda
+    (None/False) davranis BIREBIR eskisi gibidir (bkz.
+    `takip/izleyici.py:HedefTakip`); DEMO modu ucunu de verir.
     `demo_kayit` (Adim 4, DUZELTME - THREAD KALKTI): True ise `kaydet` HAM
     kareyi yazar (ciz() YOK) + kare basina durum bir `.jsonl` yan dosyasina
     yazilir (ayni govde, uzanti .jsonl - `gazebo/gorsel_uret.py` HUD'lu
@@ -478,7 +478,7 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     """
     secici = hedef_secici or otomatik_hedef_sec
     tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor,
-                     dedektor_boyut=dedektor_boyut)
+                     dedektor_boyut=dedektor_boyut, dedektor_karar=dedektor_karar)
     kilitli = False
     yaz = None
     duraklat = False
@@ -741,6 +741,7 @@ def main():
                 kaydet=a.kaydet, max_kare=a.max_kare,
                 hedef_secici=secici, kayip_dedektor=kayip_dedektor,
                 dedektor_boyut=(a.mod == "demo" and demo_ayar.DEDEKTOR_BOYUT_OTORITESI),
+                dedektor_karar=(a.mod == "demo" and demo_ayar.DEDEKTOR_KARAR_OTORITESI),
                 demo_kayit=(a.mod == "demo"), mod_etiketi=a.mod)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
