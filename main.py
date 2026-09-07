@@ -13,7 +13,9 @@ bu dosya onlarin yerini ALMAZ, yaninda durur.
 """
 import argparse
 import os
+import queue
 import sys
+import threading
 import time
 from collections import deque
 
@@ -448,14 +450,63 @@ def goster(pencere, img, bekleme_ms, duraklat):
             return "devam"
 
 
+class _HudIsci:
+    """`ciz()` + video yazimi ayri THREAD'de (Adim 4): ana takip dongusu
+    HUD/kayit maliyetinden bagimsiz hizda kosar. Kuyruk DOLARSA en yeni is
+    ATLANIR (`dusen_hud`) - HUD birkac kare geriden gelsin, takip FPS'i
+    DUSMESIN. Yalniz `kaydet` (headless video) icin kullanilir; interaktif
+    `pencere` + `hud_thread` birlikte SINANMADI, klavye/duraklatma bu yolda
+    YOK (bilerek - Adim 4'un konusu offline demo videosu)."""
+
+    def __init__(self, kaydet, fps_kayit, boyut, max_kuyruk=4):
+        self.kuyruk = queue.Queue(maxsize=max_kuyruk)
+        self.yaz = None
+        self._kaydet = kaydet
+        self._fps = fps_kayit
+        self._boyut = boyut
+        self.dusen_hud = 0
+        self._iplik = threading.Thread(target=self._dongu, daemon=True)
+        self._iplik.start()
+
+    def gonder(self, is_):
+        try:
+            self.kuyruk.put_nowait(is_)
+        except queue.Full:
+            self.dusen_hud += 1
+
+    def _dongu(self):
+        while True:
+            is_ = self.kuyruk.get()
+            if is_ is None:
+                return
+            (img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms, tur,
+             toplam, hedef_id) = is_
+            ciz(img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms, tur,
+                toplam, hedef_id=hedef_id)
+            if self.yaz is None:
+                os.makedirs(os.path.dirname(self._kaydet) or ".", exist_ok=True)
+                self.yaz = cv2.VideoWriter(
+                    self._kaydet, cv2.VideoWriter_fourcc(*"mp4v"),
+                    self._fps, self._boyut)
+            self.yaz.write(img)
+
+    def kapat(self):
+        self.kuyruk.put(None)
+        self._iplik.join(timeout=10.0)
+        if self.yaz is not None:
+            self.yaz.release()
+
+
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
-        hedef_secici=None, kayip_dedektor=None):
+        hedef_secici=None, kayip_dedektor=None, hud_thread=False):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
     geldiginde buraya baska bir fonksiyon verilecek; dongu degismeyecek.
     `kayip_dedektor`: None ise KAYIP davranisi degismez (bkz.
     `takip/izleyici.py:HedefTakip`); DEMO modu `demo_ayar.KaroArayici` verir.
+    `hud_thread`: True + `kaydet` verilirse HUD/video yazimi `_HudIsci`
+    THREAD'inde kosar (Adim 4) - `pencere` bu yolda gosterilmez.
     """
     secici = hedef_secici or otomatik_hedef_sec
     tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor)
@@ -474,7 +525,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     bekleme = max(1, int(1000.0 / kaynak.fps)) if kaynak.fps > 0 else 1
     hedef_id = getattr(kaynak, "track_id", None)   # VisDrone track; yoksa None
 
-    if pencere:
+    hud = None
+    if hud_thread and kaydet:
+        hud = _HudIsci(kaydet, kaynak.fps if kaynak.fps > 0 else 30.0,
+                       (kaynak.genislik, kaynak.yukseklik))
+    elif pencere:
         # WINDOW_NORMAL  : kullanici fareyle boyutlandirabilsin
         # WINDOW_KEEPRATIO: elle boyutlandirirken en-boy orani korunsun
         cv2.namedWindow(kaynak.ad, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
@@ -531,7 +586,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
             gecikmeler.append(gecikme * 1e3)
             fps = len(sureler) / max(1e-6, sum(sureler))
 
-            if pencere or kaydet:
+            if hud is not None:
+                hud.gonder((kare.goruntu.copy(), kare, sonuc, adaylar, fps,
+                           kilitli, gecikme * 1e3, kaynak.tur,
+                           kaynak.kare_sayisi, hedef_id))
+            elif pencere or kaydet:
                 ciz(kare.goruntu, kare, sonuc, adaylar, fps, kilitli,
                     gecikme * 1e3, kaynak.tur, kaynak.kare_sayisi,
                     hedef_id=hedef_id)
@@ -553,9 +612,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                 break
     finally:
         kaynak.kapat()
+        if hud is not None:
+            hud.kapat()
         if yaz is not None:
             yaz.release()
-        if pencere:
+        if pencere and hud is None:
             cv2.destroyWindow(kaynak.ad)
 
     g = np.array(gecikmeler, np.float64) if gecikmeler else np.zeros(1)
@@ -570,6 +631,7 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
         "gecikme_p95": float(np.percentile(g, 95)),
         "gecikme_max": float(g.max()),
         "gt_kare": len(olcum),
+        "dusen_hud": hud.dusen_hud if hud is not None else 0,
     }
     if olcum:
         io = np.array([r["iou"] for r in olcum], np.float64)
@@ -673,7 +735,8 @@ def main():
     try:
         m = kos(kaynak, cekirdek=a.cekirdek, pencere=not a.penceresiz,
                 kaydet=a.kaydet, max_kare=a.max_kare,
-                hedef_secici=secici, kayip_dedektor=kayip_dedektor)
+                hedef_secici=secici, kayip_dedektor=kayip_dedektor,
+                hud_thread=(a.mod == "demo"))
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)
@@ -685,6 +748,8 @@ def main():
     print(f"  gecikme     : ort {m['gecikme_ort']:.2f} ms | "
           f"p50 {m['gecikme_p50']:.2f} | p95 {m['gecikme_p95']:.2f} | "
           f"max {m['gecikme_max']:.2f}")
+    if m.get("dusen_hud"):
+        print(f"  HUD dusen kare: {m['dusen_hud']} (thread yetismedi, takip ETKILENMEDI)")
     if m.get("gt_kare"):
         print(f"  --- GT ile olcum ({m['gt_kare']} kare) ---")
         print(f"  IoU         : {m['ort_iou']:.3f}  "
