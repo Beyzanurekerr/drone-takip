@@ -1,0 +1,62 @@
+{
+  "senaryo": "Teshis2e_160m",
+  "aile": "DEMO",
+  "siddet": "",
+  "beklenen": "px bandi karsilastirmasi icin 100 kare",
+  "etiketler": [
+    "teshis_2e",
+    "arastirma_disi_demo_olcumu"
+  ],
+  "aciklama": "2e-TESHIS: sabit 160 m, Demo_celdirici ile AYNI duzen (hatchback+2 celdirici, baylands, IMX500)",
+  "amac": "2e-teshis: A6'nin 80m'de 0 tespitinin sebebi px bandi mi?",
+  "t_ofset_s": 0.166667,
+  "kare_sayisi": 100,
+  "dusen_kare": 0,
+  "fps": 30.0,
+  "genislik": 2028,
+  "yukseklik": 1520,
+  "fx": 1561.0000534057617,
+  "fy": 1561.0000610351562,
+  "cx": 1014.0,
+  "cy": 760.0,
+  "fov": 1.152164881990054,
+  "zemin_m": 160.0,
+  "hedef": "hedef",
+  "araclar": [
+    {
+      "ad": "hedef",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": true
+    },
+    {
+      "ad": "celdirici",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": false
+    },
+    {
+      "ad": "celdirici2",
+      "L": 4.0011,
+      "W": 2.1405,
+      "H": 1.5679,
+      "hedef": false
+    }
+  ],
+  "kayit": {
+    "sure_s": 37.7,
+    "rtf": 0.02247541579292125,
+    "poz_ornegi": {
+      "hedef": 282,
+      "celdirici": 282,
+      "celdirici2": 282,
+      "drone": 282
+    },
+    "cmd_vel_mesaj": 1,
+    "senkron_bosluk_ms_ort": 2.667,
+    "senkron_bosluk_ms_max": 4.167,
+    "tolerans_ms": 20.0
+  }
+}
