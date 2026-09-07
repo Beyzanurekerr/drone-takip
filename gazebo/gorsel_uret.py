@@ -299,3 +299,246 @@ def ozet_tablo_uret(deney, satirlar, basliklar=None):
     fig.savefig(yol, dpi=130, bbox_inches="tight")
     plt.close(fig)
     return yol
+
+
+# =============================================================================
+# DEMO HUD (Adim 6) - gazebo/demo_hud_uret.py CAGIRIR
+#
+# Yukarıdaki `_kare_ciz`'den BİLEREK AYRI: o bir teşhis aracı (GT/IoU/PSR
+# oracle bilgisi taşır); bu bölüm ÜRÜN demosu içindir - demo izleyicisi GT
+# görmez, hiçbir teşhis metriği (IoU/PSR/hassasiyet) ekrana yazılmaz. Aynı
+# "kendi çizim kodunu yazma" ilkesi burada da geçerli: `demo_hud_uret.py`
+# yalnızca bu fonksiyonları çağırır.
+# =============================================================================
+DEMO_FONT = cv2.FONT_HERSHEY_SIMPLEX
+DEMO_YOK = "-"
+
+# durum renkleri: takip/izleyici.py'deki 5 durumla (main.py:DURUM_RENK'in
+# supersetiyle) AYNI aile; KORUMA main.py'de yok (demo'ya özgü), burada
+# eklendi - kritik küçülmeyi (KORUMA_ESIK altı) diğer 4 durumdan ayırt eden
+# 5. renk.
+DEMO_DURUM_RENK = {
+    "KILITLI": (0, 255, 255),    # sari
+    "SUPHELI": (0, 165, 255),    # turuncu
+    "ARAMA":   (255, 160, 0),    # gok mavisi
+    "KAYIP":   (0, 0, 255),      # kirmizi
+    "KORUMA":  (255, 0, 255),    # magenta - hedef KORUMA_ESIK altina kucculdu
+}
+
+# gazebo/kamera_imx500.sdf ile AYNI sayilar (TEK kaynak orada, bkz. o
+# dosyanin basligindaki turetim); burada yalnizca KOPYALANDI, TEKRAR
+# OLCULMEDI - gazebo/senaryolar.py:IMX500_ODAK_PX ile de AYNI.
+IMX500_GEN_REF = 2028
+IMX500_ODAK_PX_REF = 1561.0
+
+
+def demo_odak_px(genislik):
+    """Video genişliği IMX500 referansından (2028) farklıysa (ölçekleme)
+    odağı orantılı türet - sayı kaynağı `gazebo/kamera_imx500.sdf`, burada
+    TEKRAR ÖLÇÜLMEZ."""
+    if not genislik or genislik <= 0:
+        return IMX500_ODAK_PX_REF
+    return IMX500_ODAK_PX_REF * (genislik / float(IMX500_GEN_REF))
+
+
+def _demo_yaz(img, metin, konum, olcek=0.5, renk=(255, 255, 255), kalinlik=1):
+    """Siyah kontur + renkli govde - acik/koyu zeminde okunur (main.py:_yaz
+    ile ayni ilke, bagimlilik yaratmamak icin burada kucuk kopyasi)."""
+    cv2.putText(img, metin, konum, DEMO_FONT, olcek, (0, 0, 0),
+                kalinlik + 2, cv2.LINE_AA)
+    cv2.putText(img, metin, konum, DEMO_FONT, olcek, renk, kalinlik, cv2.LINE_AA)
+
+
+def _demo_karart(img, x0, y0, x1, y1, alfa=0.55):
+    """Panel/serit zemini: kesip karartmak (main.py:_karart ile ayni ilke)."""
+    x0, y0 = max(0, int(x0)), max(0, int(y0))
+    x1, y1 = min(img.shape[1], int(x1)), min(img.shape[0], int(y1))
+    if x1 <= x0 or y1 <= y0:
+        return
+    roi = img[y0:y1, x0:x1]
+    roi[:] = (roi * (1.0 - alfa)).astype(img.dtype)
+
+
+def _demo_mesafe_hesapla(kutu, irtifa, W, H, odak_px):
+    """Nadir kamera + düz zemin varsayımıyla PINHOLE geometriden hedefin
+    eğik mesafesi + gerçek boyu.
+
+    `irtifa` (m) jsonl'den (Gazebo pozundan) gelir - GERÇEK ölçüm. Yanal
+    ofset (kutunun kadraj merkezine göre px uzaklığı) ve gerçek boy ise
+    BURADA türetilir: dx_m = irtifa * dx_px / odak_px (benzer üçgenler),
+    mesafe = hypot(irtifa, dx_m, dy_m), boy_m = px_boyut * mesafe / odak_px.
+    Bu bir TAHMİNDİR (düz zemin varsayımı) - ölçüm değil; hedef aracın
+    gerçek boyu (~4.0 m, bkz. `gazebo/senaryolar.py:Y1_MESH_L`) sağlaması
+    için kabaca örtüşmesi beklenir.
+
+    Döner: (mesafe_m, boy_m) ya da (None, None) - veri eksikse.
+    """
+    if kutu is None or irtifa is None or not odak_px:
+        return None, None
+    cx, cy = kutu[0] + kutu[2] / 2.0, kutu[1] + kutu[3] / 2.0
+    dx_px, dy_px = cx - W / 2.0, cy - H / 2.0
+    dx_m, dy_m = irtifa * dx_px / odak_px, irtifa * dy_px / odak_px
+    mesafe = float(np.hypot(irtifa, np.hypot(dx_m, dy_m)))
+    px_boy = max(float(kutu[2]), float(kutu[3]))
+    boy_m = float(px_boy * mesafe / odak_px)
+    return mesafe, boy_m
+
+
+def _demo_inset_ciz(img, bolge, buyutme=4, kenar=(0, 220, 255)):
+    """Sağ üst köşede `bolge` (x,y,w,h) `buyutme`x büyütülmüş önizleme
+    (ROI varsa ROI, yoksa sistem kutusu). Kadraj dışı kısım kırpılır;
+    alan geçersizse (kutu None ya da kırpma sonrası boş) hiçbir şey
+    çizilmez. Döner: sonraki içeriğin başlayabileceği y (panel bu y'nin
+    altından başlar, inset'in üstüne binmesin diye)."""
+    UST_PAY = 6
+    if bolge is None:
+        return UST_PAY
+    H, W = img.shape[:2]
+    x, y, w, h = [int(round(v)) for v in bolge]
+    x0, y0 = max(0, x), max(0, y)
+    x1, y1 = min(W, x + w), min(H, y + h)
+    if x1 <= x0 or y1 <= y0:
+        return UST_PAY
+    parca = img[y0:y1, x0:x1]
+    iw = min(int((x1 - x0) * buyutme), W // 3)
+    ih = min(int((y1 - y0) * buyutme), H // 3)
+    if iw < 8 or ih < 8:
+        return UST_PAY
+    inset = cv2.resize(parca, (iw, ih), interpolation=cv2.INTER_NEAREST)
+    ix0, iy0 = W - iw - UST_PAY, UST_PAY + 12
+    img[iy0:iy0 + ih, ix0:ix0 + iw] = inset
+    cv2.rectangle(img, (ix0 - 2, iy0 - 2), (ix0 + iw + 2, iy0 + ih + 2), kenar, 2)
+    _demo_yaz(img, "ROI 4x", (ix0, iy0 - 4), 0.42, kenar, 1)
+    return iy0 + ih + 10
+
+
+def _demo_panel_ciz(img, satirlar, vurgu, ust_y):
+    """Sağ kenarda TEK bilgi paneli. `satirlar`: [(etiket, deger), ...].
+    `ust_y`: panelin başlayacağı y (inset'in altında kalsın diye
+    `_demo_inset_ciz`'in dönüşü verilir)."""
+    H, W = img.shape[:2]
+    f, kal, ped = 0.5, 1, 8
+    etiket_w = max(cv2.getTextSize(e + ":", DEMO_FONT, f, kal)[0][0] for e, _ in satirlar)
+    deger_w = max(cv2.getTextSize(str(d), DEMO_FONT, f, kal)[0][0] for _, d in satirlar)
+    satir_h = int(cv2.getTextSize("Ag", DEMO_FONT, f, kal)[0][1] * 2.2)
+    pw = etiket_w + deger_w + 3 * ped
+    ph = ped * 2 + satir_h * len(satirlar)
+    x0, y0 = W - pw - 6, min(ust_y, max(0, H - ph - 6))
+    _demo_karart(img, x0, y0, x0 + pw, y0 + ph)
+    cv2.rectangle(img, (x0, y0), (x0 + pw, y0 + ph), (60, 60, 60), 1)
+    cv2.rectangle(img, (x0, y0), (x0 + 4, y0 + ph), vurgu, -1)
+    y = y0 + ped + satir_h // 2 + 4
+    for etiket, deger in satirlar:
+        _demo_yaz(img, etiket + ":", (x0 + ped + 6, y), f, (170, 170, 170), kal)
+        _demo_yaz(img, str(deger), (x0 + ped + 6 + etiket_w + ped, y), f, (245, 245, 245), kal)
+        y += satir_h
+
+
+def demo_klip_serit_hazirla(durum_dizisi, irtifa_dizisi, genislik, yukseklik=90):
+    """Alt şeridin STATİK kısmını (durum bandı + irtifa eğrisi, TÜM klip)
+    BİR KEZ çizer - kare başına yeniden hesaplanmaz (900 kare × O(genislik)
+    yerine kare başı O(1); `demo_hud_kare_ciz` yalnızca bu tabanı yapıştırıp
+    oynatma imlecini çizer). Girdiler `durum_dizisi`/`irtifa_dizisi`: TÜM
+    klibin JSONL'den (görüntüsüz) okunmuş hafif skaler listeleri - "bellekte
+    biriktirme yok" kuralı KARE GÖRÜNTÜLERİ içindir, bu listeler için değil
+    (900 float/str, ihmal edilebilir bellek).
+
+    Döner: `demo_hud_kare_ciz`e `serit=` olarak verilecek sözlük.
+    """
+    n = len(durum_dizisi)
+    bant_h, bosluk, egri_h = 10, 6, 30
+    taban = np.zeros((yukseklik, genislik, 3), np.uint8)
+    band_y = bosluk
+    for x in range(genislik):
+        idx = min(n - 1, int(x / max(1, genislik - 1) * (n - 1))) if n > 1 else 0
+        renk = DEMO_DURUM_RENK.get(durum_dizisi[idx], (120, 120, 120))
+        taban[band_y:band_y + bant_h, x] = renk
+    egri_y0 = band_y + bant_h + 16
+    gecerli = [v for v in irtifa_dizisi if v is not None]
+    if gecerli and n > 1:
+        vmin, vmax = min(gecerli), max(gecerli)
+        span = max(1e-6, vmax - vmin)
+        onceki = None
+        for i, v in enumerate(irtifa_dizisi):
+            x = int(i / (n - 1) * (genislik - 1))
+            if v is None:
+                onceki = None
+                continue
+            y = int(egri_y0 + egri_h - (v - vmin) / span * egri_h)
+            if onceki is not None:
+                cv2.line(taban, onceki, (x, y), (0, 220, 0), 1, cv2.LINE_AA)
+            onceki = (x, y)
+        etiket = f"irtifa {vmin:.0f}-{vmax:.0f} m"
+    else:
+        etiket = "irtifa -"
+    return {"taban": taban, "etiket": etiket, "n": n, "yukseklik": yukseklik,
+            "alt_sinir": egri_y0 + egri_h}
+
+
+def _demo_serit_ciz(img, serit, olaylar, kare_no):
+    """Alt şerit: (üst) durum bandı + oynatma imleci, (orta) irtifa eğrisi,
+    (alt) en yakın olay notu. `serit`: `demo_klip_serit_hazirla` çıktısı.
+    `olaylar`: [(kare_no, metin), ...] - durum geçişleri, `demo_hud_uret.py`
+    tarafından JSONL'den (görüntüsüz) önceden çıkarılır."""
+    H, W = img.shape[:2]
+    taban, yukseklik, n = serit["taban"], serit["yukseklik"], serit["n"]
+    y0 = H - yukseklik
+    _demo_karart(img, 0, y0, W, H)
+    cv2.line(img, (0, y0), (W, y0), (80, 80, 80), 1)
+    bant = img[y0:y0 + yukseklik, 0:W]
+    maske = taban.any(axis=2)
+    bant[maske] = taban[maske]
+    alt_sinir = y0 + serit["alt_sinir"]     # "alt_sinir" seride GORE LOKAL (0..yukseklik)
+    cx = int(kare_no / max(1, n - 1) * (W - 1)) if n > 1 else 0
+    cv2.line(img, (cx, y0), (cx, alt_sinir), (255, 255, 255), 1)
+    _demo_yaz(img, serit["etiket"], (6, alt_sinir - 4), 0.4, (0, 220, 0), 1)
+    yakin = [(k, ad) for k, ad in olaylar if k <= kare_no]
+    metin = f"son olay: kare {yakin[-1][0]}  {yakin[-1][1]}" if yakin else "olay yok"
+    _demo_yaz(img, metin, (6, alt_sinir + 14), 0.42, (255, 255, 255), 1)
+
+
+def demo_hud_kare_ciz(img, rec, kare_no, tespit_sayisi, fps, serit, olaylar, odak_px):
+    """Adım 6 demo HUD - TEK kare (streaming, `demo_hud_uret.py` diskten
+    okuyup hemen yazar; `img` YERİNDE değiştirilir).
+
+    Çizilenler: kutu (durum rengi), ROI, sağ-üst ROI 4x inset, sağ bilgi
+    paneli (irtifa/mesafe/px+~m/mod/durum/tespit sayısı/FPS/komut), alt
+    şerit (durum bandı + irtifa eğrisi + son olay notu). GT/IoU/PSR gibi
+    hiçbir teşhis/oracle bilgisi KULLANILMAZ - `rec` içinde varsa bile
+    (bu depoda sim kayıtları GT taşır) burada OKUNMAZ.
+
+    `rec`: jsonl'den TEK kare kaydı (`kare/durum/kutu/roi/px/irtifa/mod/
+    komut` anahtarları - bkz. `main.py:kos()` demo_kayit bloğu, gerçek
+    şema). `tespit_sayisi`: bu koşumda şimdiye kadar `kutu is not None`
+    olan kare sayısı (basit bir çalışan sayaç - resmi bir metrik değil,
+    yalnızca demo bilgisi). `fps`: kaynak videonun kare hızı (kaydın
+    okuma FPS'i; kare-başı gecikme jsonl'de YOK, uydurulmaz).
+    """
+    H, W = img.shape[:2]
+    durum = rec.get("durum")
+    renk = DEMO_DURUM_RENK.get(durum, (200, 200, 200))
+    kutu, roi = rec.get("kutu"), rec.get("roi")
+
+    _kutu_ciz(img, kutu, renk, 2)
+    if kutu is not None:
+        _demo_yaz(img, durum or "?", (int(kutu[0]), max(12, int(kutu[1]) - 6)), 0.5, renk, 1)
+    _kutu_ciz(img, roi, RENK_ROI, 1)
+
+    inset_alt = _demo_inset_ciz(img, roi if roi is not None else kutu, buyutme=4)
+
+    mesafe, boy_m = _demo_mesafe_hesapla(kutu, rec.get("irtifa"), W, H, odak_px)
+    px_deger = rec.get("px")
+    satirlar = [
+        ("IRTIFA", f"{rec['irtifa']:.1f} m" if rec.get("irtifa") is not None else DEMO_YOK),
+        ("MESAFE", f"{mesafe:.1f} m" if mesafe is not None else DEMO_YOK),
+        ("BOYUT", f"{px_deger:.0f} px (~{boy_m:.2f} m)"
+                  if px_deger is not None and boy_m is not None else DEMO_YOK),
+        ("MOD", rec.get("mod") or DEMO_YOK),
+        ("DURUM", durum or DEMO_YOK),
+        ("TESPIT", str(tespit_sayisi)),
+        ("FPS", f"{fps:.1f}"),
+        ("KOMUT", rec.get("komut") or DEMO_YOK),
+    ]
+    _demo_panel_ciz(img, satirlar, renk, inset_alt)
+    _demo_serit_ciz(img, serit, olaylar, kare_no)
+    return img
