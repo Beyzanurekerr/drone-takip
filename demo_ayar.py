@@ -38,6 +38,13 @@ A6_AGIRLIK = "weights/a6_kucuk_hedef.pt"
 A6_SINIFLAR = [0, 1, 2, 3]            # car,van,truck,bus (asamaB egitimiyle AYNI)
 YOLO_CONF = 0.25
 
+# DEMO BOYUT OTORITESI (2026-09-07): boyut yalniz dogrulanmis dedektor
+# tespitinde yazilir, _boyut_tazele/klasik rafine ARAYA KARISMAZ - kare
+# ~698 sicramasinin (bkz. commit 2ab78a7) kaynagini kapatir. `main.py`
+# `--mod demo`de `HedefTakip(dedektor_boyut=DEDEKTOR_BOYUT_OTORITESI)`
+# olarak gecer - takip/izleyici.py'de False iken davranis degismez.
+DEDEKTOR_BOYUT_OTORITESI = True
+
 
 def r_sec(L_native):
     """R_MERDIVEN'den, ag girdisinde NET_HEDEF'e (log uzayinda) en yakin
@@ -99,6 +106,7 @@ class KaroArayici:
         self._imlec = 0
         self._merkez = np.array([native_w / 2.0, native_h / 2.0], np.float32)
         self.taranan_karo_sayisi = 0
+        self.son_roi = None    # bu karede TARANAN son karo (x,y,w,h) - HUD/JSON icin
 
     def _izgara(self, R):
         if R not in self._izgara_onbellek:
@@ -134,6 +142,7 @@ class KaroArayici:
             x0, y0, rw, rh = self._sira[self._imlec]
             self._imlec += 1
             self.taranan_karo_sayisi += 1
+            self.son_roi = (x0, y0, rw, rh)
             parca = bgr[y0:y0 + rh, x0:x0 + rw]
             if parca.shape[:2] != (rh, rw):
                 continue

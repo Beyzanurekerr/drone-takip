@@ -126,7 +126,8 @@ class HedefTakip:
                  kimlik_hareket_kapisi=0.003, kimlik_min_kenar=10.0,
                  zemin_orani=0.0008, zemin_pencere=20, zemin_sabir=20,
                  zemin_dogrulama=True,
-                 yasak_kare=30, hakem=None, kayip_dedektor=None):
+                 yasak_kare=30, hakem=None, kayip_dedektor=None,
+                 dedektor_boyut=False):
         # A10 HAKEM ARAYUZU (tek eklenti). hakem=None iken davranis BIREBIR
         # eskisi gibidir; esdegerlik testiyle sinanir. Hakem, guncelle()
         # sonunda cagrilir ve durumu/boyutu degistirebilir - kapali cevrim.
@@ -136,6 +137,14 @@ class HedefTakip:
         # durumunda onun yerine gecer - bkz. `_karo_arama_adimi`.
         self.kayip_dedektor = kayip_dedektor
         self._karo_kurulu = False
+        # DEMO BOYUT OTORITESI (ayni ilke): dedektor_boyut=False iken
+        # davranis BIREBIR eskisi gibidir (rafine_kutu boyuta karisir).
+        # True'da boyut YALNIZ dogrulanmis tespitlerde yazilir (kilitle,
+        # _karo_arama_adimi), _boyut_tazele YALNIZ merkez duzeltir - kare
+        # ~698'de gorulen (bkz. commit 2ab78a7) sessiz boyut sicramasinin
+        # kaynagini kapatir. Guvenlik: boyut <= 1.5 x son tespit boyutu.
+        self.dedektor_boyut = dedektor_boyut
+        self._son_tespit_boyut = None
         self.ego = EgoMotion()
         self.tespit = HareketTespit()
         self.cekirdek = CEKIRDEKLER[cekirdek]() if isinstance(cekirdek, str) else cekirdek
@@ -202,20 +211,37 @@ class HedefTakip:
         self.son_adaylar = adaylar
         return adaylar
 
+    def _dedektor_boyut_uygula(self, tespit_boyut):
+        """Dogrulanmis tespit -> boyut OTORITESI (demo modu). Karisim YOK;
+        tek koruma: onceki tespite gore >1.5x sicrama ORANTILI kesilir."""
+        tespit_boyut = np.maximum(np.asarray(tespit_boyut, np.float32), self.min_kenar)
+        if self._son_tespit_boyut is not None:
+            tavan = 1.5 * float(self._son_tespit_boyut.max())
+            oran = float(tespit_boyut.max()) / max(tavan, 1e-6)
+            if oran > 1.0:
+                tespit_boyut = tespit_boyut / oran
+        self.boyut = tespit_boyut
+        self.boyut_olculen = self.boyut.copy()
+        self._son_tespit_boyut = self.boyut.copy()
+
     def kilitle(self, bgr, kutu):
         gri = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
         kutu = np.asarray(kutu, np.float32)
-        # hareket lekesi kaba bir kutudur -> renk kontrastiyla keskinlestir
-        r = rafine_kutu(bgr, kutu[:2] + kutu[2:] / 2, kutu[2:])
-        if r is not None:
-            kutu = r
-        self.boyut = np.maximum(kutu[2:], self.min_kenar)
-        # kutu boyutunun fizik capasi: kilit anindaki boyut x birikimli ego olcegi.
-        # Ego olcegi 400 karede ~%5 kayiyor; tek bir bozuk rafine ise kutuyu
-        # %65 sisirebiliyor. Bu yuzden boyut bu bandin disina cikamaz.
-        # OLCUM tabanli capa: her basarili rafine dogrudan kutuyu OLCER.
-        # (Ego olceginin kare kare carpimi ustel hata biriktirdigi icin terk edildi.)
-        self.boyut_olculen = self.boyut.copy()
+        if self.dedektor_boyut:
+            # kutu ZATEN dedektor cikisi (demo modu) - rafine KARISTIRMAZ
+            self._dedektor_boyut_uygula(kutu[2:])
+        else:
+            # hareket lekesi kaba bir kutudur -> renk kontrastiyla keskinlestir
+            r = rafine_kutu(bgr, kutu[:2] + kutu[2:] / 2, kutu[2:])
+            if r is not None:
+                kutu = r
+            self.boyut = np.maximum(kutu[2:], self.min_kenar)
+            # kutu boyutunun fizik capasi: kilit anindaki boyut x birikimli ego olcegi.
+            # Ego olcegi 400 karede ~%5 kayiyor; tek bir bozuk rafine ise kutuyu
+            # %65 sisirebiliyor. Bu yuzden boyut bu bandin disina cikamaz.
+            # OLCUM tabanli capa: her basarili rafine dogrudan kutuyu OLCER.
+            # (Ego olceginin kare kare carpimi ustel hata biriktirdigi icin terk edildi.)
+            self.boyut_olculen = self.boyut.copy()
         self.kf = Kalman(kutu[0] + kutu[2] / 2, kutu[1] + kutu[3] / 2)
         self.cekirdek.baslat(bgr, gri, np.r_[kutu[:2], self.boyut])
         # REFERANS IMZA (imza_ref): burada dondurulur, bir daha guncellenmez.
@@ -280,6 +306,13 @@ class HedefTakip:
         olc = float(np.clip(self.ego.olcek_katsayisi, 0.90, 1.10))
         self.kf.tahmin(M)
         self.boyut = np.maximum(self.boyut * olc, self.min_kenar)
+        if self.dedektor_boyut and self._son_tespit_boyut is not None:
+            # ego-olcegi tespitler arasi surekli surukleyebilir; tavan son
+            # DOGRULANMIS tespitin 1.5 katinda kalir (kare ~698 sinifi
+            # sicramaya karsi genel guvenlik, yalniz rafine_kutu'ya ozel degil)
+            tavan = 1.5 * float(self._son_tespit_boyut.max())
+            if self.boyut.max() > tavan:
+                self.boyut = self.boyut * (tavan / float(self.boyut.max()))
 
         t0 = time.perf_counter()
         if self.durum in (KILITLI, SUPHELI):
@@ -320,7 +353,7 @@ class HedefTakip:
         return {"kutu": self.kutu, "durum": self.durum, "psr": self.psr,
                 "kayip": self.kayip, "ego_guven": ego_guven, "olcek": olc,
                 "benzerlik": self.benzerlik, "yanlis_kilit": self.yanlis_kilit,
-                "sure": s}
+                "komut": self.komut, "sure": s}
 
     # ------------------------------------------------------------------
     def _takip_adimi(self, bgr, gri):
@@ -547,8 +580,9 @@ class HedefTakip:
             a, kutu = en_iyi
             r2 = rafine_kutu(bgr, a["merkez"], self.boyut, hedef_renk=self.imza.renk)
             if r2 is not None:
-                self.boyut = np.maximum(0.5 * self.boyut + 0.5 * r2[2:], self.min_kenar)
-                self.boyut_olculen = self.boyut.copy()
+                if not self.dedektor_boyut:
+                    self.boyut = np.maximum(0.5 * self.boyut + 0.5 * r2[2:], self.min_kenar)
+                    self.boyut_olculen = self.boyut.copy()
                 kutu = np.r_[r2[:2] + r2[2:] / 2 - self.boyut / 2, self.boyut]
             self.kf.ata(kutu[:2] + kutu[2:] / 2)
             self.cekirdek.baslat(bgr, gri, kutu)
@@ -585,11 +619,15 @@ class HedefTakip:
         merkez, kutu, d_norm = sonuc
         if d_norm < self.aday_esik_kayip:
             return
-        r2 = rafine_kutu(bgr, merkez, self.boyut, hedef_renk=self.imza.renk)
-        if r2 is not None:
-            self.boyut = np.maximum(0.5 * self.boyut + 0.5 * r2[2:], self.min_kenar)
-            self.boyut_olculen = self.boyut.copy()
-            kutu = np.r_[r2[:2] + r2[2:] / 2 - self.boyut / 2, self.boyut]
+        if self.dedektor_boyut:
+            # kutu ZATEN dedektor cikisi (KaroArayici) - rafine KARISTIRMAZ
+            self._dedektor_boyut_uygula(kutu[2:])
+        else:
+            r2 = rafine_kutu(bgr, merkez, self.boyut, hedef_renk=self.imza.renk)
+            if r2 is not None:
+                self.boyut = np.maximum(0.5 * self.boyut + 0.5 * r2[2:], self.min_kenar)
+                self.boyut_olculen = self.boyut.copy()
+                kutu = np.r_[r2[:2] + r2[2:] / 2 - self.boyut / 2, self.boyut]
         self.kf.ata(kutu[:2] + kutu[2:] / 2)
         self.cekirdek.baslat(bgr, gri, kutu)
         self.durum, self.kayip = KILITLI, 0
@@ -640,8 +678,11 @@ class HedefTakip:
         r = rafine_kutu(bgr, self.kf.konum, self.boyut, hedef_renk=self.imza.renk)
         if r is None:
             return
-        self.boyut = np.maximum(0.75 * self.boyut + 0.25 * r[2:], self.min_kenar)
-        self.boyut_olculen = 0.85 * self.boyut_olculen + 0.15 * np.maximum(r[2:], self.min_kenar)
+        if not self.dedektor_boyut:
+            self.boyut = np.maximum(0.75 * self.boyut + 0.25 * r[2:], self.min_kenar)
+            self.boyut_olculen = 0.85 * self.boyut_olculen + 0.15 * np.maximum(r[2:], self.min_kenar)
+        # dedektor_boyut=True: boyuta YAZILMAZ (kare ~698 sicramasinin
+        # kaynagiydi), yalniz merkez duzeltilir.
         yeni_c = r[:2] + r[2:] / 2
         if float(np.linalg.norm(yeni_c - self.kf.konum)) < 0.6 * float(self.boyut.max()):
             self.kf.duzelt(yeni_c, r_carpan=1.0)

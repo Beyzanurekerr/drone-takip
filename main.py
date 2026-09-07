@@ -12,10 +12,9 @@ Olcum ve kiyaslama icin `kiyasla.py` / `calistir.py` kullanilmaya devam edilir;
 bu dosya onlarin yerini ALMAZ, yaninda durur.
 """
 import argparse
+import json
 import os
-import queue
 import sys
-import threading
 import time
 from collections import deque
 
@@ -450,66 +449,36 @@ def goster(pencere, img, bekleme_ms, duraklat):
             return "devam"
 
 
-class _HudIsci:
-    """`ciz()` + video yazimi ayri THREAD'de (Adim 4): ana takip dongusu
-    HUD/kayit maliyetinden bagimsiz hizda kosar. Kuyruk DOLARSA en yeni is
-    ATLANIR (`dusen_hud`) - HUD birkac kare geriden gelsin, takip FPS'i
-    DUSMESIN. Yalniz `kaydet` (headless video) icin kullanilir; interaktif
-    `pencere` + `hud_thread` birlikte SINANMADI, klavye/duraklatma bu yolda
-    YOK (bilerek - Adim 4'un konusu offline demo videosu)."""
-
-    def __init__(self, kaydet, fps_kayit, boyut, max_kuyruk=4):
-        self.kuyruk = queue.Queue(maxsize=max_kuyruk)
-        self.yaz = None
-        self._kaydet = kaydet
-        self._fps = fps_kayit
-        self._boyut = boyut
-        self.dusen_hud = 0
-        self._iplik = threading.Thread(target=self._dongu, daemon=True)
-        self._iplik.start()
-
-    def gonder(self, is_):
-        try:
-            self.kuyruk.put_nowait(is_)
-        except queue.Full:
-            self.dusen_hud += 1
-
-    def _dongu(self):
-        while True:
-            is_ = self.kuyruk.get()
-            if is_ is None:
-                return
-            (img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms, tur,
-             toplam, hedef_id) = is_
-            ciz(img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms, tur,
-                toplam, hedef_id=hedef_id)
-            if self.yaz is None:
-                os.makedirs(os.path.dirname(self._kaydet) or ".", exist_ok=True)
-                self.yaz = cv2.VideoWriter(
-                    self._kaydet, cv2.VideoWriter_fourcc(*"mp4v"),
-                    self._fps, self._boyut)
-            self.yaz.write(img)
-
-    def kapat(self):
-        self.kuyruk.put(None)
-        self._iplik.join(timeout=10.0)
-        if self.yaz is not None:
-            self.yaz.release()
+def _hafif_ciz(img, sonuc):
+    """Canli pencere icin HAFIF HUD (Adim 4 duzeltmesi - THREAD kalkti,
+    agir `ciz()`/panel yerine kutu + 2 satir, senkron ama ucuz)."""
+    _kutu_ciz(img, sonuc.get("kutu"), (255, 120, 0), 2)
+    komut = f" komut={sonuc['komut']}" if sonuc.get("komut") else ""
+    cv2.putText(img, f"durum={sonuc['durum']}{komut}", (8, 22),
+               cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
+    cv2.putText(img, f"kare={sonuc.get('kare_no', '?')}", (8, 44),
+               cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
 
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
-        hedef_secici=None, kayip_dedektor=None, hud_thread=False):
+        hedef_secici=None, kayip_dedektor=None, dedektor_boyut=False,
+        demo_kayit=False, mod_etiketi=None):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
     geldiginde buraya baska bir fonksiyon verilecek; dongu degismeyecek.
-    `kayip_dedektor`: None ise KAYIP davranisi degismez (bkz.
-    `takip/izleyici.py:HedefTakip`); DEMO modu `demo_ayar.KaroArayici` verir.
-    `hud_thread`: True + `kaydet` verilirse HUD/video yazimi `_HudIsci`
-    THREAD'inde kosar (Adim 4) - `pencere` bu yolda gosterilmez.
+    `kayip_dedektor`/`dedektor_boyut`: varsayilanlarinda (None/False) davranis
+    BIREBIR eskisi gibidir (bkz. `takip/izleyici.py:HedefTakip`); DEMO modu
+    ikisini de verir.
+    `demo_kayit` (Adim 4, DUZELTME - THREAD KALKTI): True ise `kaydet` HAM
+    kareyi yazar (ciz() YOK) + kare basina durum bir `.jsonl` yan dosyasina
+    yazilir (ayni govde, uzanti .jsonl - `gazebo/gorsel_uret.py` HUD'lu
+    videoyu bunlardan OFFLINE uretir). `pencere` ile birlikte hafif HUD
+    (`_hafif_ciz`) senkron cizilir - agir `ciz()` bu yolda KULLANILMAZ.
     """
     secici = hedef_secici or otomatik_hedef_sec
-    tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor)
+    tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor,
+                     dedektor_boyut=dedektor_boyut)
     kilitli = False
     yaz = None
     duraklat = False
@@ -525,16 +494,20 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     bekleme = max(1, int(1000.0 / kaynak.fps)) if kaynak.fps > 0 else 1
     hedef_id = getattr(kaynak, "track_id", None)   # VisDrone track; yoksa None
 
-    hud = None
-    if hud_thread and kaydet:
-        hud = _HudIsci(kaydet, kaynak.fps if kaynak.fps > 0 else 30.0,
-                       (kaynak.genislik, kaynak.yukseklik))
-    elif pencere:
+    if pencere:
         # WINDOW_NORMAL  : kullanici fareyle boyutlandirabilsin
         # WINDOW_KEEPRATIO: elle boyutlandirirken en-boy orani korunsun
         cv2.namedWindow(kaynak.ad, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
         cv2.resizeWindow(kaynak.ad, *pencere_boyutu(kaynak.genislik,
                                                     kaynak.yukseklik))
+
+    json_yol = None
+    json_f = None
+    if demo_kayit and kaydet:
+        json_yol = os.path.splitext(kaydet)[0] + ".jsonl"
+        os.makedirs(os.path.dirname(json_yol) or ".", exist_ok=True)
+        json_f = open(json_yol, "w")
+    pozlar = getattr(kaynak, "pozlar", None)   # gazebo kaynagi: kare basina kam_z
 
     try:
         for kare in kaynak:
@@ -550,7 +523,8 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                         kutu[:2] = secili["merkez"] - kutu[2:] / 2
                         tak.kilitle(kare.goruntu, kutu)
                         kilitli = True
-                sonuc = {"kutu": tak.kutu, "durum": tak.durum, "psr": 0.0, "sure": {}}
+                sonuc = {"kutu": tak.kutu, "durum": tak.durum, "psr": 0.0,
+                        "komut": None, "sure": {}}
             else:
                 sonuc = tak.guncelle(kare.goruntu)
                 adaylar = tak.son_adaylar
@@ -586,10 +560,40 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
             gecikmeler.append(gecikme * 1e3)
             fps = len(sureler) / max(1e-6, sum(sureler))
 
-            if hud is not None:
-                hud.gonder((kare.goruntu.copy(), kare, sonuc, adaylar, fps,
-                           kilitli, gecikme * 1e3, kaynak.tur,
-                           kaynak.kare_sayisi, hedef_id))
+            if demo_kayit:
+                # Adim 4 DUZELTME: THREAD YOK - kaydet HAM kareyi yazar
+                # (ciz() maliyeti yok), durum ayri .jsonl'e dusuyor; HUD'lu
+                # video `gazebo/gorsel_uret.py` ile OFFLINE uretilir.
+                if kaydet:
+                    if yaz is None:
+                        os.makedirs(os.path.dirname(kaydet) or ".", exist_ok=True)
+                        yaz = cv2.VideoWriter(
+                            kaydet, cv2.VideoWriter_fourcc(*"mp4v"),
+                            kaynak.fps if kaynak.fps > 0 else 30.0,
+                            (kare.genislik, kare.yukseklik))
+                    yaz.write(kare.goruntu)
+                    if json_f is not None:
+                        kutu = sonuc.get("kutu")
+                        roi = (getattr(kayip_dedektor, "son_roi", None)
+                              if kayip_dedektor is not None and sonuc["durum"] in (ARAMA, KAYIP)
+                              else None)
+                        irtifa = (pozlar[kare.indeks].get("kam_z")
+                                 if pozlar is not None and kare.indeks < len(pozlar) else None)
+                        json_f.write(json.dumps({
+                            "kare": kare.indeks, "durum": sonuc["durum"],
+                            "kutu": [float(v) for v in kutu] if kutu is not None else None,
+                            "roi": list(roi) if roi is not None else None,
+                            "px": float(max(kutu[2], kutu[3])) if kutu is not None else None,
+                            "irtifa": irtifa, "mod": mod_etiketi,
+                            "komut": sonuc.get("komut"), "iou": sonuc.get("iou"),
+                            "gt": [float(v) for v in kare.gt] if kare.gt is not None else None,
+                        }) + "\n")
+                if pencere:
+                    _hafif_ciz(kare.goruntu, {**sonuc, "kare_no": kare.indeks})
+                    cevap = goster(kaynak.ad, kare.goruntu, bekleme, duraklat)
+                    if cevap == "cik":
+                        break
+                    duraklat = (cevap == "duraklat")
             elif pencere or kaydet:
                 ciz(kare.goruntu, kare, sonuc, adaylar, fps, kilitli,
                     gecikme * 1e3, kaynak.tur, kaynak.kare_sayisi,
@@ -612,11 +616,11 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                 break
     finally:
         kaynak.kapat()
-        if hud is not None:
-            hud.kapat()
         if yaz is not None:
             yaz.release()
-        if pencere and hud is None:
+        if json_f is not None:
+            json_f.close()
+        if pencere:
             cv2.destroyWindow(kaynak.ad)
 
     g = np.array(gecikmeler, np.float64) if gecikmeler else np.zeros(1)
@@ -631,7 +635,7 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
         "gecikme_p95": float(np.percentile(g, 95)),
         "gecikme_max": float(g.max()),
         "gt_kare": len(olcum),
-        "dusen_hud": hud.dusen_hud if hud is not None else 0,
+        "json_yol": json_yol,
     }
     if olcum:
         io = np.array([r["iou"] for r in olcum], np.float64)
@@ -736,7 +740,8 @@ def main():
         m = kos(kaynak, cekirdek=a.cekirdek, pencere=not a.penceresiz,
                 kaydet=a.kaydet, max_kare=a.max_kare,
                 hedef_secici=secici, kayip_dedektor=kayip_dedektor,
-                hud_thread=(a.mod == "demo"))
+                dedektor_boyut=(a.mod == "demo" and demo_ayar.DEDEKTOR_BOYUT_OTORITESI),
+                demo_kayit=(a.mod == "demo"), mod_etiketi=a.mod)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)
@@ -748,8 +753,8 @@ def main():
     print(f"  gecikme     : ort {m['gecikme_ort']:.2f} ms | "
           f"p50 {m['gecikme_p50']:.2f} | p95 {m['gecikme_p95']:.2f} | "
           f"max {m['gecikme_max']:.2f}")
-    if m.get("dusen_hud"):
-        print(f"  HUD dusen kare: {m['dusen_hud']} (thread yetismedi, takip ETKILENMEDI)")
+    if m.get("json_yol"):
+        print(f"  durum JSON  : {m['json_yol']} (HUD'lu video icin gorsel_uret.py'ye verilir)")
     if m.get("gt_kare"):
         print(f"  --- GT ile olcum ({m['gt_kare']} kare) ---")
         print(f"  IoU         : {m['ort_iou']:.3f}  "
