@@ -49,16 +49,34 @@ from kaynak import Kare, Kaynak, KaynakHatasi
 from gazebo.dunya_uret import dunya_yaz
 from gazebo.senaryolar import (
     Arac, GzSenaryo, DEMO_MERKEZ_X, DEMO_MERKEZ_Y, DEMO_HIZ,
-    ODAK_PX, KAM_HZ, Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
+    IMX500_GEN, IMX500_YUK, IMX500_ODAK_PX, Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
 )
 
-# CANLI CIKTI COZUNURLUGU (2026-09-08, olculdu): IMX500 tam cozunurlugu
-# (2028x1520) canli modda RTF~0.22, ham kare FPS~6.6 veriyor - FPS>=15
-# kabul esigini GECEMEZ. Arastirma kamerasi cozunurlugu (640x480, ayni
-# G0-G7 ailesi) RTF~0.57, ham kare FPS~17.2'ye cikariyor - canli mod
-# icin BUNU kullan (DEMO'nun offline kaydinda kullanilan IMX500 DEGIL -
-# orada gercek zamanlilik onemsizdi, burada ESAS kisit budur).
-CANLI_GEN, CANLI_YUK = 640, 480
+# CANLI CIKTI COZUNURLUGU (2026-09-08 DUZELTME - kullanicidan): arastirma
+# kamerasi (640x480) IMX500 DISI bir kamera, kabul edilmez - takip
+# sabitleri (demo_ayar.R_MERDIVEN, takip/izleyici.KORUMA_ESIK...) IMX500
+# nativ pikseline gore kalibre; 640x480'e dusmek onlari da bozuyordu
+# (bkz. docs/DEMO_SONUC.md "Canlı (scripted)").
+#
+# Plan A (IMX500 TAM cozunurluk 2028x1520, kam_hz 30->15) DENENDI VE
+# KALDI: FPS 4.65 (>=15 gerekli), kilit orani %2.5 - render maliyeti
+# update_rate'ten degil COZUNURLUKTEN geliyormus (YOLO/kirpma-yeniden-
+# boyutlandirma da tam kare boyutuna baglı), yarilanan update_rate
+# tersine ISLENEN kare basina daha fazla is dustugu icin FPS'i
+# DUSURDU (bkz. docs/DEMO_SONUC.md "Canlı (scripted) - Plan A").
+#
+# Plan B (kullanicidan): IMX500'un YARI-DOGRUSAL cozunurlugu (2028/2 x
+# 1520/2 = 1014x760), odak_px orantili yarilanir (1561/2=780.5) - FOV
+# AYNI kalir, render+YOLO maliyeti ~4x azalir (piksel alani 1/4).
+# `demo_ayar.TUVAL_OLCEK = odak_px/1561 = 0.5` ile R_MERDIVEN/
+# koruma_esik/min_kenar bu kameraya gore yeniden olceklenir (bkz.
+# `gazebo/kabul_canli.py`, `demo_ayar.ayarla_tuval_olcek`) - ag-girdisi
+# bandi (BANT/NET_HEDEF) BILEREK degismez (resize SONRASI sabit AG
+# canvasinda olcer).
+CANLI_GEN, CANLI_YUK = IMX500_GEN // 2, IMX500_YUK // 2
+CANLI_ODAK_PX = IMX500_ODAK_PX / 2.0
+CANLI_TUVAL_OLCEK = CANLI_ODAK_PX / IMX500_ODAK_PX   # = 0.5, demo_ayar.ayarla_tuval_olcek'e verilir
+CANLI_HZ = 15.0
 
 TUS_HIZ_YATAY = 5.0      # m/s - W/A/S/D
 TUS_HIZ_DIKEY = 3.0      # m/s - R/F (200 m'ye kadar tirmanis icin yeterli)
@@ -75,9 +93,11 @@ TUSLAR = {
 
 
 def canli_senaryo(kam_z0=50.0):
-    """DEMO ailesinin baylands zemini + celdiricisiz tek hedef, ama IMX500
-    DEGIL arastirma kamerasi cozunurlugu (640x480, odak 500px, ayni
-    G0-G7 ailesi) - CANLI_GEN/YUK ustteki not, RTF/FPS olcumu gerekcesi."""
+    """DEMO ailesinin baylands zemini + celdiricisiz tek hedef, IMX500'un
+    YARI-DOGRUSAL cozunurlugu + odak (1014x760, odak_px=780.5, FOV AYNI) -
+    takip tarafi `demo_ayar.ayarla_tuval_olcek(CANLI_TUVAL_OLCEK)` ile
+    buna gore yeniden olceklenmeli (bkz. CANLI_GEN/YUK/ODAK_PX ustteki
+    not, `gazebo/kabul_canli.py`)."""
     hedef = Arac("hedef", x0=DEMO_MERKEZ_X - 30.0, y0=DEMO_MERKEZ_Y, yaw=0.0,
                  vx=DEMO_HIZ, renk=(0.16, 0.16, 0.75), mesh="hatchback",
                  L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H)
@@ -88,7 +108,7 @@ def canli_senaryo(kam_z0=50.0):
         kam_x=DEMO_MERKEZ_X - 30.0, kam_y=DEMO_MERKEZ_Y, kam_z=kam_z0,
         kam_profil=None, drone_statik=False, kare=1,
         zemin_tipi="baylands", genislik=CANLI_GEN, yukseklik=CANLI_YUK,
-        odak_px=ODAK_PX, kam_hz=KAM_HZ, aile="CANLI")
+        odak_px=CANLI_ODAK_PX, kam_hz=CANLI_HZ, aile="CANLI")
 
 
 class GazeboCanliKaynak(Kaynak):
