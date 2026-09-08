@@ -432,32 +432,50 @@ def ciz(img, kare, sonuc, adaylar, fps, kilitli, gecikme_ms=0.0,
 
 
 def goster(pencere, img, bekleme_ms, duraklat):
-    """Doner: "devam" | "duraklat" | "cik".  Bosluk duraklat, n tek kare, q cik."""
+    """Doner: (durum, tus). durum: "devam" | "duraklat" | "cik". `tus`: ham
+    `cv2.waitKey` kodu (0xFF maskeli) - CANLI kaynaklarin (`gazebo_canli`)
+    klavye kontrolu icin (bkz. `veri/gazebo_canli.py:GazeboCanliKaynak.
+    tus_isle`); diger kaynaklar YOK SAYAR, DAVRANIS DEGISMEZ. Bosluk
+    duraklat, n tek kare, q/ESC cik."""
     cv2.imshow(pencere, img)
     while True:
         tus = cv2.waitKey(0 if duraklat else bekleme_ms) & 0xFF
         if tus in (27, ord("q")):
-            return "cik"
+            return "cik", tus
         if tus == ord(" "):
             duraklat = not duraklat
             if not duraklat:
-                return "devam"
+                return "devam", tus
             continue
         if duraklat and tus in (ord("n"), 83):
-            return "duraklat"
+            return "duraklat", tus
         if not duraklat:
-            return "devam"
+            return "devam", tus
 
 
 def _hafif_ciz(img, sonuc):
     """Canli pencere icin HAFIF HUD (Adim 4 duzeltmesi - THREAD kalkti,
-    agir `ciz()`/panel yerine kutu + 2 satir, senkron ama ucuz)."""
+    agir `ciz()`/panel yerine kutu + 2 satir, senkron ama ucuz).
+
+    CANLI mod (2026-09-08): `sonuc` icinde varsa `mod`/`px`/`irtifa` de
+    3. satirda gosterilir - digerlerinde bu alanlar YOK, satir hic
+    eklenmez (DAVRANIS DEGISMEZ)."""
     _kutu_ciz(img, sonuc.get("kutu"), (255, 120, 0), 2)
     komut = f" komut={sonuc['komut']}" if sonuc.get("komut") else ""
     cv2.putText(img, f"durum={sonuc['durum']}{komut}", (8, 22),
                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
     cv2.putText(img, f"kare={sonuc.get('kare_no', '?')}", (8, 44),
                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
+    if any(k in sonuc for k in ("mod", "px", "irtifa")):
+        px = sonuc.get("px")
+        irtifa = sonuc.get("irtifa")
+        parcalar = [f"mod={sonuc['mod']}"] if sonuc.get("mod") else []
+        if px is not None:
+            parcalar.append(f"px={px:.0f}")
+        if irtifa is not None:
+            parcalar.append(f"irtifa={irtifa:.1f}m")
+        cv2.putText(img, "  ".join(parcalar), (8, 66),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
 
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
@@ -565,6 +583,15 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                 # Adim 4 DUZELTME: THREAD YOK - kaydet HAM kareyi yazar
                 # (ciz() maliyeti yok), durum ayri .jsonl'e dusuyor; HUD'lu
                 # video `gazebo/gorsel_uret.py` ile OFFLINE uretilir.
+                kutu = sonuc.get("kutu")
+                px = float(max(kutu[2], kutu[3])) if kutu is not None else None
+                # irtifa: kayitli gazebo kaynaginda pozlar'dan (kam_z), CANLI
+                # kaynakta (pozlar YOK) `kaynak.irtifa`den (bkz.
+                # veri/gazebo_canli.py:GazeboCanliKaynak.irtifa) - DAVRANIS
+                # ikisi de yoksa DEGISMEZ (None).
+                irtifa = (pozlar[kare.indeks].get("kam_z")
+                         if pozlar is not None and kare.indeks < len(pozlar)
+                         else getattr(kaynak, "irtifa", None))
                 if kaydet:
                     if yaz is None:
                         os.makedirs(os.path.dirname(kaydet) or ".", exist_ok=True)
@@ -574,24 +601,24 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                             (kare.genislik, kare.yukseklik))
                     yaz.write(kare.goruntu)
                     if json_f is not None:
-                        kutu = sonuc.get("kutu")
                         roi = (getattr(kayip_dedektor, "son_roi", None)
                               if kayip_dedektor is not None and sonuc["durum"] in (ARAMA, KAYIP)
                               else None)
-                        irtifa = (pozlar[kare.indeks].get("kam_z")
-                                 if pozlar is not None and kare.indeks < len(pozlar) else None)
                         json_f.write(json.dumps({
                             "kare": kare.indeks, "durum": sonuc["durum"],
                             "kutu": [float(v) for v in kutu] if kutu is not None else None,
                             "roi": list(roi) if roi is not None else None,
-                            "px": float(max(kutu[2], kutu[3])) if kutu is not None else None,
-                            "irtifa": irtifa, "mod": mod_etiketi,
+                            "px": px, "irtifa": irtifa, "mod": mod_etiketi,
                             "komut": sonuc.get("komut"), "iou": sonuc.get("iou"),
                             "gt": [float(v) for v in kare.gt] if kare.gt is not None else None,
                         }) + "\n")
                 if pencere:
-                    _hafif_ciz(kare.goruntu, {**sonuc, "kare_no": kare.indeks})
-                    cevap = goster(kaynak.ad, kare.goruntu, bekleme, duraklat)
+                    _hafif_ciz(kare.goruntu, {**sonuc, "kare_no": kare.indeks,
+                                              "mod": mod_etiketi, "px": px,
+                                              "irtifa": irtifa})
+                    cevap, tus = goster(kaynak.ad, kare.goruntu, bekleme, duraklat)
+                    if hasattr(kaynak, "tus_isle"):
+                        kaynak.tus_isle(tus)
                     if cevap == "cik":
                         break
                     duraklat = (cevap == "duraklat")
@@ -608,7 +635,9 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
                             (kare.genislik, kare.yukseklik))
                     yaz.write(kare.goruntu)
                 if pencere:
-                    cevap = goster(kaynak.ad, kare.goruntu, bekleme, duraklat)
+                    cevap, tus = goster(kaynak.ad, kare.goruntu, bekleme, duraklat)
+                    if hasattr(kaynak, "tus_isle"):
+                        kaynak.tus_isle(tus)
                     if cevap == "cik":
                         break
                     duraklat = (cevap == "duraklat")
@@ -704,6 +733,14 @@ def main():
                          "kayit karsiligi) - ilk kilidin KENDI hatasini olcum "
                          "disi birakip yalniz kilit-SONRASI kurtarmayi/takibi "
                          "test eder (bkz. docs/DEMO_SONUC.md 'v1 + GT-ilk-kilit')")
+    ap.add_argument("--gui", action="store_true",
+                    help="--source gazebo_canli: gz sim'in KENDI gorsel "
+                         "istemcisini de ac (`gz sim -g`, izlemek icin - "
+                         "takip hattini etkilemez, WSL2'de X/WSLg gerekir)")
+    ap.add_argument("--sure", type=float, default=None,
+                    help="--source gazebo_canli: bu sure (sn, duvar saati) "
+                         "dolunca kaynak temiz bicimde biter - sinirli-sureli "
+                         "otomatik/kabul kosumlari icin; verilmezse sinirsiz")
     a = ap.parse_args()
 
     if a.mod == "demo":
@@ -734,7 +771,8 @@ def main():
                                 kamera_id=a.camera_id, senaryo=a.scenario,
                                 veri_kok=a.dataset, dizi=a.sequence,
                                 track_id=a.track_id, olcek=a.olcek,
-                                hedef_genislik=a.hedef_genislik)
+                                hedef_genislik=a.hedef_genislik,
+                                gui=a.gui, sure_sn=a.sure)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)

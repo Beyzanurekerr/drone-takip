@@ -49,9 +49,16 @@ from kaynak import Kare, Kaynak, KaynakHatasi
 from gazebo.dunya_uret import dunya_yaz
 from gazebo.senaryolar import (
     Arac, GzSenaryo, DEMO_MERKEZ_X, DEMO_MERKEZ_Y, DEMO_HIZ,
-    IMX500_GEN, IMX500_YUK, IMX500_ODAK_PX, IMX500_HZ, IMX500_GURULTU,
-    IMX500_K1, Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
+    ODAK_PX, KAM_HZ, Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
 )
+
+# CANLI CIKTI COZUNURLUGU (2026-09-08, olculdu): IMX500 tam cozunurlugu
+# (2028x1520) canli modda RTF~0.22, ham kare FPS~6.6 veriyor - FPS>=15
+# kabul esigini GECEMEZ. Arastirma kamerasi cozunurlugu (640x480, ayni
+# G0-G7 ailesi) RTF~0.57, ham kare FPS~17.2'ye cikariyor - canli mod
+# icin BUNU kullan (DEMO'nun offline kaydinda kullanilan IMX500 DEGIL -
+# orada gercek zamanlilik onemsizdi, burada ESAS kisit budur).
+CANLI_GEN, CANLI_YUK = 640, 480
 
 TUS_HIZ_YATAY = 5.0      # m/s - W/A/S/D
 TUS_HIZ_DIKEY = 3.0      # m/s - R/F (200 m'ye kadar tirmanis icin yeterli)
@@ -68,8 +75,9 @@ TUSLAR = {
 
 
 def canli_senaryo(kam_z0=50.0):
-    """DEMO ailesiyle AYNI kanitlanmis sahne (baylands + IMX500), yalniz
-    `kam_profil=None` (klavye/CANLI kontrol) ve celdiricisiz tek hedef."""
+    """DEMO ailesinin baylands zemini + celdiricisiz tek hedef, ama IMX500
+    DEGIL arastirma kamerasi cozunurlugu (640x480, odak 500px, ayni
+    G0-G7 ailesi) - CANLI_GEN/YUK ustteki not, RTF/FPS olcumu gerekcesi."""
     hedef = Arac("hedef", x0=DEMO_MERKEZ_X - 30.0, y0=DEMO_MERKEZ_Y, yaw=0.0,
                  vx=DEMO_HIZ, renk=(0.16, 0.16, 0.75), mesh="hatchback",
                  L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H)
@@ -79,9 +87,8 @@ def canli_senaryo(kam_z0=50.0):
         araclar=[hedef], hedef_ad="hedef",
         kam_x=DEMO_MERKEZ_X - 30.0, kam_y=DEMO_MERKEZ_Y, kam_z=kam_z0,
         kam_profil=None, drone_statik=False, kare=1,
-        zemin_tipi="baylands", genislik=IMX500_GEN, yukseklik=IMX500_YUK,
-        odak_px=IMX500_ODAK_PX, kam_hz=IMX500_HZ, gurultu=IMX500_GURULTU,
-        kam_k1=IMX500_K1, aile="CANLI")
+        zemin_tipi="baylands", genislik=CANLI_GEN, yukseklik=CANLI_YUK,
+        odak_px=ODAK_PX, kam_hz=KAM_HZ, aile="CANLI")
 
 
 class GazeboCanliKaynak(Kaynak):
@@ -108,7 +115,7 @@ class GazeboCanliKaynak(Kaynak):
         self.fps = float(self.sen.kam_hz)
         self.ad = f"gazebo_canli:{self.sen.ad}"
         self.sure_sn = float(sure_sn) if sure_sn is not None else None
-        self._baslangic = time.time()
+        self._baslangic = time.time()   # asagida _baglan() sonrasi YENIDEN ayarlanir
         # KONU IZOLASYONU: gazebo/kaydet.py:Kayitci ile AYNI gerekce - onceki
         # bir kosumdan kalan `gz sim` ayni konulara yayin yapiyor olabilir.
         self.partisyon = f"canli-{os.getpid()}"
@@ -133,6 +140,11 @@ class GazeboCanliKaynak(Kaynak):
         except Exception:
             self.kapat()
             raise
+        # `sure_sn` BAGLANTI TAMAMLANDIKTAN SONRA baslar - dunya yuklemesi
+        # (Fuel/baylands) birkac saniye surebiliyor, __init__ basindan
+        # saymak butceyi baglanti bitmeden tuketip ilk oku()'da 0 kare
+        # dondururdu (olculdu, bkz. commit).
+        self._baslangic = time.time()
 
     # ------------------------------------------------------------------
     def _sim_baslat(self):
