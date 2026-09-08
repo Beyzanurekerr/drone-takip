@@ -260,7 +260,8 @@ VIDEO_UZANTILARI = (".mp4", ".avi", ".mov", ".mkv", ".m4v", ".webm", ".mpg",
 def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
                    senaryo: str = "test1", veri_kok: str = None,
                    dizi: str = None, track_id: int = None,
-                   olcek: float = 1.0, hedef_genislik: int = 0) -> Kaynak:
+                   olcek: float = 1.0, hedef_genislik: int = 0,
+                   gui: bool = False, sure_sn: float = None) -> Kaynak:
     """Tek giris noktasi.
 
     Kabul edilen bicimler:
@@ -273,6 +274,12 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
                                        track_id, olcek parametreleriyle)
         "gazebo:G0"                 -> Gazebo kontrollu senaryo kaydi
                                        (veri_kok = kayit koku, dizi = senaryo)
+        "gazebo_canli"              -> Gazebo'ya CANLI baglanti (klavye
+                                       kontrollu, GERCEK ZAMANLI) - bkz.
+                                       `veri/gazebo_canli.py`. `gui=True`:
+                                       ayrica `gz sim -g` istemcisi acilir.
+                                       `sure_sn`: verilirse bu sure sonunda
+                                       kaynak temiz bicimde biter (kabul testi).
 
     Yeni bir kaynak tipi (dataset adapter'i vb.) eklemek icin buraya bir dal
     eklemek yeterlidir; cagiran taraf degismez.
@@ -294,6 +301,10 @@ def kaynak_olustur(kaynak: str, girdi: str = None, kamera_id: int = 0,
         return GazeboKaynak(veri_kok or GAZEBO_VARSAYILAN,
                             senaryo=dizi or (arg or None),
                             olcek=olcek, hedef_genislik=hedef_genislik)
+    if on == "gazebo_canli":
+        from veri.gazebo_canli import GazeboCanliKaynak  # ancak gerekince yukle
+        return GazeboCanliKaynak(kok=veri_kok or GAZEBO_VARSAYILAN,
+                                 gui=gui, sure_sn=sure_sn)
     if on in KAMERA_ADLARI and arg:
         try:
             return KameraKaynak(int(arg))

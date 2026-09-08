@@ -16,6 +16,12 @@ debug/
 data/gazebo/*/kareler/
 data/gazebo/*/zemin.png
 data/gazebo/*/gz.log
+data/gazebo/*/gz_canli.log
+
+# CANLI (veri/gazebo_canli.py): sabit bir "kayit" DEGIL, her calistirmada
+# dunya_yaz() ile YENIDEN uretilen bir dunya - A1_taban vb.nin aksine
+# dunya.sdf'i saklamanin bir kayit kunyesi degeri yok.
+data/gazebo/Canli*/
 
 # Zemin dokusu onbellegi: seed'li ve gazebo/dunya_uret.py ile yeniden uretilir
 data/gazebo/_doku/
@@ -45,3 +51,6 @@ runs/
 .venv_imx500/
 .jdk/
 weights/imx500/calib/images/
+
+# canli mod nohup calisma loglari - yerel, izlenmez
+logs/

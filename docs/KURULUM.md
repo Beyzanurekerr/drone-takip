@@ -144,6 +144,71 @@ python3 main.py --mod demo --source gazebo --sequence Demo_kucul \
 python3 -m gazebo.demo_hud_uret cikti/demo/kucul.mp4
 ```
 
+## 5b. Canlı mod (klavye kontrollü, `demo-canli` dalı)
+
+Kayıttan OYNATMA değil — `gz sim` gerçek zamanlı çalışırken bağlanır, drone
+klavyeyle sürülür. `--mod demo` ile kullanılmalı (GT yoktur, ilk kilit
+YOLO/A6 soğuk edinmesiyle yapılır):
+
+```bash
+python3 main.py --mod demo --source gazebo_canli
+```
+
+`--gui` eklenirse `gz sim`in kendi 3B görsel istemcisi de açılır (yalnız
+izleme içindir, takip hattını etkilemez):
+
+```bash
+python3 main.py --mod demo --source gazebo_canli --gui
+```
+
+**Tuşlar** (OpenCV penceresi ODAKTAYKEN):
+
+| Tuş | Hareket |
+|---|---|
+| `W` / `S` | ileri / geri (yatay) |
+| `A` / `D` | sola / sağa (yatay) |
+| `R` / `F` | yukarı / aşağı (irtifa) |
+| `Q` / `E` | sola / sağa dön (yaw) |
+| fare sürükle | hedef seç (`--sec` ile) |
+| `boşluk` | duraklat/devam, `q`/`ESC` çık |
+
+Tuş bırakılınca (~0.35 s içinde tekrar basılmazsa) o yöndeki hareket
+kendiliğinden durur — klavyenin donanım-seviyesi tekrarına (basılı tutunca
+tekrar eden olaylar) güvenir.
+
+**WSL2'de `--gui` notu:** `gz sim -g` bir X11/Wayland penceresi açar;
+WSLg (Windows 11 varsayılan) bunu genelde sorunsuz gösterir. Eski
+WSL2/Windows 10 kurulumlarında (WSLg yok) `--gui` ya hiç açılmaz ya da
+`DISPLAY` hatası verir — kod bunu SESSİZCE yutar (`--gui` verilmemiş gibi
+devam eder), takip hattı etkilenmez; yalnız görsel izleme kaybolur. Ana
+OpenCV penceresi (kamera görüntüsü + HUD) `--gui`den BAĞIMSIZDIR ve WSLg
+olmadan da çalışır (bu depo şimdiye kadar hep `DISPLAY` ayarlı bir ortamda
+test edildi).
+
+**Scripted kabul testi** (klavyesiz, otomatik 60 s tırmanış): `python3
+gazebo/kabul_canli.py` — sonuç ve kök neden `docs/DEMO_SONUC.md` "Canlı
+(scripted)" bölümünde. **Elle klavye/fare sürüşü henüz KULLANICI
+tarafından test edilmedi** — bu depoyu klonlayan/çalıştıran kişinin kendi
+elleriyle doğrulaması gerekiyor.
+
+**GPU render (WSL2 + NVIDIA, 2026-09-08'de bu makinede doğrulandı):**
+`veri/gazebo_canli.py:GazeboCanliKaynak._sim_baslat()` artık
+`LIBGL_ALWAYS_SOFTWARE`'i AÇIKÇA kaldırıp `MESA_D3D12_DEFAULT_ADAPTER_
+NAME=NVIDIA` set ediyor — bu makinede (Intel iGPU + NVIDIA RTX 3060 ikili
+GPU'lu bir WSL2) `LIBGL_ALWAYS_SOFTWARE` kaldırılıp NVIDIA adaptörü
+ZORLANMADAN GPU render `gz sim`i ÇÖKERTİYORDU (D3D12/Mesa varsayılan
+olarak Intel'i seçip LLVM double-registration hatasıyla abort ediyordu);
+adaptör NVIDIA'ya zorlanınca çökme YOK, IMX500 nativ (2028×1520) RTF
+~0.97–0.99 (neredeyse gerçek zamanlı) ölçüldü — bkz. `docs/DURUM.md`
+(`demo-canli` dalı) ayrıntı için. **Bu GENEL bir çözüm DEĞİL** — başka bir
+GPU/sürücü/WSL2 sürümü kombinasyonunda hâlâ çökebilir. Çökerse: log'da
+`LLVM ERROR`/`CommandLine Error` ararsanız aynı sınıf hata olduğunu
+doğrulayabilirsiniz; geçici çözüm ortam değişkenini kaldırıp
+(`unset MESA_D3D12_DEFAULT_ADAPTER_NAME` ya da kodu geri alıp) yazılım
+render'a (`LIBGL_ALWAYS_SOFTWARE=1`) dönmektir — bu durumda IMX500 nativ
+çözünürlükte gerçek zamanlılık elde edilemez, native Ubuntu (WSL2 DEĞİL)
+üzerinde GPU render denenmesi önerilir.
+
 ## 6. Süre bütçesi
 
 | Adım | Süre | Ölçüldü mü |
