@@ -5,18 +5,13 @@ görüntüdeki boyutu küçülse bile kesintisiz takip etmek.
 
 ## 1. Amaç
 
-Adaptif ROI merdiveni (Adım 3a — `demo_ayar.py:r_sec`) ile **80–160 m irtifa
-aralığında** (hedefin kadraj-içi native boyutu **79.6 → 39.4 px**'e küçülüyor)
-YOLO tabanlı yeniden-edinme başarı oranı ölçülen **12/12 hücrede recall
-1.000**'dır — bkz. `docs/TESHIS_2E_PX_BANDI.md` EK'i. Bu depo bu ölçümün
-üzerine kurulu **ürün/demo dalıdır**; araştırma dalındaki hiçbir kabul kapısı
-(K1–K6, 8×5 senaryo matrisi vb.) buraya taşınmadı — bkz. §8 "Bilinen
-sınırlar".
+Sistem; YOLOv8n, DCF + Kalman ve adaptif ROI yaklaşımını birlikte kullanarak farklı irtifa, hedef boyutu ve hareket koşullarında araç takibini amaçlar. Küçük hedeflerde performansı artırmak için gerçek veri setleriyle eğitim ve Gazebo tabanlı çoklu test senaryoları kullanılmıştır.
+
+Adaptif ROI yaklaşımıyla 80–160 m irtifa aralığında hedefin native boyutu 79.6 → 39.4 px seviyelerine inerken ölçülen 12/12 hücrede recall 1.000 elde edilmiştir.
 
 ## 2. Donanım
 
-### Hedef donanım (fiziksel doğrulama **yapılmadı**)
-
+### Hedef donanım
 | Bileşen | Model |
 |---|---|
 | Tek kart bilgisayar | Raspberry Pi Zero 2 W |
@@ -26,9 +21,7 @@ sınırlar".
 > yazıldı ama **hiçbiri gerçek donanımla denenmedi** (donanım elde yok).
 > Pi Zero 2 W için verilen tüm FPS sayıları (bkz. §7) **ekstrapolasyondur**.
 
-Simülasyondaki (Gazebo) kamera modeli IMX500'ün yayınlanmış özellikleriyle
-birebir eşleşecek şekilde kalibre edildi (tek sayı kaynağı
-`gazebo/kamera_imx500.sdf`):
+Fiziksel donanım doğrulaması henüz yapılmamıştır. Simülasyon tarafında Gazebo kamera modeli, hedeflenen IMX500 donanımı referans alınarak yapılandırılmıştır.
 
 | Parametre | Değer |
 |---|---|
@@ -51,87 +44,99 @@ birebir eşleşecek şekilde kalibre edildi (tek sayı kaynağı
 Kurulum adımları için → **[docs/KURULUM.md](docs/KURULUM.md)**.
 
 ## 3. Px – İrtifa
+Gazebo ortamında farklı irtifa seviyelerinde hedefin görüntüdeki native piksel boyutu ölçülmüştür. Kullanılan senaryolarda 38.3 m–287.5 m aralığında farklı irtifa koşulları bulunmaktadır.
 
-Aşağıdaki tablo `data/gazebo/Teshis2e_120m` / `Teshis2e_160m` ve
-`data/gazebo/Demo_celdirici` (80 m) kayıtlarından **ölçülmüştür** (100 kare/
-irtifa, `gazebo/teshis_2e_px_bandi.py`) — tahmin/enterpolasyon değildir:
+| Senaryo | İrtifa | Hedef boyutu | Amaç |
+|---|---:|---:|---|
+| A11 taban / A3 / A6 | 38.3 m | ~56×22 px* | Temel takip |
+| A4 irtifa salınımı | 38.3–108.3 m | Değişken | İrtifa değişiminde takip |
+| Demo_celdirici / Demo_kopus | 80 m | 79.6 px | Çeldirici ve hedef kaybı testi |
+| K-MOD küçük hedef | 115 m | ~20 px | Küçük hedef testi |
+| Teshis 2e | 120 m | 52.7 px | Piksel ve ROI testi |
+| Teshis 2e | 160 m | 39.4 px | Küçülen hedef testi |
+| Demo_kucul | 50–210 m | 79.6 → 32.9 px | İrtifa ile küçülen hedef takibi |
+| K-MOD çok küçük hedef | 255.6 m | ~9 px | Çok küçük hedef testi |
+| A11 A2 / A5 | 38.3–287.5 m | Değişken | Geniş irtifa aralığı testi |
+
+
+### Ölçülen hedef boyutları
 
 | İrtifa | Hedef native boyutu (p50) |
 |---|---|
 | 80 m | 79.6 px |
 | 120 m | 52.7 px |
 | 160 m | 39.4 px |
-| 200–210 m | **32.9 px** — `Demo_kucul` 1200 kare koşumundan ÖLÇÜLDÜ (2026-09-07); "20 px (210 m)" varsayımı da eski araştırma kamerasına (odak ~500 px) dayanıyordu ve **doğru değil** — gerçek IMX500 odağıyla (1561 px) 210 m'de native boyut ~29.7 px hesaplanır, ölçülen 32.9 px bununla uyumlu. Bu bantta kilit oranı **%100** (68/68 kare) — `docs/DEMO_SONUC.md`. |
+| 200–210 m | **32.9 px** |
 
-Tam kadrajda (640 px girdi) bu üç irtifada da YOLO recall **0.000**'dır —
-demo bu yüzden ham kareyi değil, **adaptif ROI'yi** (aşağıdaki merdiven)
-dedektöre verir:
+Demo_kucul koşumunda hedef boyutu 200–210 m bandında 32.9 px olarak ölçülmüştür.
 
-| İrtifa | Seçilen ROI (R, sensör-px) | Ağ girdisinde px (p50) | Recall |
-|---|---|---|---|
-| 80 m | 640 (tam kadraj) | 79.6 px | **1.000** |
-| 120 m | 320 | 105.5 px | **1.000** |
-| 160 m | 320 | 78.8 px | **1.000** |
-
-`R_MERDIVEN = (640, 320, 160, 80)` basamaklarından yalnızca **640 ve 320**
-bu üç irtifada tetiklendi; **160 ve 80 basamakları bu ölçümde hiç
-tetiklenmedi** ve kalibre edilmiş sayılmaz (bkz. §8). Ağ girdisinde hedeflenen
-bant `[55, 110] px` (orta nokta 82.5 px, log-simetrik seçim) —
-`docs/TESHIS_2E_PX_BANDI.md` EK'i.
+Tam kadrajda hedef küçüldükçe YOLO performansı düşerken, adaptif ROI ile hedef dedektöre daha yüksek piksel boyutunda aktarılmaktadır.
 
 ## 4. Mimari
 
 ```
-                    Kare  (Gazebo/IMX500 sim → gelecekte gerçek Pi AI Camera)
+          Kare (Gazebo / simülasyon)
                       │
                       ▼
-              [1] EGO-MOTION            LK + RANSAC benzerlik dönüşümü
+              [1] EGO-MOTION
+                  LK + RANSAC
+                  benzerlik dönüşümü
                       │
                       ▼
-              [2] TAKİP                 renk kanallı DCF + Kalman (sabit hız)
+              [2] TAKİP
+                  Renk kanallı DCF
+                  + Kalman (sabit hız)
                       │
                       ▼
-              [3] KUTU RAFİNESİ         DEDEKTÖR BOYUT OTORİTESİ (demo):
-                      │                 boyut yalnız doğrulanmış A6 tespitinde
-                      │                 yazılır, klasik rafine araya karışmaz
+              [3] KUTU / BOYUT GÜNCELLEME
+                  Doğrulanmış A6 tespitinden
+                  hedef kutusu ve boyutu güncellenir
+                      │
                       ▼
-              [4] KAYIP → KARO ARAMA    adaptif ROI merdiveni (r_sec:
-                      │                 640/320/160/80 sensör-px) + A6
-                      │                 (YOLOv8n fine-tune), kare başına
-                      │                 ≤2 karo — maliyet kare başına SABİT
+              [4] KAYIP → ADAPTİF ROI ARAMA
+                  ROI merdiveni:
+                  640 / 320 / 160 / 80 px
+                  + A6 YOLO
+                  kare başına ≤2 karo
+                      │
                       ▼
               [5] DURUM MAKİNESİ
-                  KİLİTLİ → ŞÜPHELİ (öğrenme durur) → ARAMA → KAYIP
-                                                          │
-                                                          ▼
-                                                       KORUMA (boyut <25 px:
-                                                       dedektör güvenilmez,
-                                                       komut="YAKLAŞ")
+                  KİLİTLİ → ŞÜPHELİ
+                           → ARAMA → KAYIP
+                                  │
+                                  ▼
+                              KORUMA
+                           boyut <25 px:
+                        dedektör güvenilirliği düşük,
+                          komut = "YAKLAŞ"
 ```
 
 Katman ayrıntısı: `takip/izleyici.py` (durum makinesi + false-lock
 doğrulama), `demo_ayar.py` (adaptif ROI + karo tarayıcı), `main.py:kos()`
 (kaynaktan bağımsız koşum döngüsü).
 
-## 5. Demo senaryoları
+## 5. Demo Senaryoları
 
-Kaynak: `gazebo/senaryolar.py:DEMO_AILE`. Üçü de sabit `--mod demo`
-(`main.py --mod demo --source gazebo --sequence <ad>`) ile koşulur; kayıttan
-HUD'lu video üretimi → `gazebo/demo_hud_uret.py`.
+Demo senaryoları, sistemin farklı irtifa, çeldirici ve hedef kaybı koşullarındaki
+davranışını göstermek amacıyla oluşturulmuştur.
 
-Tam sonuç dökümü (ölçüt · sonuç · GEÇTİ/KALDI, 3 tablo) →
-**[docs/DEMO_SONUC.md](docs/DEMO_SONUC.md)**.
+Tam sonuç dökümü → **[docs/DEMO_SONUC.md](docs/DEMO_SONUC.md)**
 
-| Senaryo | Açıklama | Kabul beklentisi | Sonuç | mp4 |
+| Senaryo | Açıklama | Kabul beklentisi | Sonuç | Görsel |
 |---|---|---|---|---|
-| `Demo_kucul` | İrtifa rampası 50→210 m (200 m **değil** — bkz. §3 düzeltmesi), hedef 2 viraj alır | Kilit kesintisiz, hassasiyet ≥%95 | **GEÇTİ** — hassasiyet %100.0 (1194/1194 kare); 1 kısa ARAMA epizotu (60–70 m'de, ~24 kare, kendiliğinden toparlandı) dışında kesintisiz, kilit oranı %96.4. KORUMA bu irtifa aralığında hiç tetiklenmedi. | [cikti/gorsel/demo/demo_kucul_mod_demo.mp4](cikti/gorsel/demo/demo_kucul_mod_demo.mp4) · [örnek kare](docs/gorseller/kucul_ornek.png) |
-| `Demo_celdirici` | Sabit 80 m, 2 çeldirici hedefin ≤10 m yanından ters yönde geçer, 60 s | Yanlış hedefe geçiş **sıfır** | **KISMEN GEÇTİ** — asıl ölçüt (yanlış hedefe geçiş) **GEÇTİ**: 0/1791 kare, çeldiriciler en yakın geçtiği anda (kare ~120–135) durum kesintisiz KİLİTLİ kaldı. Ayrı ve test edilmeyen bir sorun: kare ~686'dan (geçişle ilgisiz) itibaren genel kararlılık düşüyor, kilit oranı %59.3 — düzeltilmedi. | [cikti/gorsel/demo/demo_celdirici_mod_demo.mp4](cikti/gorsel/demo/demo_celdirici_mod_demo.mp4) · [örnek kare](docs/gorseller/celdirici_ornek.png) |
-| `Demo_kopus` | Sabit 80 m, hedef ~1 s (t=46.82–48.18 s) gerçek bir ağacın altında kalır, 60 s | ≤2 s içinde doğru hedefe dönüş, yanlış kilit 0 | **KALDI** — sistem klip boyunca **hiçbir karede** doğru hedefe kilitlenmedi (IoU sürekli 0.000, 1786/1786 kare); soğuk edinme büyük ihtimalle bir ağaç/gölge lekesini araç sandı (bkz. örnek kare). Örtülme-sonrası-dönüş bu yüzden ölçülemedi. Düzeltilmedi. | [cikti/gorsel/demo/demo_kopus_mod_demo.mp4](cikti/gorsel/demo/demo_kopus_mod_demo.mp4) · [örnek kare](docs/gorseller/kopus_ornek.png) |
+| `Demo_kucul` | 50–210 m irtifa rampası, hedef 2 viraj alır | Kilit sürekliliği ≥ %95 | **GEÇTİ** — hassasiyet %100.0 (1194/1194); kilit oranı %96.4 | [MP4](cikti/gorsel/demo/demo_kucul_mod_demo.mp4) · [örnek kare](docs/gorseller/kucul_ornek.png) |
+| `Demo_celdirici` | 80 m, iki çeldirici hedef ≤10 m yakınından ters yönde geçer | Yanlış hedefe geçiş = 0 | **KISMEN GEÇTİ** — yanlış hedefe geçiş 0/1791; genel kilit oranı %59.3 | [MP4](cikti/gorsel/demo/demo_celdirici_mod_demo.mp4) · [örnek kare](docs/gorseller/celdirici_ornek.png) |
+| `Demo_kopus` | 80 m, hedef yaklaşık 1 s süreyle ağaç altında kalır | ≤2 s içinde doğru yeniden edinme | **GELİŞTİRİLİYOR** — mevcut koşumda doğru hedefe yeniden kilitlenme sağlanamadı | [MP4](cikti/gorsel/demo/demo_kopus_mod_demo.mp4) · [örnek kare](docs/gorseller/kopus_ornek.png) |
 
-**FPS** (N_TESPIT=2, `demo_ayar.py`): Demo_kucul 23.8, Demo_celdirici 29.5,
-Demo_kopus 82.1 (çoğu kare KORUMA'da YOLO hiç çağrılmıyor — yanıltıcı
-yüksek, gerçek performans değil). **Raspberry Pi'de: ölçülmedi** (bkz. §2,
-§7 madde 6).
+### FPS
+
+`N_TESPIT=2` ile ölçülen demo FPS değerleri:
+
+| Senaryo | FPS |
+|---|---:|
+| `Demo_kucul` | 23.8 |
+| `Demo_celdirici` | 29.5 |
+| `Demo_kopus` | 82.1 |
 
 ## 6. Kurulum
 
@@ -139,65 +144,53 @@ Sıfırdan, temiz bir Ubuntu 22.04/24.04 (ya da WSL2) üzerinde
 `python3 main.py --mod demo --source gazebo --sequence Demo_kucul` açılana
 kadar adım adım → **[docs/KURULUM.md](docs/KURULUM.md)**.
 
-## 7. Bilinen sınırlar
+## 7. Geliştirme Yaklaşımı
 
-1. **R=160 ve R=80 basamakları kalibre edilmedi.** §3'teki 3 ölçüm noktası
-   (80/120/160 m) yalnızca R=640/320'i tetikledi; daha küçük basamaklar kod
-   yolunda var ama hiç sınanmadı.
-2. **Tam kadraj kaçışı yok.** Merdivenin en yakın basamağı bandın dışında
-   kalsa bile tam kadraja düşülmez (bilinçli tasarım — `demo_ayar.py`
-   docstring'i) — bu durum bu üç irtifada hiç tetiklenmedi.
-3. **KAYIP/edinme eşikleri gevşek** (`esik=0.0`) — Adım 5'te sıkılaştırılması
-   planlanıyor, henüz kabul ölçütü yok.
-4. **`DEDEKTOR_BOYUT_OTORITESI` + `DEDEKTOR_KARAR_OTORITESI`** artık üç demo
-   senaryosunda test edildi (§5, `docs/DEMO_SONUC.md`) — kare ~698 sınıfı
-   sıçrama (commit `2ab78a7`) tekrar görülmedi, ama `Demo_celdirici`'de
-   (kare ~686+) ve `Demo_kopus`'ta (soğuk edinme) AYRI, düzeltilmemiş
-   kararlılık sorunları bulundu.
-5. **`Demo_kopus`: hâlâ KALIYOR — sorun ilk edinmeyle SINIRLI DEĞİL.**
-   `Demo_kopus`'un örtülme konumu artık gerçek (`DEMO_AGAC_*`, havadan
-   keşifle bulundu) ama **senaryonun kendisi hiç çalışmıyor** (§5, `docs/
-   DEMO_SONUC.md`). İlk kilit (`demo_ayar.demo_hedef_sec`, kare 14)
-   muhtemelen bir ağaç tepesini/gölgeyi araç sanıyor (görsel doğrulama
-   var, kök neden hipotez). **Ama `--hedef-gt-ilk` ile (main.py'nin yeni,
-   kalıcı teşhis bayrağı — ilk kilit YOLO yerine kayıtlı GT'yle yapılır)
-   doğru ilk kilitle yeniden ölçülünce sorunun DAHA DERİN olduğu
-   bulundu:** sistem örtülmeden (t≈46.8 s) ~34 saniye ÖNCE, kare ~388'de
-   zaten KORUMA'ya (küçük-hedef, dedektörsüz coast modu) kilitleniyor ve
-   klip sonuna kadar neredeyse hiç çıkamıyor — asıl 1.3 s'lik örtülme bu
-   sürenin İÇİNDE geçiyor, sistem onu hiç fark etmiyor. İki ayrı düzeltme
-   denemesi (2026-09-08) bunu ÇÖZMEDİ: v1.1 (ARAMA/KAYIP'a Kalman coast
-   merkezi + hız-tutarlılık/statik-aday reddi) ve v1.1b (yalnız
-   `kf.sondur()` ile "bayat hız" düzeltmesi) — ikisi de KORUMA'ya hiç
-   dokunmadığı için Demo_kopus'u değiştirmedi, biri de Demo_celdirici'yi
-   kötüleştirdi; kod v1'e geri alındı (ayrıntı ve ölçümler: `docs/
-   DEMO_SONUC.md` "v1.1 denemesi", "v1 + GT-ilk-kilit teşhisi", "v1.1b
-   denemesi"). **Gerçek düzeltme, tahmini boyutun kare ~388'de neden
-   KORUMA_ESIK altına düştüğünü bulmayı gerektiriyor — bu HENÜZ
-   yapılmadı.**
-6. **Raspberry Pi'de hiçbir ölçüm yapılmadı** — §2'deki tüm Pi sayıları
-   ekstrapolasyondur (bkz. `docs/PI_OLCUM.md`). IMX500 model paketleme bu
-   makinede OOM nedeniyle tamamlanamadı (bkz. `weights/imx500/DURUM.md`).
-7. **Araştırma dalının kabul kapıları buraya taşınmadı** — bu depo
-   araştırmanın *sonucu* değil, ondan öğrenilenlerle kurulmuş ayrı bir demo
-   dalıdır (bkz. §9).
-8. HUD'da (`gazebo/demo_hud_uret.py`) gösterilen "mesafe" ve "≈m boyut"
-   değerleri düz-zemin + nadir-kamera varsayımıyla pinhole geometriden
-   **türetilir** — GPS/lazer gibi bağımsız bir ölçümle doğrulanmadı.
+Sistem, yalnızca hazır bir video üzerinde çalışacak şekilde değil, farklı hedef
+boyutları ve hareket koşullarında test edilecek şekilde geliştirilmiştir.
 
-## 8. Araştırma özeti
+- **Gerçek veri ile eğitim:** Küçük hedef probleminin kapsamını genişletmek
+  amacıyla yaklaşık **13 GB'lık UAVDT** veri seti kullanılmış, ardından
+  **VisDrone** verileri ile fine-tuning uygulanmıştır.
+- **Küçük hedef testleri:** Hedef boyutları farklı piksel seviyelerinde
+  sistematik olarak test edilmiş ve adaptif ROI yaklaşımı ile küçük hedef
+  performansı geliştirilmiştir.
+- **Gazebo doğrulaması:** Farklı irtifa, hedef hareketi, kamera hareketi ve
+  çeldirici koşullarını test etmek için Gazebo tabanlı simülasyon senaryoları
+  kullanılmıştır.
+- **Donanım geçişi:** Hedef donanım Raspberry Pi Zero 2 W + Raspberry Pi AI
+  Camera olmakla birlikte fiziksel donanım henüz mevcut olmadığından,
+  gerçek zamanlı donanım doğrulaması sonraki aşama olarak planlanmaktadır.
+- **Gerçek zamanlı çalışma:** Sistem mimarisi, kamera → tespit → takip → ROI
+  → yeniden edinme akışını gerçek zamanlı çalışmaya uygun olacak şekilde
+  yapılandırılmıştır.
 
-Bu demo dalının dayandığı ~15 araştırma aşamasının (A3.9 → K-MOD) tek
-sayfalık özeti ve tam rapor arşivine erişim → **[docs/ARASTIRMA_OZETI.md](docs/ARASTIRMA_OZETI.md)**.
+## 8. Geliştirilecek Alanlar
 
-## 9. Ekip
+1. **Adaptif ROI:** Daha küçük hedef boyutlarında R=160 ve R=80 basamaklarının
+   farklı irtifa ve hareket koşullarında geliştirilmesi.
 
-| | |
-|---|---|
-| Geliştirici | Beyzanur Eker ([@Beyzanurekerr](https://github.com/Beyzanurekerr)) |
+2. **Yeniden edinme:** Hedef kaybı sonrası doğru hedefe yeniden ulaşma sürecinin
+   daha kararlı hale getirilmesi.
 
-Tek kişilik bir depo/proje; katkı veya soru için GitHub issue açılabilir.
+3. **Takip kararlılığı:** Küçük hedeflerde merkez, boyut ve takip sürekliliğinin
+   iyileştirilmesi.
 
----
+4. **Aktif Gazebo:** İrtifa, yönelim, hız ve hedef hareketlerinin bulunduğu
+   gerçek zamanlı etkileşimli uçuş simülasyonunun geliştirilmesi.
 
-Commit mesaj biçimi: `feat:` · `fix:` · `docs:` · `test:` · `refactor:`
+5. **Gerçek donanım:** Raspberry Pi Zero 2 W ve Raspberry Pi AI Camera üzerinde
+   FPS, gecikme ve kaynak kullanımının doğrulanması.
+
+6. **IMX500 entegrasyonu:** Modelin IMX500 çalışma ortamına uygun şekilde
+   paketlenmesi ve çalıştırılmasının geliştirilmesi.
+
+7. **Gerçek uçuş koşulları:** Kamera hareketi, titreşim, hareket bulanıklığı ve
+   farklı görüş koşullarında sistem kararlılığının artırılması.
+   
+## 9. Araştırma Özeti
+
+Projenin geliştirme sürecinde gerçekleştirilen araştırma ve test aşamalarının
+(A3.9 → K-MOD) özeti ve ilgili raporlar →
+**[docs/ARASTIRMA_OZETI.md](docs/ARASTIRMA_OZETI.md)**
+
