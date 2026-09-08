@@ -697,6 +697,13 @@ def main():
     ap.add_argument("--n-tespit", type=int, default=None, dest="n_tespit",
                     help="demo modu dedektor kadansi (1=her kare, 2/3=... "
                          "araya DCF koprusu girer) - verilmezse demo_ayar.N_TESPIT")
+    ap.add_argument("--hedef-gt-ilk", action="store_true", dest="hedef_gt_ilk",
+                    help="--mod demo: ilk kilit demo_hedef_sec (soguk edinme, "
+                         "YOLO+karo tarama) YERINE kayitli GT kutusuyla yapilir "
+                         "(VisDrone --yolo-gt-esle ile AYNI ilke: tikla-sec'in "
+                         "kayit karsiligi) - ilk kilidin KENDI hatasini olcum "
+                         "disi birakip yalniz kilit-SONRASI kurtarmayi/takibi "
+                         "test eder (bkz. docs/DEMO_SONUC.md 'v1 + GT-ilk-kilit')")
     a = ap.parse_args()
 
     if a.mod == "demo":
@@ -736,7 +743,10 @@ def main():
     if a.mod == "demo":
         karayici = demo_ayar.KaroArayici(kaynak.genislik, kaynak.yukseklik, _demo_model)
         karayici.sifirla((kaynak.genislik / 2.0, kaynak.yukseklik / 2.0))
-        secici = demo_ayar.demo_hedef_sec(karayici)
+        # --hedef-gt-ilk: ilk kilit demo_hedef_sec (soguk edinme) YERINE GT -
+        # kilit-SONRASI kurtarma (kayip_dedektor=karayici, dedektor_karar)
+        # DEGISMEDEN kalir, yalniz ilk-kilidin KENDI hatasi olcum disi kalir.
+        secici = gt_hedef_sec if a.hedef_gt_ilk else demo_ayar.demo_hedef_sec(karayici)
         kayip_dedektor = karayici
 
     print(kaynak.bilgi())

@@ -54,6 +54,64 @@ göstermedi, biri geriledi). Demo_kopus'un asıl düzeltmesi
 ardışık kare üzerinde adayın KENDİ hareketine bakan bir tutarlılık
 kontrolü) dokunmayı gerektirir — bu denemenin kapsamı DIŞINDA kaldı.
 
+## v1 + GT-ilk-kilit teşhisi (2026-09-08) — Demo_kopus'un GERÇEK arıza yeri bulundu
+
+`--hedef-gt-ilk` (main.py, yeni CLI bayrağı, **KALICI teşhis aracı**):
+`--mod demo`'da ilk kilit `demo_hedef_sec` (soğuk edinme, YOLO+karo
+tarama) YERİNE kayıtlı GT kutusuyla yapılır (VisDrone `--yolo-gt-esle`
+ile aynı ilke — tıkla-seç'in kayıt karşılığı); kilit-SONRASI davranış
+(`kayip_dedektor=karayici`, `dedektor_karar`) DEĞİŞMEZ. Amaç: Demo_kopus'un
+"ilk kilit zaten yanlış" sorununu ölçüm dışı bırakıp asıl soruyu (1.3 s'lik
+örtülme sonrası doğru hedefe dönüş var mı) İLK KEZ ölçmek.
+
+| Senaryo | v1 (demo_hedef_sec) | v1 + GT-ilk-kilit |
+|---|---|---|
+| Demo_kucul | kilit %96.4–96.9, IoU 0.793 | kilit %96.9, IoU 0.793 — fark yok (ilk kilit zaten doğruydu) |
+| Demo_celdirici | kilit %59.3 | kilit %53.6, IoU 0.329 — aynı büyüklük mertebesi |
+| Demo_kopus | IoU sürekli 0.000 | IoU ort **0.112** (@0.5 %13.2), kilit oranı **%17.9** — ARTIK SIFIR DEĞİL, ama hâlâ çok düşük |
+
+**Asıl bulgu (Demo_kopus, DOĞRU ilk kilitle bile):** sistem kare ~388'de —
+örtülme penceresinden (kare 1405–1445) yaklaşık **34 saniye ÖNCE** —
+KORUMA'ya giriyor ve kare 1419'a kadar (1031 kare, ~34 s) orada KALIYOR.
+Asıl örtülme (t=46.82–48.18 s) bu KORUMA süresinin İÇİNDE geçiyor —
+sistem onu hiç "görmüyor" çünkü zaten dedektörsüz coast modunda
+(`_koruma_adimi`, arama YOK). KORUMA'dan çıkınca (kare 1419→KAYIP→1426
+KILITLI) IoU klip sonuna kadar neredeyse hep 0 kalıyor — "dönüş" hâlâ
+YOK. **Sonuç: Demo_kopus'un sorunu yalnızca ilk-edinme hatası DEĞİL**
+(o da var, ayrı) — GT ile doğru başlasa bile iz, örtülmeden çok önce,
+muhtemelen bir boyut/ölçek tahmini sapmasıyla KORUMA'ya kilitleniyor
+(GT hedef boyutu klip ortalaması 79.6×42.6 px, KORUMA_ESIK'in [25 px]
+çok üstünde — demek ki KORUMA'yı tetikleyen *tahmin edilen* boyut,
+gerçek GT boyutu değil) ve dedektör devre dışı kaldığı için bir daha
+çıkamıyor. Kök neden (tahmini boyut neden kare 388'de 25 px altına
+düşüyor) araştırılmadı — kapsam dışı bırakıldı.
+
+## v1.1b denemesi (2026-09-08) — yalnız `kf.sondur()`, KALDI, v1'de bırakıldı
+
+Yukarıdaki bulgudan sonra "bayat hız" hipotezi (ARAMA/KAYIP'ta Kalman
+hızı hiç söndürülmüyor — `kf.sondur()` yalnız KILITLI/SUPHELI dalında
+çağrılıyor) TEK DEĞİŞKEN olarak test edildi: `_dedektor_karar_adimi`'nin
+ARAMA/KAYIP dalına `self.kf.sondur()` eklendi (v1.1'in geri kalanı —
+Kalman-merkezli arama, hız-tutarlılık, statik-aday reddi — YOK),
+standart `demo_hedef_sec` ile (GT-ilk DEĞİL) üç senaryo koşuldu:
+
+| Senaryo | v1 | v1.1b (yalnız `sondur()`) |
+|---|---|---|
+| Demo_kucul | kilit %96.9, IoU 0.793 | kilit %96.9, IoU 0.792 — fark yok |
+| Demo_celdirici | yanlış hedef 0/1791, kilit %59.3 | yanlış hedef **hâlâ 0/1791**, kilit oranı **%46.8'e GERİLEDİ** (v1.1'in tam hali kadar kötü değil — %38.1 — ama v1'den yine de kötü) |
+| Demo_kopus | IoU sürekli 0.000, kilit %3.5 | **BİREBİR AYNI** — IoU 0.000, kilit %3.5 |
+
+**Demo_kopus neden birebir aynı kaldı:** `sondur()` yalnız ARAMA/KAYIP
+dalında çalışıyor; Demo_kopus'un asıl sorunu (kare ~388'deki erken KORUMA
+girişi) `_koruma_adimi` içinde — ayrı bir fonksiyon, bu değişikliğin hiç
+uğramadığı bir dal. Yani hipotez YANLIŞ değil ama YANLIŞ MEKANİZMAYI
+hedefliyordu.
+
+**Sonuç:** `sondur()` Demo_kopus'u hiç etkilemedi ve Demo_celdirici'yi
+v1'den kötüleştirdi. Net fayda yok → kod v1'e geri alındı (`git checkout
+-- takip/izleyici.py`). `--hedef-gt-ilk` (main.py) KALICI kaldı — "ilk
+kilit mi, kilit-sonrası mı" ayrımını yapan bir teşhis aracı.
+
 ## Demo_kucul — **GEÇTİ**
 
 | Ölçüt | Sonuç | Durum |
@@ -97,6 +155,12 @@ karede görünür halde, otoparkta, kutunun ~150 px güneybatısında. Sahne
 `Demo_kopus` için yoğun ağaç örtüsü içeriyor (senaryonun kendi konusu -
 örtülme testi); soğuk edinme büyük ihtimalle bir ağaç/gölge lekesini araç
 sanmış. Bu bir HİPOTEZ, doğrulanmadı.
+
+**Güncelleme (2026-09-08):** yukarıdaki sayılar standart `demo_hedef_sec`
+(soğuk edinme) iledir. `--hedef-gt-ilk` ile (doğru ilk kilit) yeniden
+ölçüldüğünde sorunun ilk-edinmeyle SINIRLI OLMADIĞI bulundu — bkz. "v1 +
+GT-ilk-kilit teşhisi" bölümü: sistem örtülmeden ~34 s önce (kare ~388)
+zaten KORUMA'ya kilitleniyor ve bir daha çıkamıyor.
 
 ## Ortak
 

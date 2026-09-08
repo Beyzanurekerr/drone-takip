@@ -154,18 +154,27 @@ kadar adım adım → **[docs/KURULUM.md](docs/KURULUM.md)**.
    sıçrama (commit `2ab78a7`) tekrar görülmedi, ama `Demo_celdirici`'de
    (kare ~686+) ve `Demo_kopus`'ta (soğuk edinme) AYRI, düzeltilmemiş
    kararlılık sorunları bulundu.
-5. **`Demo_kopus`: hâlâ KALIYOR.** `Demo_kopus`'un örtülme konumu artık
-   gerçek (`DEMO_AGAC_*`, havadan keşifle bulundu) ama **senaryonun
-   kendisi hiç çalışmıyor** — soğuk edinme klip boyunca doğru hedefe hiç
-   kilitlenmedi (§5, `docs/DEMO_SONUC.md`), örtülmeden bağımsız bir sorun.
-   **Sebep:** `demo_ayar.demo_hedef_sec`'in ilk kilit seçimi (kare 14)
+5. **`Demo_kopus`: hâlâ KALIYOR — sorun ilk edinmeyle SINIRLI DEĞİL.**
+   `Demo_kopus`'un örtülme konumu artık gerçek (`DEMO_AGAC_*`, havadan
+   keşifle bulundu) ama **senaryonun kendisi hiç çalışmıyor** (§5, `docs/
+   DEMO_SONUC.md`). İlk kilit (`demo_ayar.demo_hedef_sec`, kare 14)
    muhtemelen bir ağaç tepesini/gölgeyi araç sanıyor (görsel doğrulama
-   var, kök neden hipotez — bkz. `docs/DEMO_SONUC.md` Demo_kopus). v1.1
-   denemesi (2026-09-08, ARAMA/KAYIP kurtarmasına Kalman coast merkezi +
-   hız-tutarlılık/statik-aday reddi eklendi) bunu DÜZELTMEDİ, çünkü arıza
-   Kalman henüz kurulmadan, ilk kilit anında oluşuyor — deneme yalnız
-   kilit-SONRASI kurtarmayı değiştirdi, kod v1'e geri alındı (ayrıntı ve
-   ölçümler: `docs/DEMO_SONUC.md` "v1.1 denemesi").
+   var, kök neden hipotez). **Ama `--hedef-gt-ilk` ile (main.py'nin yeni,
+   kalıcı teşhis bayrağı — ilk kilit YOLO yerine kayıtlı GT'yle yapılır)
+   doğru ilk kilitle yeniden ölçülünce sorunun DAHA DERİN olduğu
+   bulundu:** sistem örtülmeden (t≈46.8 s) ~34 saniye ÖNCE, kare ~388'de
+   zaten KORUMA'ya (küçük-hedef, dedektörsüz coast modu) kilitleniyor ve
+   klip sonuna kadar neredeyse hiç çıkamıyor — asıl 1.3 s'lik örtülme bu
+   sürenin İÇİNDE geçiyor, sistem onu hiç fark etmiyor. İki ayrı düzeltme
+   denemesi (2026-09-08) bunu ÇÖZMEDİ: v1.1 (ARAMA/KAYIP'a Kalman coast
+   merkezi + hız-tutarlılık/statik-aday reddi) ve v1.1b (yalnız
+   `kf.sondur()` ile "bayat hız" düzeltmesi) — ikisi de KORUMA'ya hiç
+   dokunmadığı için Demo_kopus'u değiştirmedi, biri de Demo_celdirici'yi
+   kötüleştirdi; kod v1'e geri alındı (ayrıntı ve ölçümler: `docs/
+   DEMO_SONUC.md` "v1.1 denemesi", "v1 + GT-ilk-kilit teşhisi", "v1.1b
+   denemesi"). **Gerçek düzeltme, tahmini boyutun kare ~388'de neden
+   KORUMA_ESIK altına düştüğünü bulmayı gerektiriyor — bu HENÜZ
+   yapılmadı.**
 6. **Raspberry Pi'de hiçbir ölçüm yapılmadı** — §2'deki tüm Pi sayıları
    ekstrapolasyondur (bkz. `docs/PI_OLCUM.md`). IMX500 model paketleme bu
    makinede OOM nedeniyle tamamlanamadı (bkz. `weights/imx500/DURUM.md`).
