@@ -154,10 +154,18 @@ kadar adım adım → **[docs/KURULUM.md](docs/KURULUM.md)**.
    sıçrama (commit `2ab78a7`) tekrar görülmedi, ama `Demo_celdirici`'de
    (kare ~686+) ve `Demo_kopus`'ta (soğuk edinme) AYRI, düzeltilmemiş
    kararlılık sorunları bulundu.
-5. **`Demo_kopus`'un örtülme konumu artık gerçek** (`DEMO_AGAC_*`, havadan
-   keşifle bulundu) ama **senaryonun kendisi hiç çalışmıyor** — soğuk
-   edinme klip boyunca doğru hedefe hiç kilitlenmedi (§5, `docs/
-   DEMO_SONUC.md`), örtülmeden bağımsız bir sorun.
+5. **`Demo_kopus`: hâlâ KALIYOR.** `Demo_kopus`'un örtülme konumu artık
+   gerçek (`DEMO_AGAC_*`, havadan keşifle bulundu) ama **senaryonun
+   kendisi hiç çalışmıyor** — soğuk edinme klip boyunca doğru hedefe hiç
+   kilitlenmedi (§5, `docs/DEMO_SONUC.md`), örtülmeden bağımsız bir sorun.
+   **Sebep:** `demo_ayar.demo_hedef_sec`'in ilk kilit seçimi (kare 14)
+   muhtemelen bir ağaç tepesini/gölgeyi araç sanıyor (görsel doğrulama
+   var, kök neden hipotez — bkz. `docs/DEMO_SONUC.md` Demo_kopus). v1.1
+   denemesi (2026-09-08, ARAMA/KAYIP kurtarmasına Kalman coast merkezi +
+   hız-tutarlılık/statik-aday reddi eklendi) bunu DÜZELTMEDİ, çünkü arıza
+   Kalman henüz kurulmadan, ilk kilit anında oluşuyor — deneme yalnız
+   kilit-SONRASI kurtarmayı değiştirdi, kod v1'e geri alındı (ayrıntı ve
+   ölçümler: `docs/DEMO_SONUC.md` "v1.1 denemesi").
 6. **Raspberry Pi'de hiçbir ölçüm yapılmadı** — §2'deki tüm Pi sayıları
    ekstrapolasyondur (bkz. `docs/PI_OLCUM.md`). IMX500 model paketleme bu
    makinede OOM nedeniyle tamamlanamadı (bkz. `weights/imx500/DURUM.md`).

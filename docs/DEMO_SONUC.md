@@ -8,6 +8,52 @@ HUD'lu videolar `cikti/demo/`, kare başına durum `cikti/demo/*.jsonl`.
 **Kural (talimat gereği):** KALAN (geçemeyen) senaryo düzeltilmedi —
 sonuç olduğu gibi raporlanıyor.
 
+## v1.1 denemesi (2026-09-08) — KALDI, v1 KOD OLARAK BIRAKILDI
+
+Kullanıcının Demo_kopus/Demo_celdirici'yi düzeltmek için önerdiği tek
+değişken: `takip/izleyici.py:_dedektor_karar_adimi`'nin ARAMA/KAYIP
+dalında (1) arama merkezi artık DONMUŞ "son güvenilir merkez" değil,
+Kalman'ın HER KAREDE güncellenen coast öngörüsü, yarıçap
+`r = gecen_kare × |Kalman hızı| + R_ZAMAN` ile büyüyor; (2)
+`demo_ayar.KaroArayici.adim()`'in aday puanı artık salt D_NORM değil,
+adayın son 3 karelik hareket vektörünün Kalman hızıyla (yön+büyüklük)
+tutarlılığıyla karışık, ve Kalman hızı belirginken (>3 px/kare) ust
+üste durgun kalan (statik) bir aday doğrudan reddediliyor. Üç senaryo
+da bu değişiklikle yeniden koşuldu (`--mod demo --source gazebo
+--sequence <ad>`), sonra **kod v1'e geri alındı** (`git checkout --
+demo_ayar.py takip/izleyici.py`) — aşağıdaki üç ölçüm net bir fayda
+göstermedi ve bir tanesinde gerileme var:
+
+| Senaryo | v1 | v1.1 | Sonuç |
+|---|---|---|---|
+| Demo_kucul | kilit %96.4, IoU 0.793, hassasiyet %100.0 | kilit %96.9, IoU 0.793, hassasiyet %100.0, FPS daha iyi (paylaşımsız CPU) | ~parite, ölçülebilir fark yok |
+| Demo_celdirici | yanlış hedef 0/1791 (GEÇTİ); genel kilit oranı %59.3 (bilgi amaçlı, çalkalanarak kısmen toparlanıyordu) | yanlış hedef **hâlâ 0/1791 (GEÇTİ)**; genel kilit oranı **%38.1'e GERİLEDİ** — kare 686'da KILITLI→SUPHELI→ARAMA→KAYIP'a düşüyor ve klip sonuna kadar (1030 kare) **bir daha hiç toparlanmıyor** (v1'in çalkalanıp kısmen geri dönmesinin aksine) | asıl ölçüt etkilenmedi, ikincil kararlılık metriği KÖTÜLEŞTİ |
+| Demo_kopus | IoU sürekli 0.000 (1786/1786) | IoU **hâlâ sürekli 0.000** (1786/1786) — DEĞİŞMEDİ | KALDI, beklenen sonuç |
+
+**Demo_kopus neden değişmedi (tasarım gereği, sürpriz değil):** asıl
+arıza `demo_ayar.demo_hedef_sec` içindeki İLK KİLİT seçiminde (kare 14,
+henüz `HedefTakip`/Kalman nesnesi YOK) — v1.1'in hız-tutarlılığı ve
+statik-aday reddi Kalman hızına muhtaç, ilk edinmede Kalman olmadığı
+için bu yol `merkez=None, r=None, hiz=None` ile çağrılıp DAVRANIŞ
+DEĞİŞMEDEN eskisi gibi çalışıyor (bkz. `demo_ayar.py` modül başlığındaki
+kasıtlı not). Yani bu deneme Demo_kopus'un asıl arızasını hiç
+hedeflemedi — ilk edinmeye dokunmadan yalnızca kilit-SONRASI
+ARAMA/KAYIP kurtarmasını değiştirdi.
+
+**Demo_celdirici neden geriledi (hipotez, doğrulanmadı):** kayıp anında
+Kalman hızı `sondur()` ile SÖNDÜRÜLMÜYOR (yalnız KILITLI/SUPHELI
+dalında çağrılır) — ARAMA/KAYIP boyunca son bilinen hız SABİT kalıp
+sürükleniyor. Uzun bir KAYIP'tan sonra gerçek hedefin o anki hareketi bu
+BAYAT hız tahminiyle uyuşmayınca hız-tutarlılık terimi geçerli adayı
+düşük puanlıyor, gerekirse statik-reddi de yanlışlıkla tetikleyebilir —
+sonuç, v1'in "çalkalanarak parçalı toparlanma"sı yerine kalıcı KAYIP.
+
+**Sonuç:** kod v1 olarak bırakıldı (yukarıdaki üç madde net fayda
+göstermedi, biri geriledi). Demo_kopus'un asıl düzeltmesi
+`demo_hedef_sec`'in ilk-kilit seçimine (Kalman öncesi, ör. birden çok
+ardışık kare üzerinde adayın KENDİ hareketine bakan bir tutarlılık
+kontrolü) dokunmayı gerektirir — bu denemenin kapsamı DIŞINDA kaldı.
+
 ## Demo_kucul — **GEÇTİ**
 
 | Ölçüt | Sonuç | Durum |
