@@ -121,7 +121,7 @@ class HedefTakip:
                  psr_kilit=None, psr_supheli=None,
                  coast_kare=8, max_arama_kare=90,
                  aday_esik=0.52, aday_esik_kayip=0.62, aday_marj=0.06, arama_r0=28.0, arama_buyume=7.0, kayip_periyot=3,
-                 dogrulama_araligi=4, izgara=32, min_kenar=4.0,
+                 dogrulama_araligi=4, izgara=32, min_kenar=4.0, koruma_esik=None,
                  kimlik_periyot=6, kimlik_esik=0.45, kimlik_sabir=2,
                  kimlik_hareket_kapisi=0.003, kimlik_min_kenar=10.0,
                  zemin_orani=0.0008, zemin_pencere=20, zemin_sabir=20,
@@ -183,6 +183,11 @@ class HedefTakip:
         self.kayip_periyot = kayip_periyot
         self.dogrulama_araligi = dogrulama_araligi
         self.min_kenar = min_kenar
+        # sensor-px kalibrasyonu (2026-09-08, kullanicidan): KORUMA_ESIK
+        # IMX500 nativ (2028px) icin kalibre; farkli cozunurlukte (canli
+        # kucuk-tuval) `koruma_esik=KORUMA_ESIK*TUVAL_OLCEK` verilir -
+        # verilmezse (None, varsayilan) davranis BIREBIR eskisi gibidir.
+        self.koruma_esik = KORUMA_ESIK if koruma_esik is None else float(koruma_esik)
         # --- bagimsiz dogrulama (A3.8) ---
         self.kimlik_periyot = kimlik_periyot      # kac karede bir imza kontrolu
         self.kimlik_esik = kimlik_esik            # dondurulmus imzaya asgari benzerlik
@@ -362,7 +367,7 @@ class HedefTakip:
         # kapisi onu eler ve sistem bir daha asla kilitlenemez.
         c = self.kf.konum
         if not (-20 < c[0] < W + 20 and -20 < c[1] < H + 20):
-            self.durum = KORUMA if self.boyut.max() < KORUMA_ESIK else KAYIP
+            self.durum = KORUMA if self.boyut.max() < self.koruma_esik else KAYIP
             self.kf.x[0] = float(np.clip(c[0], 0, W - 1))
             self.kf.x[1] = float(np.clip(c[1], 0, H - 1))
             self.kf.x[2:] = 0.0
@@ -559,7 +564,7 @@ class HedefTakip:
         self.kayip += 1
         gecen = self.kayip - self.coast_kare
         if gecen > self.max_arama_kare:
-            if self.boyut.max() < KORUMA_ESIK:
+            if self.boyut.max() < self.koruma_esik:
                 self.durum = KORUMA
                 return
             self.durum = KAYIP
@@ -685,7 +690,7 @@ class HedefTakip:
             yeni_c = r[:2] + r[2:] / 2
             if float(np.linalg.norm(yeni_c - self.kf.konum)) < 0.6 * float(self.boyut.max()):
                 self.kf.duzelt(yeni_c, r_carpan=1.0)
-        if self.boyut.max() >= KORUMA_ESIK:
+        if self.boyut.max() >= self.koruma_esik:
             self.durum = ARAMA
             self.kayip = self.coast_kare
             self.komut = None
@@ -779,7 +784,7 @@ class HedefTakip:
             self._celiski_sayac = 0
             self._tespit_yok_sayac += 1
             if self._tespit_yok_sayac >= self.k_kayip:
-                self.durum = KORUMA if self.boyut.max() < KORUMA_ESIK else ARAMA
+                self.durum = KORUMA if self.boyut.max() < self.koruma_esik else ARAMA
                 self._karo_kurulu = False
             elif self._tespit_yok_sayac >= self.k_supheli:
                 self.durum = SUPHELI

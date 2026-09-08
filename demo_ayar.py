@@ -29,9 +29,25 @@ import cv2
 import numpy as np
 
 AG = (640, 360)
-R_MERDIVEN = (640, 320, 160, 80)     # sensor-px ROI genisligi merdiveni (3a)
-BANT = (55.0, 110.0)                  # ag girdisinde hedeflenen px bandi
+_R_MERDIVEN_1X = (640, 320, 160, 80)  # sensor-px ROI merdiveni, IMX500 (odak_px=1561) icin kalibre
+TUVAL_OLCEK = 1.0                     # aktif kamera odak_px / 1561 (IMX500 native) - kucuk tuvalde < 1.0
+R_MERDIVEN = _R_MERDIVEN_1X            # ayarla_tuval_olcek() ile yeniden olceklenir
+BANT = (55.0, 110.0)                  # ag girdisinde hedeflenen px bandi - resize SONRASI sabit
+                                       # AG canvasinda oldugu icin TUVAL_OLCEK'ten BAGIMSIZ (talimat)
 NET_HEDEF = sum(BANT) / 2.0           # 82.5 - log-simetrik secim referansi
+
+
+def ayarla_tuval_olcek(k):
+    """Kamera nativ cozunurlugu IMX500'den (2028x1520, odak_px=1561) FARKLI
+    oldugunda cagirilir (`k = odak_px / 1561`) - sensor-px cinsinden
+    kalibre edilmis R_MERDIVEN'i orantili yeniden olcekler (2026-09-08,
+    kullanicidan: 640x480 arastirma kamerasina duserken R_MERDIVEN
+    kalibrasyonu bozulmustu, bkz. docs/DEMO_SONUC.md 'Canlı (scripted)').
+    BANT/NET_HEDEF (ag-girdisi bandi) resize SONRASI sabit AG canvasinda
+    olctugu icin BILEREK degistirilmez."""
+    global TUVAL_OLCEK, R_MERDIVEN
+    TUVAL_OLCEK = float(k)
+    R_MERDIVEN = tuple(max(1, int(round(r * TUVAL_OLCEK))) for r in _R_MERDIVEN_1X)
 
 KARO_KARE_BASI = 2                    # kare basina en fazla taranan karo sayisi
 A6_AGIRLIK = "weights/a6_kucuk_hedef.pt"

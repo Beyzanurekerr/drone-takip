@@ -207,12 +207,111 @@ sensörde R=320 artık karenin YARISI (2028'de ~%16'sı yerine), yani ROI
 merdiveni de aynı zamanda BOZULUYOR. Sonuç: sistem çoğu zaman KORUMA/KAYIP'ta
 kalıyor (hedef gerçekten küçük + ROI merdiveni yanlış ölçekli).
 
-**Düzeltilmedi (kapsam dışı bırakıldı):** ya IMX500 çözünürlüğünde kalıp
-FPS≥15'ten vazgeçmek (ya da daha güçlü/GPU'lu donanım beklemek), ya da
-640×480 için `R_MERDIVEN`/`BANT`/A6 modelini YENİDEN kalibre etmek (kendi
-başına bir teşhis turu ister, `docs/TESHIS_2E_PX_BANDI.md`'nin 640×480
-karşılığı). Bu turun kapsamı yalnız bağlantı+kontrol döngüsünü kurup
-ölçmekti; kalibrasyon AYRI bir iş olarak bırakıldı.
+**GÜNCELLEME (2026-09-08, kullanıcıdan): bu deney REDDEDİLDİ** — 640×480
+araştırma kamerası IMX500 DIŞI bir donanım, kabul edilemez. Aşağıdaki
+Plan A / Plan B bu KALDI'nın düzeltmesi olarak yürütüldü; ikisi de ayrı
+ayrı KALDI (ayrıntı aşağıda). Bu bölüm yalnız TARİHSEL kayıt olarak
+bırakıldı (üstteki `cikti/canli/kabul.*` kanıtı Plan A'nın koşumuyla
+ÜZERİNE YAZILDI, ayrıca saklanmadı).
+
+### Plan A — IMX500 tam çözünürlük (2028×1520), kam_hz 30→15 — **KALDI**
+
+Fikir: render maliyeti çözünürlükten değil kamera `update_rate`'inden
+gelsin varsayımıyla, kamera IMX500 nativine geri döndürüldü
+(`veri/gazebo_canli.py:canli_senaryo`, `odak_px=1561`) ve `kam_hz`
+30'dan 15'e düşürüldü (`CANLI_HZ`) — takip sabitleri (R_MERDIVEN,
+KORUMA_ESIK) DEĞİŞTİRİLMEDİ (IMX500 nativ için zaten kalibreler).
+
+| Ölçüt | Sonuç | Durum |
+|---|---|---|
+| FPS ≥ 15 | **4.65** (236 kare, 60 s) | **KALDI** |
+| Kilit oranı ≥ %90 | **%2.5** | **KALDI** |
+| 50→200 m / 60 s tırmanış | Yalnız **130.9 m**'ye ulaşıldı | KALDI (bilgi) |
+
+**Kök neden (ölçüldü):** `update_rate` yarılanması FPS'i DÜŞÜRDÜ,
+YÜKSELTMEDİ — önceki "bağlantı-testi" RTF/FPS ölçümü (IMX500 kam_hz=30
+için ~6.6 FPS) yalnız gz-sim↔bridge bağlantısını ölçüyordu, YOLO +
+takip CPU yükü YOKTU. Tam takip hattıyla (bu script) IMX500 tam
+çözünürlükte kare başına render+kırpma+YOLO maliyeti o kadar yüksek ki
+düşük update_rate ile "daha az kare işlensin, her biri aynı hızda
+işlensin" beklentisi gerçekleşmedi — render/CPU maliyeti update_rate'e
+DEĞİL çözünürlüğe bağlıymış (deneyle doğrulandı, hipotez ÇÜRÜTÜLDÜ).
 
 Kanıt: `cikti/canli/kabul.json` (özet), `cikti/canli/kabul.jsonl` (kare
-başına durum/px/irtifa), `cikti/canli/kabul.mp4` (ham görüntü).
+başına durum/px/irtifa), `cikti/canli/kabul.mp4` (ham görüntü) — bu
+dosyalar Plan A'nın sonucunu taşır (640×480 denemesinin kanıtı Plan
+A'nın kaydıyla ÜZERİNE YAZILDI).
+
+### Plan B — yarı-doğrusal çözünürlük (1014×760) + TUVAL_OLCEK ölçekleme — **KALDI (regresyon kapısında)**
+
+Fikir: IMX500'ün TAM YARISI (2028/2×1520/2=1014×760, odak_px=1561/2=
+780.5 — FOV AYNI kalır) + sensor-px sabitlerini (`demo_ayar.R_MERDIVEN`,
+`takip.izleyici.HedefTakip.koruma_esik`, `.min_kenar`) bu kameraya göre
+`TUVAL_OLCEK=0.5` ile yeniden ölçeklemek. Altyapı eklendi (KALICI,
+davranışı TUVAL_OLCEK verilmezse BİREBİR eskisi gibi):
+
+- `demo_ayar.ayarla_tuval_olcek(k)`: `R_MERDIVEN`'i `_R_MERDIVEN_1X`
+  tabanından `k` ile yeniden hesaplar. `BANT`/`NET_HEDEF` (ağ-girdisi
+  bandı, resize SONRASI sabit `AG` kanvasında ölçer) BİLEREK
+  DEĞİŞTİRİLMEZ (talimat).
+- `HedefTakip(koruma_esik=..., min_kenar=...)` — yeni, isteğe bağlı
+  kwargs (`takip/izleyici.py`); `None` ise (varsayılan) davranış
+  BİREBİR eskisi gibi.
+- `main.py --tuval-olcek K` (varsayılan 1.0) — `--mod demo`'da yukarıdaki
+  ikisini otomatik uygular.
+- `gazebo/kabul_canli.py` bunları CANLI kaynak için `CANLI_TUVAL_OLCEK`
+  (=0.5) ile doğrudan uygular (CLI argparse'a girmez, `kos()`'a doğrudan
+  geçirilir).
+
+**Regresyon (talimat: canlı kabule geçmeden ÖNCE koşulmalı):** kayıtlı
+`Demo_kucul` `gazebo/kaydet.py` ile YENİDEN kaydedildi (deterministik,
+`kareler/` diski tasarrufu için gitignore'lu ve silinmişti — orijinal
+kayıt dosyaları [`pozlar.csv`/`meta.json`/`dunya.sdf`/`imu.csv`] test
+SONRASI `git checkout` ile GERİ ALINDI, kalıcı bir değişiklik YOK), sonra
+`--hedef-genislik 1014 --tuval-olcek 0.5` ile taban (`--tuval-olcek 1.0`,
+aynı yeniden-kayıt üzerinde adil kıyas için) ile karşılaştırıldı:
+
+| Ölçüt | Taban (2028×1520, ölçeksiz) | 1014×760 + TUVAL_OLCEK=0.5 |
+|---|---|---|
+| Kilit oranı | %93.0 | **%43.1** |
+| IoU | 0.749 (@0.5 %95.8) | 0.505 (@0.5 %60.8) |
+| Hassasiyet (merkez hatası) | %96.2 | %64.7 |
+| Hedef boyut (ort.) | 62.6×45.7 px | 31.3×22.8 px (tam yarı, beklenen) |
+| Durum dağılımı (1185 kare) | KILITLI 969, ARAMA 100, KAYIP 68, ŞÜPHELİ 48 | KILITLI 448, ARAMA 388, KAYIP 281, ŞÜPHELİ 68 |
+
+**Kabul ölçütü (kilit ≥%95) KALDI — canlı kabul bu nedenle KOŞULMADI**
+(talimat: regresyon geçmeden canlıya geçilmeyecek).
+
+**Kök neden (ölçüldü, ölçeklenebilir bir sabit HATASI DEĞİL):** durum
+geçiş izini incelendiğinde (`cikti/regresyon_1014/Demo_kucul.jsonl`)
+hata GRADÜEL bir bozulma değil TEK BÜYÜK bir kopma: kare ~535'te
+(irtifa ~121 m, hedef ~29px) ARAMA'ya giriyor ve klip sonuna kadar (650
+kare, irtifa 121→210 m) BİR DAHA HİÇ KİLİTLENEMİYOR. Taban kayıtta AYNI
+tür bir kopma var (kare 741, irtifa ~152 m) ama kare 890'da (irtifa
+~183 m) TOPARLANIYOR. `R_MERDIVEN`/`koruma_esik`/`min_kenar` ölçeklemesi
+DOĞRU çalışıyor (hedef boyutu tam yarıya düşüyor, R seçim oranı
+`L_native*AG[0]/R` matematiksel olarak DEĞİŞMİYOR) — sorun kalibrasyon
+DEĞİL, GERÇEK bilgi kaybı: 1014px genişlikte bir kırpma, aynı sahne
+alanını 2028px'e göre YARI SAYIDA gerçek örnekle (piksel) yakalıyor;
+dijital upscale (AG=640'a resize) bu eksik bilgiyi geri getirmiyor.
+Hedef irtifa arttıkça (native px küçüldükçe) bu bilgi açığı büyüyor ve
+bir eşikten sonra (~120 m/~29px bu klipte) YOLO/A6 modeli hedefi bir
+daha GÜVENİLİR bulamıyor. Bu, düşük nativ sensör çözünürlüğünün fiziksel
+bir sınırı — TUVAL_OLCEK gibi bir sabit-yeniden-ölçekleme ile
+DÜZELTİLEMEZ (aynı kısıt zaten Plan A/B'nin var olma nedeniydi).
+
+**Düzeltilmedi (kapsam dışı bırakıldı — bu turun ikisi de kapsamıydı,
+üçüncü bir yol DENENMEDİ):** olası yönler (1) IMX500 tam çözünürlükte
+kalıp render/YOLO maliyetini GERÇEKTEN düşürecek bir optimizasyon
+(ONNX/int8, GPU, ROI-öncelikli render vb. — Plan A'nın update_rate
+denemesi bunu YAPMADIĞI için başarısız oldu), (2) düşük-çözünürlük
+rejiminde re-edinme stratejisini (KaroArayici tarama/eşik) native
+piksel yoğunluğuna göre YENİDEN TASARLAMAK (basit sabit ölçekleme değil
+— kendi teşhis turu ister), (3) daha güçlü/GPU'lu donanım beklemek. Bu
+turun kapsamı yalnız kullanıcının verdiği A/B planını yürütüp ölçmekti.
+
+Kanıt: `cikti/regresyon_1014/Demo_kucul.jsonl` (1014×760 koşumu, kare
+başına durum/px), `cikti/regresyon_1014/Demo_kucul.mp4` (aynı koşumun
+görüntüsü). Taban koşumun (2028×1520, aynı yeniden-kayıt) kanıtı
+saklanmadı (yalnız bu tablodaki özet sayılar) — kaynak kareler zaten
+`git checkout` ile geri alınan geçici bir yeniden-kayıttı.

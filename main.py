@@ -24,6 +24,7 @@ import numpy as np
 from calistir import _kutu_ciz, iou      # cizim ve olcum ilkelerini yeniden kullan
 from kaynak import KaynakHatasi, kaynak_olustur
 from takip.izleyici import ARAMA, KAYIP, KILITLI, SUPHELI, HedefTakip
+from takip.izleyici import KORUMA_ESIK as KORUMA_ESIK_VARSAYILAN
 
 ISINMA = 6          # hareket tespiti icin gecmis gerekiyor (ilk kareler bos doner)
 DRIFT_ESIK = 0.3    # bu IoU'nun altinda "kopmus" sayilir
@@ -480,7 +481,8 @@ def _hafif_ciz(img, sonuc):
 
 def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
         hedef_secici=None, kayip_dedektor=None, dedektor_boyut=False,
-        dedektor_karar=False, n_tespit=1, demo_kayit=False, mod_etiketi=None):
+        dedektor_karar=False, n_tespit=1, demo_kayit=False, mod_etiketi=None,
+        koruma_esik=None, min_kenar=None):
     """Kaynak-bagimsiz calisma dongusu.
 
     `hedef_secici`: None ise `otomatik_hedef_sec` kullanilir. Fare ile secim
@@ -488,6 +490,10 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     `kayip_dedektor`/`dedektor_boyut`/`dedektor_karar`: varsayilanlarinda
     (None/False) davranis BIREBIR eskisi gibidir (bkz.
     `takip/izleyici.py:HedefTakip`); DEMO modu ucunu de verir.
+    `koruma_esik`/`min_kenar`: None ise `HedefTakip` varsayilanlarinda
+    (IMX500 nativ 2028px icin kalibre) davranis BIREBIR eskisi gibidir;
+    kamera nativ cozunurlugu farkliysa (bkz. `--tuval-olcek`) cagiran
+    bunlari `TUVAL_OLCEK` ile ONCEDEN olcekleyip verir.
     `demo_kayit` (Adim 4, DUZELTME - THREAD KALKTI): True ise `kaydet` HAM
     kareyi yazar (ciz() YOK) + kare basina durum bir `.jsonl` yan dosyasina
     yazilir (ayni govde, uzanti .jsonl - `gazebo/gorsel_uret.py` HUD'lu
@@ -495,9 +501,14 @@ def kos(kaynak, cekirdek="renk_dcf", pencere=True, kaydet=None, max_kare=0,
     (`_hafif_ciz`) senkron cizilir - agir `ciz()` bu yolda KULLANILMAZ.
     """
     secici = hedef_secici or otomatik_hedef_sec
+    tak_kw = {}
+    if koruma_esik is not None:
+        tak_kw["koruma_esik"] = koruma_esik
+    if min_kenar is not None:
+        tak_kw["min_kenar"] = min_kenar
     tak = HedefTakip(cekirdek=cekirdek, kayip_dedektor=kayip_dedektor,
                      dedektor_boyut=dedektor_boyut, dedektor_karar=dedektor_karar,
-                     n_tespit=n_tespit)
+                     n_tespit=n_tespit, **tak_kw)
     kilitli = False
     yaz = None
     duraklat = False
@@ -726,6 +737,12 @@ def main():
     ap.add_argument("--n-tespit", type=int, default=None, dest="n_tespit",
                     help="demo modu dedektor kadansi (1=her kare, 2/3=... "
                          "araya DCF koprusu girer) - verilmezse demo_ayar.N_TESPIT")
+    ap.add_argument("--tuval-olcek", type=float, default=1.0, dest="tuval_olcek",
+                    help="--mod demo: aktif kamera odak_px / 1561 (IMX500 nativ) "
+                         "- demo_ayar.R_MERDIVEN ve HedefTakip.koruma_esik/"
+                         "min_kenar'i orantili yeniden olcekler (kucuk-tuval "
+                         "kamera icin gerekli, bkz. docs/DEMO_SONUC.md); "
+                         "verilmezse (1.0) davranis BIREBIR eskisi gibidir")
     ap.add_argument("--hedef-gt-ilk", action="store_true", dest="hedef_gt_ilk",
                     help="--mod demo: ilk kilit demo_hedef_sec (soguk edinme, "
                          "YOLO+karo tarama) YERINE kayitli GT kutusuyla yapilir "
@@ -778,7 +795,12 @@ def main():
         sys.exit(1)
 
     kayip_dedektor = None
+    koruma_esik = min_kenar = None
     if a.mod == "demo":
+        if a.tuval_olcek != 1.0:
+            demo_ayar.ayarla_tuval_olcek(a.tuval_olcek)
+            koruma_esik = KORUMA_ESIK_VARSAYILAN * a.tuval_olcek
+            min_kenar = 4.0 * a.tuval_olcek
         karayici = demo_ayar.KaroArayici(kaynak.genislik, kaynak.yukseklik, _demo_model)
         karayici.sifirla((kaynak.genislik / 2.0, kaynak.yukseklik / 2.0))
         # --hedef-gt-ilk: ilk kilit demo_hedef_sec (soguk edinme) YERINE GT -
@@ -796,7 +818,8 @@ def main():
                 dedektor_karar=(a.mod == "demo" and demo_ayar.DEDEKTOR_KARAR_OTORITESI),
                 n_tespit=(a.n_tespit if a.n_tespit is not None else
                          (demo_ayar.N_TESPIT if a.mod == "demo" else 1)),
-                demo_kayit=(a.mod == "demo"), mod_etiketi=a.mod)
+                demo_kayit=(a.mod == "demo"), mod_etiketi=a.mod,
+                koruma_esik=koruma_esik, min_kenar=min_kenar)
     except KaynakHatasi as e:
         print(f"HATA: {e}")
         sys.exit(1)

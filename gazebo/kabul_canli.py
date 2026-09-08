@@ -32,8 +32,9 @@ os.chdir(ROOT)
 import demo_ayar                                                   # noqa: E402
 from ultralytics import YOLO                                       # noqa: E402
 from main import kos                                               # noqa: E402
-from veri.gazebo_canli import GazeboCanliKaynak                    # noqa: E402
+from veri.gazebo_canli import GazeboCanliKaynak, CANLI_TUVAL_OLCEK  # noqa: E402
 from takip.izleyici import KILITLI                                 # noqa: E402
+from takip.izleyici import KORUMA_ESIK as KORUMA_ESIK_VARSAYILAN   # noqa: E402
 
 BASLANGIC_IRTIFA = 50.0
 HEDEF_IRTIFA = 200.0
@@ -47,6 +48,13 @@ CIKTI = "cikti/canli/kabul"
 def main():
     os.makedirs(os.path.dirname(CIKTI), exist_ok=True)
     model = YOLO(demo_ayar.A6_AGIRLIK)
+    # sensor-px kalibrasyonu (Plan B, 2026-09-08): kamera IMX500'un yarisi
+    # (1014x760, odak_px=780.5) - R_MERDIVEN/koruma_esik/min_kenar bu
+    # kameraya gore TUVAL_OLCEK ile yeniden olceklenmeden KaroArayici/
+    # HedefTakip KURULMAZ (bkz. veri/gazebo_canli.py, demo_ayar.py).
+    demo_ayar.ayarla_tuval_olcek(CANLI_TUVAL_OLCEK)
+    koruma_esik = KORUMA_ESIK_VARSAYILAN * CANLI_TUVAL_OLCEK
+    min_kenar = 4.0 * CANLI_TUVAL_OLCEK
     kaynak = GazeboCanliKaynak(kam_z0=BASLANGIC_IRTIFA, sure_sn=SURE_S)
     karayici = demo_ayar.KaroArayici(kaynak.genislik, kaynak.yukseklik, model)
     karayici.sifirla((kaynak.genislik / 2.0, kaynak.yukseklik / 2.0))
@@ -79,7 +87,8 @@ def main():
                 dedektor_boyut=demo_ayar.DEDEKTOR_BOYUT_OTORITESI,
                 dedektor_karar=demo_ayar.DEDEKTOR_KARAR_OTORITESI,
                 n_tespit=demo_ayar.N_TESPIT, demo_kayit=True,
-                mod_etiketi="demo")
+                mod_etiketi="demo",
+                koruma_esik=koruma_esik, min_kenar=min_kenar)
     finally:
         dur.set()
         t.join(timeout=2)
