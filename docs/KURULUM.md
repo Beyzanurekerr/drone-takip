@@ -191,6 +191,24 @@ gazebo/kabul_canli.py` — sonuç ve kök neden `docs/DEMO_SONUC.md` "Canlı
 tarafından test edilmedi** — bu depoyu klonlayan/çalıştıran kişinin kendi
 elleriyle doğrulaması gerekiyor.
 
+**GPU render (WSL2 + NVIDIA, 2026-09-08'de bu makinede doğrulandı):**
+`veri/gazebo_canli.py:GazeboCanliKaynak._sim_baslat()` artık
+`LIBGL_ALWAYS_SOFTWARE`'i AÇIKÇA kaldırıp `MESA_D3D12_DEFAULT_ADAPTER_
+NAME=NVIDIA` set ediyor — bu makinede (Intel iGPU + NVIDIA RTX 3060 ikili
+GPU'lu bir WSL2) `LIBGL_ALWAYS_SOFTWARE` kaldırılıp NVIDIA adaptörü
+ZORLANMADAN GPU render `gz sim`i ÇÖKERTİYORDU (D3D12/Mesa varsayılan
+olarak Intel'i seçip LLVM double-registration hatasıyla abort ediyordu);
+adaptör NVIDIA'ya zorlanınca çökme YOK, IMX500 nativ (2028×1520) RTF
+~0.97–0.99 (neredeyse gerçek zamanlı) ölçüldü — bkz. `docs/DURUM.md`
+(`demo-canli` dalı) ayrıntı için. **Bu GENEL bir çözüm DEĞİL** — başka bir
+GPU/sürücü/WSL2 sürümü kombinasyonunda hâlâ çökebilir. Çökerse: log'da
+`LLVM ERROR`/`CommandLine Error` ararsanız aynı sınıf hata olduğunu
+doğrulayabilirsiniz; geçici çözüm ortam değişkenini kaldırıp
+(`unset MESA_D3D12_DEFAULT_ADAPTER_NAME` ya da kodu geri alıp) yazılım
+render'a (`LIBGL_ALWAYS_SOFTWARE=1`) dönmektir — bu durumda IMX500 nativ
+çözünürlükte gerçek zamanlılık elde edilemez, native Ubuntu (WSL2 DEĞİL)
+üzerinde GPU render denenmesi önerilir.
+
 ## 6. Süre bütçesi
 
 | Adım | Süre | Ölçüldü mü |

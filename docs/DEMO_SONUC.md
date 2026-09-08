@@ -315,3 +315,67 @@ başına durum/px), `cikti/regresyon_1014/Demo_kucul.mp4` (aynı koşumun
 görüntüsü). Taban koşumun (2028×1520, aynı yeniden-kayıt) kanıtı
 saklanmadı (yalnız bu tablodaki özet sayılar) — kaynak kareler zaten
 `git checkout` ile geri alınan geçici bir yeniden-kayıttı.
+
+**GÜNCELLEME (2026-09-08) — yukarıdaki "fiziksel sınır" hükmü GERİ
+ÇEKİLDİ:** ayrı bir teşhis turunda (bkz. `docs/DURUM.md`) render'ın
+CPU/llvmpipe'a ZORUNLU kalmasının GPU sürücü çökmesinden kaynaklandığı
+bulundu, düzeltildi (aşağıya bkz.) — Plan B'nin regresyon kopması da
+muhtemelen main'deki D1/D2 ile aynı re-edinme sağlamlığı arızası
+(TUVAL_OLCEK'ten bağımsız). Bu yüzden canlı mod artık **IMX500 nativ
+çözünürlüğe (2028×1520, TUVAL_OLCEK=1.0) geri döndürüldü** — Plan B'nin
+1014×760 + ölçekleme ayarı ARTIK KULLANILMIYOR (altyapısı kalıcı
+bırakıldı, ihtiyaç olursa).
+
+### GPU etkinleştirme — YOLO cihazı + Gazebo render (2026-09-08)
+
+**1) YOLO `device="cuda"` + `half=True` (fp16):** `demo_ayar.py`'de
+`model.predict(..., device="cpu")` → `device=YOLO_DEVICE, half=YOLO_HALF`
+(`YOLO_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"`).
+Kayıtlı `Demo_kucul` (2028×1520, yeniden kaydedilip test sonrası geri
+alındı) üzerinde önce/sonra:
+
+| | FPS | Kilit oranı | IoU | Hassasiyet |
+|---|---|---|---|---|
+| Önce (CPU) | 32.9 | %93.8 | 0.754 | %97.3 |
+| Sonra (CUDA+fp16) | **43.6** (+%32) | %94.0 (**Δ+0.2pp, ±%1 içinde**) | 0.757 | %97.4 |
+
+Kilit oranı kriteri (±%1) karşılandı. `half=True` ultralytics'te
+"deprecated, `quantize` kullanın" uyarısı veriyor ama ÇALIŞIYOR (fp16
+uygulanıyor) — ileride ultralytics güncellendiğinde `quantize`'a
+geçilmesi gerekebilir, kapsam dışı bırakıldı.
+
+**2) Gazebo GPU render:** `veri/gazebo_canli.py:_sim_baslat()`'ta
+`LIBGL_ALWAYS_SOFTWARE` AÇIKÇA kaldırıldı (ambiyan kabukta zaten "1"
+ayarlıydı — `setdefault` yetmez), `MESA_D3D12_DEFAULT_ADAPTER_NAME=
+"NVIDIA"` eklendi. IMX500 nativ (2028×1520), kamera açık, ayrı deneyler
+(`/tmp` scratchpad, repo kodu değiştirilmeden):
+
+| Deneme | Render motoru | Sonuç | RTF (18 s pencere) | Kamera FPS |
+|---|---|---|---|---|
+| NVIDIA zorlanmış, varsayılan (ogre2) | ogre2, `GL_RENDERER = D3D12 (NVIDIA GeForce RTX 3060 Laptop GPU)` | **ÇÖKMEDİ** | **~0.97** (29 örnek, 1 aykırı değer 0.28 hariç istikrarlı ~0.95-1.02) | 30.7 |
+| NVIDIA zorlanmış, `--render-engine ogre` (legacy) | ogre1 | **ÇÖKMEDİ** | **~0.99** (32 örnek, 0.93-1.03 bandı) | 36.5 |
+
+Her ikisi de ÇALIŞTI — `--render-engine ogre` denemesine gerek kalmadı
+ama talimat gereği yine de koşuldu (bonus doğrulama). **Kök neden
+(önceki teşhiste bulunan):** `LIBGL_ALWAYS_SOFTWARE` kaldırılıp adaptör
+ZORLANMADIĞINDA D3D12/Mesa WSL katmanı varsayılan olarak Intel iGPU'yu
+seçiyor, Intel'in gömülü LLVM-14 sürücüsü Mesa'nın kendi LLVM-15'iyle
+aynı komut satırı bayrağını (`spirv-expand-step`) çakışan şekilde
+kaydedip `abort()` ediyordu — `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA`
+bu seçimi NVIDIA'ya zorlayıp çökmeyi ortadan kaldırdı.
+
+**Gerçek koda uygulandı, gerçek bağlantıyla doğrulandı** (`GazeboCanliKaynak`
+üzerinden, takipçi/YOLO OLMADAN, yalnız bağlantı+kare okuma — bu, canlı
+KABUL testi DEĞİL, D1/D2 merge'ine kadar o koşulmuyor):
+**28.81 gerçek FPS, IMX500 nativ 2028×1520, 15 s pencere, 433 kare.**
+
+**Genelleştirilebilirlik uyarısı:** bu düzeltme (`MESA_D3D12_DEFAULT_
+ADAPTER_NAME=NVIDIA`) bu makineye (WSL2, Intel iGPU + NVIDIA RTX 3060
+ikili GPU) özgü ölçüldü — başka bir GPU/sürücü/WSL2 sürümünde YENİDEN
+ÇÖKEBİLİR. Ayrıntı ve geri-dönüş talimatı `docs/KURULUM.md` §5b.
+
+**Canlı kabul testi (`gazebo/kabul_canli.py`) HÂLÂ KOŞULMADI** —
+kullanıcı talimatı: main'deki D1/D2 `demo-canli`'ye merge edilene kadar
+ertelendi (Plan B'nin regresyon arızasıyla AYNI kök neden olabileceği
+için). GPU değişiklikleri yalnız YAPILANDIRMA/ALTYAPI olarak hazır
+bekliyor.

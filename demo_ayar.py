@@ -27,6 +27,14 @@ iskelet var, esikler (`aday_esik_kayip` uzerinden) henuz ayarlanmadi.
 """
 import cv2
 import numpy as np
+import torch
+
+# YOLO CIHAZ SECIMI (2026-09-08, kullanicidan): CUDA varsa KULLAN - Gazebo'nun
+# GPU render sorunuyla (WSL2 D3D12 cokme) ILGISIZ, ayri bir yol (PyTorch/CUDA
+# dogrudan surucu, Gazebo'nun OpenGL/D3D12 yigininin DISINDA). half (fp16)
+# yalniz CUDA'da anlamli - CPU'da desteklenmez/yavaslatir.
+YOLO_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+YOLO_HALF = YOLO_DEVICE == "cuda"
 
 AG = (640, 360)
 _R_MERDIVEN_1X = (640, 320, 160, 80)  # sensor-px ROI merdiveni, IMX500 (odak_px=1561) icin kalibre
@@ -200,7 +208,7 @@ class KaroArayici:
             girdi = cv2.resize(parca, AG, interpolation=cv2.INTER_AREA)
             r = self.model.predict(girdi, conf=self.conf, imgsz=640,
                                     classes=self.siniflar, verbose=False,
-                                    device="cpu")[0]
+                                    device=YOLO_DEVICE, half=YOLO_HALF)[0]
             if r.boxes is None or not len(r.boxes):
                 continue
             kx, ky = rw / float(AG[0]), rh / float(AG[1])
@@ -240,7 +248,7 @@ class KaroArayici:
         girdi = cv2.resize(parca, AG, interpolation=cv2.INTER_AREA)
         r = self.model.predict(girdi, conf=self.conf, imgsz=640,
                                 classes=self.siniflar, verbose=False,
-                                device="cpu")[0]
+                                device=YOLO_DEVICE, half=YOLO_HALF)[0]
         if r.boxes is None or not len(r.boxes):
             return None
         kx, ky = rw / float(AG[0]), rh / float(AG[1])

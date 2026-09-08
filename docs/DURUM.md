@@ -6,157 +6,126 @@ Süreklilik dosyası: her alt-adım commit+push sonrası, her DUR'da güncelleni
 ayrıldı; main'e D1/D2 ayrı sürüyor, buraya DOKUNULMADI — merge kullanıcı
 tarafından tetiklenecek).
 
-**Son commit:** bu tur icin asagida (yalnız docs — kullanıcı talimatı:
-"kod değişikliği yok"). **DUR.**
+**Son commit:** bu tur icin asagida. **DUR.**
 
-**GÜNCELLEME (2026-09-08, kullanıcıdan) — bir önceki DUR'un "fiziksel
-sınır" hükmü ERKENDİ, GERİ ÇEKİLDİ:** Plan B'nin regresyon KALDI'sını
-("düşük nativ çözünürlükte gerçek piksel bilgisi kaybı, TUVAL_OLCEK ile
-düzeltilemez") ben rapor etmiştim. Kullanıcı bunu sorguladı ve iki
-kod-değişikliksiz teşhis istedi: (1) canlı döngü profili (gz render,
-transport+decode, takipçi+YOLO, GPU/render-engine durumu), (2) çözünürlük
-× RTF tablosu. İkisi de koşuldu (aşağıda) — sonuç, "fiziksel sınır"
-iddiasını DOĞRULAMIYOR: gerçek darboğaz **render + YOLO'nun ikisi de
-YAZILIMSAL (CPU) çalışması** — biri Gazebo'nun kendi ortamındaki bir GPU
-render çökmesi yüzünden, diğeri kodun `device="cpu"` seçimi yüzünden.
-Ayrıca Plan B'nin çökme deseni (bkz. `docs/DEMO_SONUC.md`ki kök neden)
-**main'deki D1/D2 ile AYNI arıza** olabilir (kullanıcıdan) — bu yüzden
-Plan B, D1/D2 `demo-canli`'ye merge edilene kadar YENİDEN KOŞULMAYACAK.
+**GÜNCELLEME (2026-09-08, kullanıcıdan) — GPU ETKİNLEŞTİRİLDİ, iki yerde:**
+önceki turda "render + YOLO CPU'ya zorlanmış" teşhisi konmuştu (bkz. bir
+önceki DUR bölümü, aşağıda saklı). Bu turda kullanıcı iki somut
+YAPILANDIRMA değişikliği istedi — ikisi de uygulandı, ölçüldü, İKİSİ DE
+BAŞARILI:
 
-## Teşhis 1 — canlı döngü profili + GPU/render-engine durumu
+## 1. YOLO device="cuda" + half (fp16)
 
-**Yöntem (kod değişikliği YOK):** `python3 -m cProfile` ile
-`gazebo/kabul_canli.py`'nin gerçek 60 s'lik canlı koşumu profillendi
-(mevcut ayar: IMX500 nativ 2028×1520, kam_hz=15 — Plan A'nın bıraktığı
-durum); GPU/render motoru `nvidia-smi`, `~/.gz/rendering/ogre2.log` ve
-ayrı bir `gz sim` deney script'iyle (geçici, repo dışı `/tmp` scratchpad)
-sınandı. `glxinfo` kurulu değildi, sudo/apt izni yok — GPU kanıtı
-`nvidia-smi` + ogre2 log'undan alındı.
+`demo_ayar.py`: `YOLO_DEVICE = "cuda" if torch.cuda.is_available() else
+"cpu"`, `YOLO_HALF = YOLO_DEVICE == "cuda"` — iki `model.predict(...,
+device="cpu")` çağrısı `device=YOLO_DEVICE, half=YOLO_HALF` oldu.
 
-**GPU var, ama İKİ AYRI SEBEPLE hiç KULLANILMIYOR:**
-- Donanım: NVIDIA GeForce RTX 3060 (6 GB) `nvidia-smi` ile GÖRÜNÜYOR ve
-  CUDA çalışıyor (WSL2 GPU passthrough aktif) — bu makinede ayrıca bir
-  Intel tümleşik GPU da var (`/usr/lib/wsl/drivers/iigd_dch...`).
-- **Gazebo tarafı:** `gz sim` render motoru **ogre2** (`gazebo/
-  dunya_uret.py` içinde sabit) ve ortamda `LIBGL_ALWAYS_SOFTWARE=1`
-  (hem kabuk ortamında hem `gazebo/kaydet.py`/`veri/gazebo_canli.py`'nin
-  `_sim_baslat()`'ında `setdefault` ile) zaten AYARLI — `~/.gz/rendering/
-  ogre2.log`: `GL_RENDERER = llvmpipe` (yazılım/CPU render, GPU DEĞİL).
-  **`LIBGL_ALWAYS_SOFTWARE`'i kaldırıp GPU render DENENDİĞİNDE `gz sim`
-  ÇÖKÜYOR** (abort): D3D12/Mesa WSL katmanı Intel iGPU sürücüsünü
-  seçiyor (`libigd12umd64.so`→`libigc.so`), onun gömülü LLVM-14'ü
-  Mesa'nın kendi LLVM-15'iyle aynı komut satırı bayrağını
-  (`spirv-expand-step`) iki kez kaydetmeye çalışıp LLVM'in global
-  registry'sini fatal hataya düşürüyor (`CommandLine Error: Option
-  'spirv-expand-step' registered more than once!`). **Sonuç:
-  `LIBGL_ALWAYS_SOFTWARE=1` bir gözden kaçma DEĞİL, bu WSL2 (Intel+NVIDIA
-  ikili GPU) ortamında ÇÖKMEYİ ÖNLEYEN GEREKLİ bir geçici çözüm** —
-  basitçe kaldırılamaz; NVIDIA adaptörünü zorlamak (`MESA_D3D12_
-  DEFAULT_ADAPTER_NAME` vb.) DENENMEDİ, ayrı bir teşhis/düzeltme turu
-  ister.
-- **YOLO/tracker tarafı — TAMAMEN BAĞIMSIZ bir bulgu:** `demo_ayar.py`
-  `model.predict(..., device="cpu")` ile SABİT CPU'ya bağlanmış — bu
-  Gazebo'nun render sorunuyla İLGİSİZ bir kod seçimi, CUDA/PyTorch
-  Gazebo'nun OpenGL/D3D12 yoluna hiç girmez, `nvidia-smi`'nin zaten
-  çalışıyor olması CUDA'nın bu ortamda erişilebilir olduğunu gösteriyor.
-  **Denenmedi (kod değişikliği yasaktı bu turda) ama düşük riskli, yüksek
-  potansiyelli bir sonraki adım:** `device="cuda"` denemek.
+Kayıtlı `Demo_kucul` (geçici olarak yeniden kaydedilip test sonrası
+`git checkout` ile geri alındı — kalıcı değişiklik yok) üzerinde önce/sonra:
 
-**Canlı döngü profili (60 s koşum, cProfile — mutlak sayılar cProfile
-ek yüküyle şişmiş, ORANLAR güvenilir; "ort." = tottime/ncalls, gerçek p50
-DEĞİL ama büyüklük mertebesi için yeterli):**
-
-| Bileşen | Ölçüm | Yorum |
+| | FPS | Kilit oranı |
 |---|---|---|
-| Transport+decode (`_goruntu_cb`: protobuf→ndarray + `cv2.cvtColor`) | **~0.42 ms/kare** (508 çağrı, 0.211 s toplam) | İHMAL EDİLEBİLİR — darboğaz DEĞİL |
-| `oku()` (yeni kareyi BEKLEME dahil) | ~23.6 ms/kare ort. (508 çağrı) | Çoğunlukla render'in kareyi YETİŞTİRMESİNİ bekleme |
-| Takipçi + YOLO (`HedefTakip.guncelle`) | ~90.7 ms/kare ort. (500 çağrı, 45.3 s) | Kare başına en büyük TEK kalem |
-| — bunun içinde yalnız YOLO `model.predict()` | ~48.6 ms/çağrı ort. (957 çağrı, 46.5 s toplam — guncelle'nin **~%85'i**) | `torch.conv2d` CPU'da 30.1 s (61248 çağrı) — GPU'ya taşınabilir, DENENMEDİ |
+| Önce (CPU) | 32.9 | %93.8 |
+| Sonra (CUDA+fp16) | **43.6** (+%32) | %94.0 (**Δ+0.2pp, ±%1 kriteri GEÇTİ**) |
 
-**Gz render (RTF, kamera açık/kapalı) — IMX500 nativ 2028×1520, mevcut
-(zorunlu yazılım) render:**
+`half=True` ultralytics'te deprecation uyarısı veriyor ama çalışıyor —
+kapsam dışı, ilerde `quantize`'a geçiş gerekebilir.
 
-| Durum | RTF | Yorum |
-|---|---|---|
-| Kamera KAPALI (yalnız fizik, sensor SDF'ten çıkarılmış) | **~0.82–1.00** | Fizik/dünya adımlaması TEK BAŞINA neredeyse gerçek zamanlı |
-| Kamera AÇIK (aynı dünya, sensör var, gerçekten abone olunup akış tüketiliyorken ölçüldü) | **~0.03** | Render, RTF'yi ~30× DÜŞÜRÜYOR |
+## 2. Gazebo GPU render
 
-**Sonuç (Teşhis 1):** canlı modda gerçek-zamanlılığı asıl sınırlayan iki
-BAĞIMSIZ, YAZILIMSAL/YAPILANDIRMA kaynaklı darboğaz var — (a) Gazebo'nun
-kamera RENDER'i (CPU/llvmpipe'a ZORLANMIŞ, GPU'ya geçiş şu an ÇÖKÜYOR)
-ve (b) YOLO ÇIKARIMI (CPU'ya SABİTLENMİŞ, GPU'nun kullanılıp
-kullanılamayacağı hiç denenmemiş). Transport+decode İHMAL EDİLEBİLİR.
-Bu ikisi "düşük nativ çözünürlükte bilgi kaybı" gibi fiziksel bir
-sınırdan TAMAMEN FARKLI bir kategori — ikisi de (özellikle YOLO/CUDA)
-potansiyel olarak DÜZELTİLEBİLİR sorunlar.
+`veri/gazebo_canli.py:_sim_baslat()`: `LIBGL_ALWAYS_SOFTWARE` AÇIKÇA
+kaldırıldı (`pop()` — ambiyan kabukta zaten "1" ayarlıydı, `setdefault`
+yetmezdi), `MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"` `setdefault` ile
+eklendi.
 
-## Teşhis 2 — çözünürlük × RTF tablosu (kamera AÇIK, takipçi YOK, mevcut yazılım render)
+**Sonuç: ÇÖKMEDİ, İKİ deneme de çalıştı** (IMX500 nativ 2028×1520,
+kamera açık, 18 s pencere):
 
-Ayrı, minimal dünyalar (`gazebo.dunya_uret.dunya_yaz`, repo kodu
-DEĞİŞTİRİLMEDEN, `/tmp` scratchpad'te) her çözünürlük için kuruldu, FOV
-sabit tutuldu (`odak_px` orantılı), yalnız kamera konusuna abone olunup
-kare sayıldı — YOLO/takip YOK:
+| Deneme | Sonuç | RTF | Kamera FPS |
+|---|---|---|---|
+| NVIDIA zorlanmış, ogre2 (varsayılan) | ÇÖKMEDİ, `GL_RENDERER = D3D12 (NVIDIA GeForce RTX 3060 Laptop GPU)` | ~0.97 | 30.7 |
+| NVIDIA zorlanmış, `--render-engine ogre` | ÇÖKMEDİ | ~0.99 | 36.5 |
 
-| Çözünürlük | RTF (18 s pencerede örnekler) | Duvar-saati FPS |
-|---|---|---|
-| 2028×1520 (IMX500 nativ) | **~0.03, İSTİKRARLI DÜŞÜK** (9 örnek, 0.026–0.038 bandında) | 2.2–3.3 |
-| 1352×1014 | **BİMODAL**: bazen ~1.0'a YAKIN, bazen ~0.05 (9 örnek: 0.05,0.06,1.00,0.97,0.055,0.55,1.00 karışık) | 3.0 |
-| 1014×760 | **BİMODAL, yükselen eğilim**: pencere başında ~0.08–0.10, sonunda ~0.86–0.99 | 5.6 |
+Önceki teşhis (bir önceki tur) zaten kök nedeni bulmuştu: adaptör
+zorlanmadığında D3D12/Mesa WSL katmanı Intel iGPU'yu seçip LLVM
+double-registration ile çöküyordu; NVIDIA'ya zorlayınca çökme YOK.
+`--render-engine ogre` denemesine (talimattaki "çökerse" dalı) GEREK
+KALMADI ama yine de koşuldu (bonus doğrulama, ikisi de iyi).
 
-**Yorum:** 2028×1520'de render İSTİKRARLI şekilde çöküyor (hiç
-toparlanmıyor); 1352×1014 ve 1014×760'ta render bazen gerçek-zamana
-YETİŞEBİLİYOR (RTF→1.0), bazen düşüyor — bu, sabit/yumuşak bir
-çözünürlük-performans eğrisinden çok bir EŞİK/tıkanıklık davranışına
-işaret ediyor (18 s'lik tek pencere, DOĞRULAMA ister — daha uzun/çok
-tekrarlı ölçüm YAPILMADI, kapsam dışı bırakıldı).
+**KURULUM.md'ye "çalışmazsa" notu EKLENMEDİ** (çünkü çalıştı) — bunun
+yerine §5b'ye GPU render'ın nasıl etkinleştirildiği + genelleştirilemezlik
+uyarısı (bu düzeltme bu makineye/WSL2-Intel+NVIDIA kombinasyonuna özgü,
+başka ortamda yine çökebilir) eklendi.
 
-## Plan B ile D1/D2 ilişkisi — YENİDEN KOŞULMAYACAK
+## Sonuç: canlı mod IMX500 nativine (TUVAL_OLCEK=1.0) GERİ DÖNDÜRÜLDÜ
 
-Kullanıcıya göre Plan B'nin regresyon KALDI'sındaki kopma deseni (kare
-~535'te tek büyük ARAMA kopması, klip sonuna kadar toparlanmama) main
-dalındaki D1/D2 ile AYNI arıza. D1/D2 şu an bu dal (`demo-canli`) için
-erişilebilir DEĞİL (main hâlâ `96d9c87`'de, D1/D2 başka bir yerde/oturumda
-sürüyor). **Bu yüzden Plan B'nin regresyonu/canlı kabulü D1/D2
-`demo-canli`'ye merge EDİLENE KADAR yeniden koşulmayacak** — aksi halde
-aynı bilinen arızayı tekrar tekrar ölçmüş oluruz.
+GPU render artık IMX500 nativ çözünürlükte (2028×1520) neredeyse gerçek
+zamanlı (RTF~0.97-0.99) olduğu için Plan B'nin 1014×760 + ölçekleme
+ayarına ARTIK GEREK YOK. `veri/gazebo_canli.py`:
+`CANLI_GEN/YUK=IMX500_GEN/YUK` (2028×1520), `CANLI_ODAK_PX=IMX500_ODAK_PX`
+(1561), `CANLI_TUVAL_OLCEK=1.0`, `CANLI_HZ=IMX500_HZ` (30, GPU render
+bunu rahat karşılıyor). Plan B'nin ölçekleme altyapısı
+(`demo_ayar.ayarla_tuval_olcek`, `HedefTakip(koruma_esik=, min_kenar=)`,
+`main.py --tuval-olcek`) KALICI bırakıldı — kullanılmıyor ama silinmedi.
 
-**Önceki (GERİ ÇEKİLEN) iddia için düzeltme:** Plan B raporundaki "TUVAL_
-OLCEK ile düzeltilemeyecek fiziksel bir sınır" ifadesi ERKENDİ — kanıt
-(taban kayıtta da BENZER bir kopma var, kare 741→890, ama TOPARLANIYOR)
-aslında bunun ölçek-bağımlı bir bilgi kaybından çok bir RE-EDİNME
-SAĞLAMLIĞI hatası (D1/D2'nin hedeflediği tür) olduğuna işaret ediyor.
-`docs/DEMO_SONUC.md`'deki ilgili paragraf bu güncellemeyle birlikte
-okunmalı (orada henüz değiştirilmedi — kayıt tarihsel, bu dosya güncel
-yorumu taşıyor).
+**Gerçek koda uygulanmış haliyle uçtan uca doğrulandı** (`GazeboCanliKaynak`
+üzerinden, TAKİPÇİ/YOLO OLMADAN — yalnız bağlantı+kare okuma, bu canlı
+KABUL testi DEĞİL): **28.81 gerçek FPS, IMX500 nativ 2028×1520, 15 s
+pencere, 433 kare** — nominal 30 FPS'e çok yakın.
 
-**Sıradaki adım (bu turun kapsamı DIŞINDA — teşhis turuydu, kod
-değişikliği YOK talimatıyla sınırlıydı):**
-- **Düşük riskli, hızlı sınanabilir:** `demo_ayar.py`'de YOLO
-  `device="cpu"` → `"cuda"` denemek (GPU zaten `nvidia-smi`'de görünüyor,
-  Gazebo render sorunundan TAMAMEN bağımsız bir yol) — kare başı ~90 ms
-  takipçi süresinin ~%85'i bununla düşebilir.
-  YOLO`predict()` çağrılarının img boyutu (imgsz=640) ve model boyutu
-  (a6_kucuk_hedef.pt) GPU'da ne kadar hızlanır ÖLÇÜLMEDİ.
-- **Ayrı, daha riskli:** Gazebo/ogre2'nin GPU render çökmesini
-  (Intel/NVIDIA WSL2 D3D12 adaptör seçimi) çözmek — `MESA_D3D12_
-  DEFAULT_ADAPTER_NAME` ya da benzeri bir ortam değişkeniyle NVIDIA'yı
-  zorlamak DENENMEDİ; kendi başına bir teşhis/düzeltme turu ister,
-  başarısız olursa mevcut `LIBGL_ALWAYS_SOFTWARE=1` NET GEREKLİ kalır.
-- Plan B'nin regresyonu/canlı kabulü: **D1/D2 merge edilene kadar
-  ERTELENDİ.**
-- **Elle klavye/fare sürüşü KULLANICI tarafından test edilecek** — yukarıdaki
-  darboğazlardan en az biri çözülüp kabul testi GEÇENE kadar bunun bir
-  anlamı yok.
-- Merge: main'e **kullanıcı tetikleyecek**, ben yapmıyorum.
+## Canlı kabul testi HÂLÂ KOŞULMADI
+
+Kullanıcı talimatı: main'deki D1/D2, Plan B'nin regresyon kopmasıyla
+(kare ~535'te tek büyük ARAMA kopması, toparlanmama) AYNI arıza olabilir
+— bu yüzden `gazebo/kabul_canli.py` (tam takipçi+YOLO+kilit-oranı
+kriteri) **D1/D2 `demo-canli`'ye merge edilene kadar KOŞULMAYACAK**. Bu
+turda yapılan GPU değişiklikleri yalnız ALTYAPI/YAPILANDIRMA olarak
+hazır — render/YOLO hızının artık darboğaz OLMADIĞI gösterildi, ama
+kilit ORANI kriteri (D1/D2'nin hedeflediği re-edinme sağlamlığı) hâlâ
+AYRI, çözülmemiş bir soru.
+
+**Sıradaki adım (bu turun kapsamı DIŞINDA):**
+- Merge: main'deki D1/D2 → main → `demo-canli` (kullanıcı tetikleyecek).
+- D1/D2 merge sonrası: `gazebo/kabul_canli.py` YENİDEN koşulmalı (artık
+  GPU render + CUDA YOLO ile, IMX500 nativ çözünürlükte) — FPS kriteri
+  (≥15) bu turun ölçümleriyle (28.8 FPS bağlantı, YOLO GPU'da çok daha
+  hızlı) RAHATLIKLA geçmesi beklenir; kilit kriteri (≥%90) D1/D2'nin
+  düzeltmesine bağlı, ÖLÇÜLMEDİ.
+- Elle klavye/fare sürüşü: **KULLANICI test edecek** — kabul testi
+  GEÇENE kadar bunun pratik bir anlamı sınırlı olsa da GPU render
+  sayesinde artık en azından akıcı (28+ FPS) bir görüntü ile denenebilir.
+- `gazebo/kaydet.py` (offline kayıt) aynı GPU render düzeltmesinden
+  YARARLANABİLİR ama bu turun kapsamı dışında bırakıldı (yalnız
+  `veri/gazebo_canli.py` değiştirildi, talimat "canlı mod" idi).
 
 **Açık soru:** yok.
 
-**Yeni KALICI altyapı (önceki turdan, hâlâ geçerli):**
-`demo_ayar.ayarla_tuval_olcek(k)` / `demo_ayar.TUVAL_OLCEK` / `_R_MERDIVEN_1X`,
-`takip.izleyici.HedefTakip(koruma_esik=, min_kenar=)`, `main.py --tuval-olcek`,
-`veri/gazebo_canli.py:CANLI_TUVAL_OLCEK` — Plan B D1/D2 sonrası yeniden
-koşulduğunda BUNLAR KULLANILACAK, yeniden yazılmayacak.
+**Yeni KALICI altyapı (bu tur):**
+`demo_ayar.YOLO_DEVICE` / `demo_ayar.YOLO_HALF` (CUDA varsa otomatik),
+`veri/gazebo_canli.py:_sim_baslat()`'ta `MESA_D3D12_DEFAULT_ADAPTER_NAME`
+zorlaması. Önceki turdan hâlâ KULLANILMIYOR ama duran altyapı:
+`demo_ayar.ayarla_tuval_olcek(k)` / `TUVAL_OLCEK` / `_R_MERDIVEN_1X`,
+`takip.izleyici.HedefTakip(koruma_esik=, min_kenar=)`, `main.py
+--tuval-olcek`, `veri/gazebo_canli.py:CANLI_TUVAL_OLCEK` (şu an 1.0).
 
-**Çalışan süreçler:** yok (`pgrep -a gz` ile doğrulandı, temiz — teşhis
-script'lerinin başlattığı tüm `gz sim` süreçleri `killpg(SIGKILL)` ile
-temizlendi).
+**Çalışan süreçler:** yok (`pgrep -a gz` ile doğrulandı, temiz — hem
+teşhis script'lerinin hem gerçek `GazeboCanliKaynak` sanity-check'inin
+`gz sim` süreçleri temiz kapatıldı).
+
+---
+
+## (Önceki tur, saklı) — Teşhis: render+YOLO CPU'ya zorlanmış
+
+Bu bölüm bir önceki turun teşhis bulgularının ÖZETİDİR — GPU artık
+etkinleştirildiği için tarihsel referans olarak bırakıldı (ayrıntı git
+geçmişinde `14ab64e` commit'inde):
+
+- NVIDIA RTX 3060 `nvidia-smi`'de görünüyordu ama (a) Gazebo GPU render'i
+  bu WSL2'de çöküyordu (Intel adaptör + LLVM double-registration), (b)
+  YOLO `device="cpu"`'ya sabitti — iki BAĞIMSIZ neden.
+- Kamera KAPALI/AÇIK RTF karşılaştırması: fizik tek başına ~0.82-1.00,
+  kamera açılınca (CPU render) ~0.03'e çöküyordu.
+- Çözünürlük × RTF tablosu (CPU render): 2028×1520 istikrarlı ~0.03;
+  1352×1014/1014×760 bimodal (~0.05-1.0 arası).
+- Sonuç o turda: "fiziksel sınır" hükmü ERKENDİ, GERİ ÇEKİLDİ — darboğaz
+  YAZILIMSAL/YAPILANDIRMA. Bu turda ikisi de GİDERİLDİ (yukarı bkz.).

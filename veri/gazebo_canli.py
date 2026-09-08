@@ -49,34 +49,33 @@ from kaynak import Kare, Kaynak, KaynakHatasi
 from gazebo.dunya_uret import dunya_yaz
 from gazebo.senaryolar import (
     Arac, GzSenaryo, DEMO_MERKEZ_X, DEMO_MERKEZ_Y, DEMO_HIZ,
-    IMX500_GEN, IMX500_YUK, IMX500_ODAK_PX, Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
+    IMX500_GEN, IMX500_YUK, IMX500_ODAK_PX, IMX500_HZ,
+    Y1_MESH_L, Y1_MESH_W, Y1_MESH_H,
 )
 
-# CANLI CIKTI COZUNURLUGU (2026-09-08 DUZELTME - kullanicidan): arastirma
-# kamerasi (640x480) IMX500 DISI bir kamera, kabul edilmez - takip
-# sabitleri (demo_ayar.R_MERDIVEN, takip/izleyici.KORUMA_ESIK...) IMX500
-# nativ pikseline gore kalibre; 640x480'e dusmek onlari da bozuyordu
-# (bkz. docs/DEMO_SONUC.md "Canlı (scripted)").
+# CANLI CIKTI COZUNURLUGU - TARIHCE (ayrinti docs/DEMO_SONUC.md "Canlı
+# (scripted)"): arastirma kamerasi (640x480) kullanicidan REDDEDILDI
+# (IMX500 disi). Plan A (IMX500 tam cozunurluk, kam_hz 30->15) KALDI -
+# render maliyeti update_rate'e degil COZUNURLUGE bagliydi. Plan B
+# (1014x760 + TUVAL_OLCEK=0.5) render'i gecici cozdu ama regresyon
+# kilidi %93->%43'e dusurdu (KALDI, ayrinti DEMO_SONUC.md).
 #
-# Plan A (IMX500 TAM cozunurluk 2028x1520, kam_hz 30->15) DENENDI VE
-# KALDI: FPS 4.65 (>=15 gerekli), kilit orani %2.5 - render maliyeti
-# update_rate'ten degil COZUNURLUKTEN geliyormus (YOLO/kirpma-yeniden-
-# boyutlandirma da tam kare boyutuna baglı), yarilanan update_rate
-# tersine ISLENEN kare basina daha fazla is dustugu icin FPS'i
-# DUSURDU (bkz. docs/DEMO_SONUC.md "Canlı (scripted) - Plan A").
-#
-# Plan B (kullanicidan): IMX500'un YARI-DOGRUSAL cozunurlugu (2028/2 x
-# 1520/2 = 1014x760), odak_px orantili yarilanir (1561/2=780.5) - FOV
-# AYNI kalir, render+YOLO maliyeti ~4x azalir (piksel alani 1/4).
-# `demo_ayar.TUVAL_OLCEK = odak_px/1561 = 0.5` ile R_MERDIVEN/
-# koruma_esik/min_kenar bu kameraya gore yeniden olceklenir (bkz.
-# `gazebo/kabul_canli.py`, `demo_ayar.ayarla_tuval_olcek`) - ag-girdisi
-# bandi (BANT/NET_HEDEF) BILEREK degismez (resize SONRASI sabit AG
-# canvasinda olcer).
-CANLI_GEN, CANLI_YUK = IMX500_GEN // 2, IMX500_YUK // 2
-CANLI_ODAK_PX = IMX500_ODAK_PX / 2.0
-CANLI_TUVAL_OLCEK = CANLI_ODAK_PX / IMX500_ODAK_PX   # = 0.5, demo_ayar.ayarla_tuval_olcek'e verilir
-CANLI_HZ = 15.0
+# 2026-09-08 GERCEK KOK NEDEN BULUNDU (kullanicidan teshis): darboguz
+# cozunurluk DEGIL, render'in ZORUNLU YAZILIM (llvmpipe/CPU) modunda
+# calismasiydi (`LIBGL_ALWAYS_SOFTWARE=1`) - bu makinede NVIDIA RTX 3060
+# VAR ama D3D12/Mesa WSL katmani varsayilan olarak Intel iGPU'yu secip
+# COKUYORDU (LLVM double-registration). `MESA_D3D12_DEFAULT_ADAPTER_
+# NAME=NVIDIA` ile NVIDIA adaptoru ZORLANINCA cokme YOK, GL_RENDERER =
+# "D3D12 (NVIDIA GeForce RTX 3060 Laptop GPU)", RTF ~0.97-0.99 (neredeyse
+# GERCEK ZAMANLI) IMX500 TAM cozunurlukte (2028x1520) OLCULDU - bkz.
+# `_sim_baslat()`. Bu yuzden kamera NATIV IMX500'e (TUVAL_OLCEK=1.0,
+# olcekleme YOK) GERI DONDURULDU - Plan B'nin olcekleme altyapisi
+# (`demo_ayar.ayarla_tuval_olcek`) KALICI birakildi, ileride farkli bir
+# kamera/cozunurluk gerekirse kullanilabilir.
+CANLI_GEN, CANLI_YUK = IMX500_GEN, IMX500_YUK
+CANLI_ODAK_PX = IMX500_ODAK_PX
+CANLI_TUVAL_OLCEK = CANLI_ODAK_PX / IMX500_ODAK_PX   # = 1.0 (GPU render ile olcekleme GEREKMIYOR)
+CANLI_HZ = IMX500_HZ                                  # 30 Hz - GPU render bunu artik rahat karsiliyor
 
 TUS_HIZ_YATAY = 5.0      # m/s - W/A/S/D
 TUS_HIZ_DIKEY = 3.0      # m/s - R/F (200 m'ye kadar tirmanis icin yeterli)
@@ -93,11 +92,11 @@ TUSLAR = {
 
 
 def canli_senaryo(kam_z0=50.0):
-    """DEMO ailesinin baylands zemini + celdiricisiz tek hedef, IMX500'un
-    YARI-DOGRUSAL cozunurlugu + odak (1014x760, odak_px=780.5, FOV AYNI) -
-    takip tarafi `demo_ayar.ayarla_tuval_olcek(CANLI_TUVAL_OLCEK)` ile
-    buna gore yeniden olceklenmeli (bkz. CANLI_GEN/YUK/ODAK_PX ustteki
-    not, `gazebo/kabul_canli.py`)."""
+    """DEMO ailesinin baylands zemini + celdiricisiz tek hedef, IMX500 NATIV
+    cozunurluk + odak (DEMO'nun offline kaydiyla AYNI kamera) - GPU render
+    (bkz. `_sim_baslat()`) bunu artik gercek zamanli tasiyor, olcekleme
+    (`demo_ayar.ayarla_tuval_olcek`) GEREKMIYOR (bkz. CANLI_GEN/YUK/ODAK_PX/
+    TUVAL_OLCEK ustteki not)."""
     hedef = Arac("hedef", x0=DEMO_MERKEZ_X - 30.0, y0=DEMO_MERKEZ_Y, yaw=0.0,
                  vx=DEMO_HIZ, renk=(0.16, 0.16, 0.75), mesh="hatchback",
                  L=Y1_MESH_L, W=Y1_MESH_W, H=Y1_MESH_H)
@@ -172,7 +171,17 @@ class GazeboCanliKaynak(Kaynak):
         onceki = ortam.get("GZ_SIM_RESOURCE_PATH", "")
         ortam["GZ_SIM_RESOURCE_PATH"] = (
             os.path.abspath(self.dizin) + (":" + onceki if onceki else ""))
-        ortam.setdefault("LIBGL_ALWAYS_SOFTWARE", "1")
+        # GPU RENDER (2026-09-08, kullanicidan teshis+duzeltme): ambiyan
+        # kabukta LIBGL_ALWAYS_SOFTWARE=1 ZATEN ayarli olabilir (bu ortamda
+        # OYLE) - pop() ile ACIKCA KALDIRILMAZSA asagidaki hicbir sey ise
+        # yaramaz (miras alinan deger kazanir). Bu makinede D3D12/Mesa WSL
+        # katmani varsayilan olarak Intel iGPU'yu secip COKUYORDU (LLVM
+        # double-registration); NVIDIA adaptoru ACIKCA ZORLANINCA cokme YOK,
+        # RTF ~0.97-0.99 (IMX500 nativ 2028x1520, olculdu). GENEL cozum
+        # DEGIL - farkli bir GPU/surucu kombinasyonunda yine cokebilir, o
+        # yuzden `setdefault` (kullanici kendi ortaminda override edebilir).
+        ortam.pop("LIBGL_ALWAYS_SOFTWARE", None)
+        ortam.setdefault("MESA_D3D12_DEFAULT_ADAPTER_NAME", "NVIDIA")
         ortam["GZ_PARTITION"] = self.partisyon
         self._log = open(os.path.join(self.dizin, "gz_canli.log"), "w")
         self._surec = subprocess.Popen(
