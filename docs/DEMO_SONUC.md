@@ -177,3 +177,42 @@ zaten KORUMA'ya kilitleniyor ve bir daha çıkamıyor.
 | Demo_kucul | **GEÇTİ** |
 | Demo_celdirici | **KISMEN GEÇTİ** (asıl test edilen "yanlış hedef" kriteri geçti) |
 | Demo_kopus | **KALDI** |
+
+## Canlı (scripted) — `demo-canli` dalı, 2026-09-08 — **KALDI**
+
+`--source gazebo_canli` (`veri/gazebo_canli.py`) ile gerçek zamanlı `gz sim`
+bağlantısı + `gazebo/kabul_canli.py` (klavye YERİNE geri-beslemeli scripted
+tırmanış kontrolcüsü: `vz = clip((200 − irtifa)/kalan_süre, 0, 8)`). Elle
+klavye/fare sürüşü **KULLANICI test edecek** (bkz. `docs/KURULUM.md`) — bu
+satır yalnız otomatik/scripted kabul koşumunu raporlar.
+
+| Ölçüt | Sonuç | Durum |
+|---|---|---|
+| FPS ≥ 15 | **24.5** | GEÇTİ |
+| Kilit oranı ≥ %90 | **%3.1** (770 kareden 24'ü KILITLI; 334 KORUMA, 251 KAYIP, 85 ARAMA, 76 ŞÜPHELİ) | **KALDI** |
+| 50→200 m / 60 s tırmanış | Yalnız **164.4 m**'ye ulaşıldı (60 s'de) | KALDI (bilgi) |
+
+**Kök neden (ölçüldü, tasarım tuzağı):** RTF/FPS'i canlı-uyumlu kılmak için
+kamera IMX500 (2028×1520, fx=1561) yerine araştırma kamerasına (640×480,
+fx=500) düşürüldü (bkz. `veri/gazebo_canli.py` — bağlantı-testinde IMX500
+RTF~0.22/FPS~6.6, 640×480 RTF~0.54-0.57/FPS~16-17). **Ama bu, FOV'u neredeyse
+AYNI tutarken (66°↔65°, `genislik`/`odak_px` orantılı küçüldüğü için) native
+piksel YOĞUNLUĞUNU ~3.1× DÜŞÜRÜYOR** — aynı gerçek mesafedeki hedef artık
+~3× daha az piksel kaplıyor (ölçülen: takip kutusu ort. 24.7px, min 12.5,
+maks 61.5 — DEMO'nun IMX500 kalibrasyonunun [55,110]px hedef bandının
+ÇOĞUNLUKLA ALTINDA). `demo_ayar.py`'nin `R_MERDIVEN=(640,320,160,80)` /
+`BANT`/`NET_HEDEF` sabitleri MUTLAK piksel değerleridir ve özellikle
+2028px-genişlikte bir sensöre göre kalibre edilmiştir — 640px-genişlikte bir
+sensörde R=320 artık karenin YARISI (2028'de ~%16'sı yerine), yani ROI
+merdiveni de aynı zamanda BOZULUYOR. Sonuç: sistem çoğu zaman KORUMA/KAYIP'ta
+kalıyor (hedef gerçekten küçük + ROI merdiveni yanlış ölçekli).
+
+**Düzeltilmedi (kapsam dışı bırakıldı):** ya IMX500 çözünürlüğünde kalıp
+FPS≥15'ten vazgeçmek (ya da daha güçlü/GPU'lu donanım beklemek), ya da
+640×480 için `R_MERDIVEN`/`BANT`/A6 modelini YENİDEN kalibre etmek (kendi
+başına bir teşhis turu ister, `docs/TESHIS_2E_PX_BANDI.md`'nin 640×480
+karşılığı). Bu turun kapsamı yalnız bağlantı+kontrol döngüsünü kurup
+ölçmekti; kalibrasyon AYRI bir iş olarak bırakıldı.
+
+Kanıt: `cikti/canli/kabul.json` (özet), `cikti/canli/kabul.jsonl` (kare
+başına durum/px/irtifa), `cikti/canli/kabul.mp4` (ham görüntü).

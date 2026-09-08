@@ -51,3 +51,6 @@ runs/
 .venv_imx500/
 .jdk/
 weights/imx500/calib/images/
+
+# canli mod nohup calisma loglari - yerel, izlenmez
+logs/
